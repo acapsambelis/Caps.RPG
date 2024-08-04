@@ -1,5 +1,6 @@
-﻿using Caps.RPG.CombatEngine.Attributes;
+﻿using Caps.RPG.Rules.Attributes;
 using Caps.RPG.Rules.Helpers;
+using Caps.RPG.Rules.Inventory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -112,8 +113,7 @@ namespace Caps.RPG.Engine.Modifiers
         }
         public static int SumModifierFlat(List<Modifier> modifiers)
         {
-            int floor = 0;
-            int bonus = 0;
+            int floor = 0; int bonus = 0; int set = 0;
             foreach (Modifier modifier in modifiers)
             {
                 if (!modifier.typesUsed.Contains(BonusType.Flat)) continue;
@@ -126,8 +126,12 @@ namespace Caps.RPG.Engine.Modifiers
                 {
                     bonus += modifier.Bonus;
                 }
+                if (modifier.Type == ActionType.Set)
+                {
+                    set = Math.Max(set, modifier.Bonus);
+                }
             }
-            return floor + bonus;
+            return Math.Max(floor + bonus, set);
         }
         public static Dictionary<Die, int> SumModifierDie(List<Modifier> modifiers)
         {
@@ -149,8 +153,7 @@ namespace Caps.RPG.Engine.Modifiers
         }
         public static int SumModifierStat(List<Modifier> modifiers, AttributeSet attributes)
         {
-            int floor = 0;
-            int bonus = 0;
+            int floor = 0; int bonus = 0; int set = 0;
             foreach (Modifier modifier in modifiers)
             {
                 if (!modifier.typesUsed.Contains(BonusType.Stat)) continue;
@@ -163,17 +166,21 @@ namespace Caps.RPG.Engine.Modifiers
                 {
                     bonus += attributes.GetStatValue(modifier.Stat);
                 }
+                if (modifier.Type == ActionType.Set)
+                {
+                    set = Math.Max(set, modifier.Bonus);
+                }
             }
-            return floor + bonus;
+            return Math.Max(floor + bonus, set);
         }
 
         #region StandardModifiers
 
         public static readonly Dictionary<TargetType, List<Modifier>> CreatureModifiers = new Dictionary<TargetType, List<Modifier>>()
         {
-            { TargetType.DefenseClass, new List<Modifier>() { new Modifier("Unarmored", TargetType.DefenseClass, ActionType.Base,  [BonusType.Flat], bonus:10) } },
-            { TargetType.AttackDamage, new List<Modifier>() { new Modifier("Unarmed",   TargetType.AttackDamage, ActionType.Bonus, [BonusType.Die], dice: new Dictionary<Die, int> {{ new Die.DFour(), 1 }}) } },
-            { TargetType.AttackBonus,  new List<Modifier>() { new Modifier("Unarmed",   TargetType.AttackBonus,  ActionType.Base,  [BonusType.Flat, BonusType.Stat], bonus:1, stat:new Strength() )} }
+            { TargetType.DefenseClass, new List<Modifier>() { new Modifier(new Item("Unarmored", "You are wearing no armor.",  ItemType.Chest), TargetType.DefenseClass, ActionType.Base,  [BonusType.Flat], bonus:10) } },
+            { TargetType.AttackDamage, new List<Modifier>() { new Modifier(new Item("Unarmed", "You are wielding no weapons.", ItemType.Hands), TargetType.AttackDamage, ActionType.Bonus, [BonusType.Die], dice: new Dictionary<Die, int> {{ new Die.DFour(), 1 }}) } },
+            { TargetType.AttackBonus,  new List<Modifier>() { new Modifier(new Item("Unarmed", "You are wielding no weapons.", ItemType.Hands), TargetType.AttackBonus,  ActionType.Base,  [BonusType.Flat, BonusType.Stat], bonus:1, stat:new Strength() )} }
         };
 
         #endregion

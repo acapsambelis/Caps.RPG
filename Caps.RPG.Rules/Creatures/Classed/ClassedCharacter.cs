@@ -5,12 +5,12 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Caps.RPG.CombatEngine.Attributes;
-using Caps.RPG.CombatEngine.Creatures.Actions;
-using Caps.RPG.CombatEngine.Creatures.Classed.Classes;
-using Caps.RPG.CombatEngine.Creatures.Types;
+using Caps.RPG.Rules.Attributes;
+using Caps.RPG.Rules.Creatures.Actions;
+using Caps.RPG.Rules.Creatures.Classed.Classes;
+using Caps.RPG.Rules.Creatures.Types;
 
-namespace Caps.RPG.CombatEngine.Creatures.Classed
+namespace Caps.RPG.Rules.Creatures.Classed
 {
     public class ClassedCharacter : Creature, CreatureType
     {

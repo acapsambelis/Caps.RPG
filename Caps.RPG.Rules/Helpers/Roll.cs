@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Caps.RPG.CombatEngine.Helpers
+namespace Caps.RPG.Rules.Helpers
 {
     public class Roll
     {

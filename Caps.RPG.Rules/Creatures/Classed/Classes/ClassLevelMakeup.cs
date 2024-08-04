@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Caps.RPG.CombatEngine.Creatures.Classed.Classes
+namespace Caps.RPG.Rules.Creatures.Classed.Classes
 {
     public class ClassLevelMakeup
     {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Caps.RPG.CombatEngine.Creatures.Actions
+namespace Caps.RPG.Rules.Creatures.Actions
 {
     public class CombatAction
     {

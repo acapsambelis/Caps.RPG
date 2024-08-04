@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Caps.RPG.CombatEngine.Creatures.Types
+namespace Caps.RPG.Rules.Creatures.Types
 {
     public interface CreatureType
     {

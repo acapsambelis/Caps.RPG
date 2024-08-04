@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Caps.RPG.CombatEngine.Attributes
+namespace Caps.RPG.Rules.Attributes
 {
     public class Presence : Stat
     {

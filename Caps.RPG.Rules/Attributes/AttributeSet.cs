@@ -1,4 +1,4 @@
-﻿namespace Caps.RPG.CombatEngine.Attributes
+﻿namespace Caps.RPG.Rules.Attributes
 {
     public class AttributeSet
     {

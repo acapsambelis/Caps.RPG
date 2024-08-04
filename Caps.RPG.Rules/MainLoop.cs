@@ -3,72 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Caps.RPG.CombatEngine.Attributes;
-using Caps.RPG.CombatEngine.Creatures;
-using Caps.RPG.CombatEngine.Creatures.Actions;
-using Caps.RPG.CombatEngine.Creatures.Classed;
-using Caps.RPG.CombatEngine.Creatures.Classed.Classes;
+using Caps.RPG.Rules.Creatures;
+using Caps.RPG.Rules.Creatures.Actions;
 
-namespace Caps.RPG.CombatEngine
+namespace Caps.RPG.Rules
 {
     public class MainLoop
     {
         public CombatState State;
 
-        public MainLoop()
+        public MainLoop(List<(string, Creature)> combattants)
         {
             State = new CombatState();
-            // blue team
-            State.AddCombattant(
-                "Blue",
-                new ClassedCharacter(
-                    "Dex F",
-                    new AttributeSet(0, 4, 3, 0, 0, 1, 2, 0),
-                    new Dictionary<Type, int> { { typeof(Fighter), 1 } }
-                )
-            );
-            State.AddCombattant(
-                "Blue",
-                new ClassedCharacter(
-                    "Str F",
-                    new AttributeSet(4, 0, 3, 0, 0, 0, 1, 2),
-                    new Dictionary<Type, int> { { typeof(Fighter), 1 } }
-                )
-            );
-            State.AddCombattant(
-                "Blue",
-                new ClassedCharacter(
-                    "Cleric",
-                    new AttributeSet(0, 0, 2, 0, 3, 4, 1, 0),
-                    new Dictionary<Type, int> { { typeof(Cleric), 1 } }
-                )
-            );
-
-            // red team
-            State.AddCombattant(
-                "Red",
-                new ClassedCharacter(
-                    "Dex F",
-                    new AttributeSet(0, 4, 3, 0, 0, 1, 2, 0),
-                    new Dictionary<Type, int> { { typeof(Fighter), 1 } }
-                )
-            );
-            State.AddCombattant(
-                "Red",
-                new ClassedCharacter(
-                    "Str F",
-                    new AttributeSet(4, 0, 3, 0, 0, 0, 1, 2),
-                    new Dictionary<Type, int> { { typeof(Fighter), 1 } }
-                )
-            );
-            State.AddCombattant(
-                "Red",
-                new ClassedCharacter(
-                    "Cleric",
-                    new AttributeSet(0, 0, 2, 0, 3, 4, 1, 0),
-                    new Dictionary<Type, int> { { typeof(Cleric), 1 } }
-                )
-            );
+            foreach ((string, Creature) c in combattants)
+            {
+                State.AddCombattant(c.Item1, c.Item2);
+            }
 
             State.BuildCombatOrder();
         }

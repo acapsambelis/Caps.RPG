@@ -1,4 +1,4 @@
-﻿using Caps.RPG.CombatEngine.Creatures.Actions;
+﻿using Caps.RPG.Rules.Creatures.Actions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Caps.RPG.CombatEngine.Creatures.Classed.Classes
+namespace Caps.RPG.Rules.Creatures.Classed.Classes
 {
     public class Fighter : CharacterClass
     {

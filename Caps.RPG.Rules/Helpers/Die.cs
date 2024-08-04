@@ -16,7 +16,7 @@ namespace Caps.RPG.Rules.Helpers
 
         public virtual int Roll()
         {
-            return CombatEngine.Helpers.Roll.RollDie(size);
+            return Rules.Helpers.Roll.RollDie(size);
         }
 
 

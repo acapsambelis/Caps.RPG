@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Caps.RPG.CombatEngine.Attributes;
-using Caps.RPG.CombatEngine.Creatures.Actions;
+using Caps.RPG.Rules.Attributes;
+using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Engine.Modifiers;
+using Caps.RPG.Rules.Inventory;
 
-namespace Caps.RPG.CombatEngine.Creatures
+namespace Caps.RPG.Rules.Creatures
 {
     public class Creature
     {
@@ -20,14 +21,21 @@ namespace Caps.RPG.CombatEngine.Creatures
         }
 
         #region privateMembers
+
+        // Basics
         private string name;
-        private CombatStatus status;
         private int maxHealth;
         private int health;
         private AttributeSet attributes;
+
+        // Combat
+        private CombatStatus status;
         private List<CombatAction> combatActions;
 
+        // Inventory
+        private CreatureInventory inv;
 
+        // Modifiers
         private bool defenseClassChanged = true;
         private bool attackBonusChanged = true;
         private Dictionary<Modifier.TargetType, List<Modifier>> modifiers;
@@ -37,15 +45,11 @@ namespace Caps.RPG.CombatEngine.Creatures
         #endregion
 
         #region PublicMembers
+        // Basics
         public string Name
         {
             get { return name; }
             set { name = value; }
-        }
-        public CombatStatus Status
-        {
-            get { return status; }
-            set { status = value; }
         }
         public int MaxHealth
         {
@@ -69,13 +73,25 @@ namespace Caps.RPG.CombatEngine.Creatures
                 }
             }
         }
+        public AttributeSet Attributes
+        {
+            get { return attributes; }
+            set { attributes = value; }
+        }
+
+        // Combat
+        public CombatStatus Status
+        {
+            get { return status; }
+            set { status = value; }
+        }
         public int DefenseClass
         {
             get
             {
                 if (defenseClassChanged)
                 {
-                    this.defenseClass = Modifier.SumModifierFlat(this.modifiers[Modifier.TargetType.DefenseClass]);
+                    this.defenseClass = Modifier.SumAll(this.modifiers[Modifier.TargetType.DefenseClass], this.Attributes);
                     this.defenseClassChanged = false;
                 }
                 return this.defenseClass;
@@ -87,22 +103,24 @@ namespace Caps.RPG.CombatEngine.Creatures
             {
                 if (attackBonusChanged)
                 {
-                    this.attackBonus = Modifier.SumModifierFlat(this.modifiers[Modifier.TargetType.AttackBonus]);
+                    this.attackBonus = Modifier.SumAll(this.modifiers[Modifier.TargetType.AttackBonus], this.Attributes);
                     this.attackBonusChanged = false;
                 }
                 return this.attackBonus;
             }
-        }
-        public AttributeSet Attributes
-        {
-            get { return attributes; }
-            set { attributes = value; }
         }
         public int Initiative
         {
             get { return new Random().Next(1, 21) + Attributes.InitiativeModifier(); }
         }
 
+        // Inventory
+        public CreatureInventory Inventory
+        {
+            get { return inv; }
+        }
+
+        // Modifiers
         public Dictionary<Modifier.TargetType, List<Modifier>> Modifiers
         {
             get { return modifiers; }
@@ -119,6 +137,7 @@ namespace Caps.RPG.CombatEngine.Creatures
             this.health = MaxHealth;
             this.combatActions = CombatAction.GetGenericList();
 
+            this.inv = new CreatureInventory(this);
             modifiers = Modifier.CreatureModifiers;
         }
         #endregion
@@ -128,13 +147,32 @@ namespace Caps.RPG.CombatEngine.Creatures
             return combatActions;
         }
 
-        public void AddModifier(Modifier modifier)
+        public void AddModifier(Modifier modifier, object? source)
         {
             if (modifier.Target == Modifier.TargetType.DefenseClass)
             {
                 this.defenseClassChanged = true;
             }
-            modifiers[modifier.Target].Add(modifier);
+            if (modifier.Target == Modifier.TargetType.AttackBonus)
+            {
+                this.attackBonusChanged = true;
+            }
+
+            List<Modifier> targetList = modifiers[modifier.Target];
+            if (source is Item)
+            {
+                Item s = (Item)source;
+                foreach (var mod in targetList)
+                {
+                    if (mod.Source is Item && ((Item)mod.Source).Type == s.Type)
+                    {
+                        targetList.Remove(mod);
+                        break;
+                    }
+                }
+            }
+
+            targetList.Add(modifier);
         }
 
         #region GenericMethods

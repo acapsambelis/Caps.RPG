@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Caps.RPG.CombatEngine.Creatures;
+using Caps.RPG.Rules.Creatures;
 
-namespace Caps.RPG.CombatEngine
+namespace Caps.RPG.Rules
 {
     public class CombatState
     {
