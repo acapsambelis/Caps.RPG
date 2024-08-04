@@ -24,11 +24,15 @@ namespace Caps.RPG.CombatEngine.Creatures
         private CombatStatus status;
         private int maxHealth;
         private int health;
-        private int defenseClass;
         private AttributeSet attributes;
         private List<CombatAction> combatActions;
 
-        private Dictionary<Modifier.ModifierTarget, List<Modifier>> modifiers;
+
+        private bool defenseClassChanged = true;
+        private bool attackBonusChanged = true;
+        private Dictionary<Modifier.TargetType, List<Modifier>> modifiers;
+        private int defenseClass;
+        private int attackBonus;
 
         #endregion
 
@@ -67,8 +71,27 @@ namespace Caps.RPG.CombatEngine.Creatures
         }
         public int DefenseClass
         {
-            get { return defenseClass; }
-            set { defenseClass = value; }
+            get
+            {
+                if (defenseClassChanged)
+                {
+                    this.defenseClass = Modifier.SumModifierFlat(this.modifiers[Modifier.TargetType.DefenseClass]);
+                    this.defenseClassChanged = false;
+                }
+                return this.defenseClass;
+            }
+        }
+        public int AttackBonus
+        {
+            get
+            {
+                if (attackBonusChanged)
+                {
+                    this.attackBonus = Modifier.SumModifierFlat(this.modifiers[Modifier.TargetType.AttackBonus]);
+                    this.attackBonusChanged = false;
+                }
+                return this.attackBonus;
+            }
         }
         public AttributeSet Attributes
         {
@@ -78,6 +101,11 @@ namespace Caps.RPG.CombatEngine.Creatures
         public int Initiative
         {
             get { return new Random().Next(1, 21) + Attributes.InitiativeModifier(); }
+        }
+
+        public Dictionary<Modifier.TargetType, List<Modifier>> Modifiers
+        {
+            get { return modifiers; }
         }
         #endregion
 
@@ -91,13 +119,22 @@ namespace Caps.RPG.CombatEngine.Creatures
             this.health = MaxHealth;
             this.combatActions = CombatAction.GetGenericList();
 
-            modifiers = new Dictionary<Modifier.ModifierTarget, List<Modifier>>();
+            modifiers = Modifier.CreatureModifiers;
         }
         #endregion
 
         public virtual List<CombatAction> GetCombatActions()
         {
             return combatActions;
+        }
+
+        public void AddModifier(Modifier modifier)
+        {
+            if (modifier.Target == Modifier.TargetType.DefenseClass)
+            {
+                this.defenseClassChanged = true;
+            }
+            modifiers[modifier.Target].Add(modifier);
         }
 
         #region GenericMethods

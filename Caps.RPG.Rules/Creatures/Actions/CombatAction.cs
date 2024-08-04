@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Caps.RPG.Engine.Modifiers;
+using Caps.RPG.Rules.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -66,7 +68,6 @@ namespace Caps.RPG.CombatEngine.Creatures.Actions
         {
             new CombatAction("Attack", "Attack one target with a physical attack.", 1, Attack, true),
             new CombatAction("Move", "Move your speed along the board. (Not implemented)", 1, Move, false),
-            new CombatAction("Dodge", "The first attack against you will miss (until your next turn).", 1, Dodge, false),
         };
         public static List<CombatAction> GetGenericList()
         {
@@ -76,15 +77,17 @@ namespace Caps.RPG.CombatEngine.Creatures.Actions
         // Generic Actions
         public static void Attack(Creature source, Creature? target)
         {
-
+            if (target != null)
+            {
+                bool hits = source.AttackBonus + new Die.DTwenty().Roll() > target.DefenseClass;
+                if (hits)
+                {
+                    target.Health -= Modifier.SumAll(source.Modifiers[Modifier.TargetType.AttackDamage], source.Attributes);
+                }
+            }
         }
 
         public static void Move(Creature source, Creature? target = null)
-        {
-
-        }
-
-        public static void Dodge(Creature source, Creature? target = null)
         {
 
         }
