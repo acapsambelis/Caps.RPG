@@ -2,6 +2,7 @@
 using Caps.RPG.Rules.Helpers;
 using Caps.RPG.Rules.Inventory;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -176,7 +177,17 @@ namespace Caps.RPG.Engine.Modifiers
 
         #region StandardModifiers
 
-        public static readonly Dictionary<TargetType, List<Modifier>> CreatureModifiers = new Dictionary<TargetType, List<Modifier>>()
+        public static Dictionary<TargetType, List<Modifier>> GetCreatureModifiers()
+        {
+            var clone = new Dictionary<TargetType, List<Modifier>>(CreatureModifiers.Count, CreatureModifiers.Comparer);
+            foreach (var kvp in CreatureModifiers)
+            {
+                clone[kvp.Key] = new List<Modifier>(kvp.Value);
+            }
+            return clone;
+        }
+
+        private static readonly Dictionary<TargetType, List<Modifier>> CreatureModifiers = new Dictionary<TargetType, List<Modifier>>()
         {
             { TargetType.DefenseClass, new List<Modifier>() { new Modifier(new Item("Unarmored", "You are wearing no armor.",  ItemType.Chest), TargetType.DefenseClass, ActionType.Base,  [BonusType.Flat], bonus:10) } },
             { TargetType.AttackDamage, new List<Modifier>() { new Modifier(new Item("Unarmed", "You are wielding no weapons.", ItemType.Hands), TargetType.AttackDamage, ActionType.Bonus, [BonusType.Die], dice: new Dictionary<Die, int> {{ new Die.DFour(), 1 }}) } },

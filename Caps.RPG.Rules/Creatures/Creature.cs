@@ -138,7 +138,7 @@ namespace Caps.RPG.Rules.Creatures
             this.combatActions = CombatAction.GetGenericList();
 
             this.inv = new CreatureInventory(this);
-            modifiers = Modifier.CreatureModifiers;
+            modifiers = Modifier.GetCreatureModifiers();
         }
         #endregion
 
@@ -172,7 +172,7 @@ namespace Caps.RPG.Rules.Creatures
                 }
             }
 
-            targetList.Add(modifier);
+            modifiers[modifier.Target].Add(modifier);
         }
 
         #region GenericMethods

@@ -44,5 +44,10 @@ namespace Caps.RPG.Rules.Inventory
         {
             return [];
         }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }
