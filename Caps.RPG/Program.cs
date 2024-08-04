@@ -4,7 +4,7 @@ using Caps.RPG.Rules.Creatures.Classed.Classes;
 using Caps.RPG.Rules.Creatures.Classed;
 using Caps.RPG.Rules.Creatures;
 
-namespace Caps.RP
+namespace Caps.RPG
 {
     public class Program
     {
