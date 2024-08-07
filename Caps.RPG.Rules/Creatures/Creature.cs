@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Caps.RPG.Rules.Attributes;
+﻿using Caps.RPG.Rules.Attributes;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Engine.Modifiers;
 using Caps.RPG.Rules.Inventory;

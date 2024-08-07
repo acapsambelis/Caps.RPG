@@ -1,4 +1,5 @@
-﻿namespace Caps.RPG.Rules.Attributes
+﻿
+namespace Caps.RPG.Rules.Attributes
 {
     public class AttributeSet
     {

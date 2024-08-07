@@ -1,12 +1,6 @@
 ﻿using Caps.RPG.Rules.Attributes;
 using Caps.RPG.Rules.Helpers;
 using Caps.RPG.Rules.Inventory;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Caps.RPG.Engine.Modifiers
 {
