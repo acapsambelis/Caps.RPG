@@ -41,16 +41,6 @@ namespace Caps.RPG
                 new Vector2D(1,5)
             ));
 
-            //test
-            combattants.Add(
-                ("Blue",
-                new ClassedCharacter(
-                    "Cleric2",
-                    new AttributeSet(0, 0, 2, 0, 3, 4, 1, 0),
-                    new Dictionary<Type, int> { { typeof(Cleric), 1 } }
-                )
-            ));
-
             // red team
 
             ClassedCharacter redDexFighter = new ClassedCharacter(
