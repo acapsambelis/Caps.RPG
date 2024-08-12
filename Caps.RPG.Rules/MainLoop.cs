@@ -1,5 +1,6 @@
 ﻿using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Creatures.Actions;
+using Caps.RPG.Rules.Helpers;
 
 namespace Caps.RPG.Rules
 {
@@ -7,70 +8,63 @@ namespace Caps.RPG.Rules
     {
         public CombatState State;
 
-        public MainLoop(List<(string, Creature)> combattants)
+        public MainLoop(List<(string, Creature, Vector2D)> combattants)
         {
             State = new CombatState();
-            foreach ((string, Creature) c in combattants)
+            foreach ((string, Creature, Vector2D) c in combattants)
             {
-                State.AddCombattant(c.Item1, c.Item2);
+                State.AddCombattant(c.Item1, c.Item2, c.Item3);
             }
 
             State.BuildCombatOrder();
         }
 
-        public void Loop(Func<string, int> inputFunction)
+        public void BetterLoop(
+            Action<Combattant[]> ScoreboardFunction,
+            Func<Combattant[], Combattant[,]> MapFunction,
+            Action<Combattant> CreatureDisplayFunction,
+            Func<Combattant, Vector2D> GetDestination,
+            Func<List<CombatAction>, CombatAction> GetAction,
+            Func<CombatState, Combattant, double, Creature> GetTarget
+        )
         {
-            string? input = string.Empty;
             int rounds = 0;
             while (State.HasNoVictor())
             {
                 rounds++;
 
-                Console.WriteLine("Start of turn state:");
-                for (int i = 0; i < State.CombatOrder.Length; i++)
+                foreach (Combattant currentCreature in State.CombatOrder)
                 {
-                    CombatState.TeamedCreature possibleTarget = State.CombatOrder[i];
-                    Console.WriteLine((i+1) + ": " + "(" + possibleTarget.Team + ")\t" + possibleTarget.Creature.Name + ":\t" + possibleTarget.Creature.Health + "/" + possibleTarget.Creature.MaxHealth);
-                }
-                Console.WriteLine("\n\n");
-                foreach (CombatState.TeamedCreature currentCreature in State.CombatOrder)
-                {
-                    Creature creature = currentCreature.Creature;
-                    Console.WriteLine("=== (" + currentCreature.Team + ") " + creature.Name + " ===");
-                    Console.WriteLine("=== " + creature.Health + "/" + creature.MaxHealth + " ===");
+                    // display
+                    if (currentCreature.Creature.Status != Creature.HealthStatus.Alive) continue;
+                    ScoreboardFunction(State.CombatOrder);
+                    Combattant[,] map = MapFunction(State.CombatOrder);
+                    CreatureDisplayFunction(currentCreature);
 
-                    List<CombatAction> availableActions = creature.GetCombatActions();
-                    Console.WriteLine("Choose an action:");
-                    for (int i = 0; i < availableActions.Count; i++)
+                    // movement
+                    Vector2D destination = new Vector2D(-Double.MaxValue, -Double.MaxValue);
+                    while (currentCreature.Position.Distance(destination) > currentCreature.Creature.MoveSpeed)
                     {
-                        Console.WriteLine(i + ": " + availableActions[i].ToString());
+                        Vector2D tmp = GetDestination(currentCreature);
+
+                        if (map[tmp.IntX, tmp.IntY] != null && map[tmp.IntX, tmp.IntY] != currentCreature) continue;
+
+                        destination = tmp;
                     }
+                    currentCreature.Move(destination);
+                    MapFunction(State.CombatOrder);
 
-                    int chosenActionIndex = inputFunction("> ");
-
-                    CombatAction chosen = availableActions[chosenActionIndex];
+                    // action
+                    List<CombatAction> availableActions = currentCreature.Creature.GetCombatActions();
+                    CombatAction chosen = GetAction(availableActions);
                     Creature? target = null;
                     if (chosen.NeedsTarget)
                     {
-                        Console.WriteLine("Choose a target:");
-                        for (int i = 0; i < State.CombatOrder.Length; i++)
-                        {
-                            CombatState.TeamedCreature possibleTarget = State.CombatOrder[i];
-                            if (possibleTarget != currentCreature)
-                            {
-                                Console.WriteLine(i + ": " + "(" + possibleTarget.Team + ") " + possibleTarget.Creature.Name + ": " + possibleTarget.Creature.Health + "/" + possibleTarget.Creature.MaxHealth);
-                            }
-                        }
-                        int chosenTargetIndex = inputFunction("> ");
-
-                        target = State.CombatOrder[chosenTargetIndex].Creature;
+                        target = GetTarget(State, currentCreature, chosen.Distance);
                     }
-                    chosen.Execution(creature, target);
-
+                    chosen.Execution(currentCreature.Creature, target);
                 }
             }
-
-            Console.WriteLine("Team " + State.GetVictorTeamName() + " has won in " + rounds + " rounds!");
         }
     }
 }

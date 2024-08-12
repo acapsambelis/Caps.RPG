@@ -22,7 +22,7 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
 
         public readonly static Dictionary<int, CombatAction> actionDictionary = new Dictionary<int, CombatAction>()
         {
-            { 1, new CombatAction("Healing Word", "You heal one target for Health equal to 5 times your Cleric level.", 1, HealingWord, true) },
+            { 1, new CombatAction("Healing Word", "You heal one target for Health equal to 5 times your Cleric level.", 1, HealingWord, true, 5) },
         };
 
         public static void HealingWord(Creature source, Creature? target = null)

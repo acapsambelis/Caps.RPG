@@ -15,7 +15,7 @@ namespace Caps.RPG.Content.Items.Hands
         {
             return [
                 new Modifier(this, Modifier.TargetType.AttackBonus,  Modifier.ActionType.Set, [Modifier.BonusType.Flat], bonus: 25),
-                new Modifier(this, Modifier.TargetType.AttackDamage, Modifier.ActionType.Set, [Modifier.BonusType.Flat], bonus: 25)
+                new Modifier(this, Modifier.TargetType.AttackDamage, Modifier.ActionType.Set, [Modifier.BonusType.Flat], bonus: 15)
             ];
         }
     }

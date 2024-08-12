@@ -7,7 +7,7 @@ namespace Caps.RPG.Rules.Creatures
 {
     public class Creature
     {
-        public enum CombatStatus
+        public enum HealthStatus
         {
             None,
             Alive,
@@ -24,7 +24,7 @@ namespace Caps.RPG.Rules.Creatures
         private AttributeSet attributes;
 
         // Combat
-        private CombatStatus status;
+        private HealthStatus status;
         private List<CombatAction> combatActions;
 
         // Inventory
@@ -60,7 +60,7 @@ namespace Caps.RPG.Rules.Creatures
                 if (health <= 0)
                 {
                     health = 0;
-                    status = CombatStatus.Unconsious;
+                    status = HealthStatus.Unconsious;
                 }
                 if (health > maxHealth)
                 {
@@ -75,7 +75,7 @@ namespace Caps.RPG.Rules.Creatures
         }
 
         // Combat
-        public CombatStatus Status
+        public HealthStatus Status
         {
             get { return status; }
             set { status = value; }
@@ -108,6 +108,10 @@ namespace Caps.RPG.Rules.Creatures
         {
             get { return new Random().Next(1, 21) + Attributes.InitiativeModifier(); }
         }
+        public int MoveSpeed
+        {
+            get { return Attributes.MoveSpeed(); }
+        }
 
         // Inventory
         public CreatureInventory Inventory
@@ -125,12 +129,12 @@ namespace Caps.RPG.Rules.Creatures
         #region Constructors
         public Creature(string name, AttributeSet attributes)
         {
-            this.status = CombatStatus.None;
+            this.status = HealthStatus.Alive;
             this.name = name;
             this.attributes = attributes;
             this.maxHealth = attributes.GetMaxHealth();
             this.health = MaxHealth;
-            this.combatActions = CombatAction.GetGenericList();
+            this.combatActions = Combattant.GetGenericList();
 
             this.inv = new CreatureInventory(this);
             modifiers = Modifier.GetCreatureModifiers();

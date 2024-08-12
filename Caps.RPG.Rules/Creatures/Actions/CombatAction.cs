@@ -1,6 +1,4 @@
-﻿using Caps.RPG.Engine.Modifiers;
-using Caps.RPG.Rules.Helpers;
-
+﻿
 
 namespace Caps.RPG.Rules.Creatures.Actions
 {
@@ -12,6 +10,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
         private int cost;
         private Action<Creature, Creature?> action;
         private bool needsTarget;
+        private double distance;
         #endregion
 
         #region PublicMembers
@@ -40,16 +39,22 @@ namespace Caps.RPG.Rules.Creatures.Actions
             get { return needsTarget; }
             set { needsTarget = value; }
         }
+        public double Distance
+        {
+            get { return distance; }
+            set { distance = value; }
+        }
         #endregion
 
         #region Constructors
-        public CombatAction(string name, string description, int cost, Action<Creature, Creature?> action, bool needsTarget)
+        public CombatAction(string name, string description, int cost, Action<Creature, Creature?> action, bool needsTarget, double distance)
         {
             this.name = name;
             this.description = description;
             this.cost = cost;
             this.action = action;
             this.needsTarget = needsTarget;
+            this.distance = distance;
         }
         #endregion
 
@@ -59,34 +64,6 @@ namespace Caps.RPG.Rules.Creatures.Actions
             return name + " : " + description;
         }
         #endregion
-
-        public readonly static List<CombatAction> ActionList = new List<CombatAction>()
-        {
-            new CombatAction("Attack", "Attack one target with a physical attack.", 1, Attack, true),
-            new CombatAction("Move", "Move your speed along the board. (Not implemented)", 1, Move, false),
-        };
-        public static List<CombatAction> GetGenericList()
-        {
-            return ActionList;
-        }
-
-        // Generic Actions
-        public static void Attack(Creature source, Creature? target)
-        {
-            if (target != null)
-            {
-                bool hits = source.AttackBonus + new Die.DTwenty().Roll() > target.DefenseClass;
-                if (hits)
-                {
-                    target.Health -= Modifier.SumAll(source.Modifiers[Modifier.TargetType.AttackDamage], source.Attributes);
-                }
-            }
-        }
-
-        public static void Move(Creature source, Creature? target = null)
-        {
-
-        }
 
     }
 }

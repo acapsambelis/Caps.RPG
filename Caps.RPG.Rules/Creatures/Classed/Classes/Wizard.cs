@@ -20,7 +20,7 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
 
         public readonly static Dictionary<int, CombatAction> actionDictionary = new Dictionary<int, CombatAction>()
         {
-            { 1, new CombatAction("Firebolt", "You deal damage to one target equal to 5 times your Wizard level.", 1, Firebolt, true) },
+            { 1, new CombatAction("Firebolt", "You deal damage to one target equal to 5 times your Wizard level.", 1, Firebolt, true, 10) },
         };
 
         public static void Firebolt(Creature source, Creature? target = null)

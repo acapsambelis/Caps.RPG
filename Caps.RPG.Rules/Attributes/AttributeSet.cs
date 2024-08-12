@@ -61,5 +61,10 @@ namespace Caps.RPG.Rules.Attributes
             return agi.InitiativeModifier();
         }
 
+        public int MoveSpeed()
+        {
+            return 5 + agi.value;
+        }
+
     }
 }
