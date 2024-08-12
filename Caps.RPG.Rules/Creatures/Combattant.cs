@@ -47,7 +47,7 @@ namespace Caps.RPG.Rules.Creatures
 
         public override int GetHashCode()
         {
-            throw new NotImplementedException();
+            return base.GetHashCode();
         }
 
         public readonly static List<CombatAction> ActionList = new List<CombatAction>()
