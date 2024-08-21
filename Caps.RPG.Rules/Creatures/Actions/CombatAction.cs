@@ -8,7 +8,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
         private string name;
         private string description;
         private int cost;
-        private Action<Creature, Creature?> action;
+        private Func<Creature, Creature?, ActionResult> action;
         private bool needsTarget;
         private double distance;
         #endregion
@@ -29,7 +29,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
             get { return cost; }
             set { cost = value; }
         }
-        public Action<Creature, Creature?> Execution
+        public Func<Creature, Creature?, ActionResult> Execution
         {
             get { return action; }
             set { action = value; }
@@ -47,7 +47,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
         #endregion
 
         #region Constructors
-        public CombatAction(string name, string description, int cost, Action<Creature, Creature?> action, bool needsTarget, double distance)
+        public CombatAction(string name, string description, int cost, Func<Creature, Creature?, ActionResult> action, bool needsTarget, double distance)
         {
             this.name = name;
             this.description = description;

@@ -10,9 +10,9 @@ namespace Caps.RPG
 {
     public class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            List<(string, Creature, Vector2D)> combattants = new List<(string, Creature, Vector2D)>();
+            List<(string, Creature, Vector2D)> combattants = [];
             // blue team
 
             ClassedCharacter blueDexFighter = new ClassedCharacter(
@@ -77,7 +77,7 @@ namespace Caps.RPG
         {
             Console.Write("> ");
             string? input = Console.ReadLine();
-            return Int32.Parse(input != null ? input : "");
+            return Int32.Parse(input ?? "");
         }
 
         public static void DisplayScoreboard(Combattant[] combattants)

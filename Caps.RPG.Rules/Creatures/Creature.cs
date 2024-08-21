@@ -28,7 +28,7 @@ namespace Caps.RPG.Rules.Creatures
         private List<CombatAction> combatActions;
 
         // Inventory
-        private CreatureInventory inv;
+        private readonly CreatureInventory inv;
 
         // Modifiers
         private bool defenseClassChanged = true;
@@ -148,22 +148,34 @@ namespace Caps.RPG.Rules.Creatures
 
         public void AddModifier(Modifier modifier, object? source)
         {
-            if (modifier.Target == Modifier.TargetType.DefenseClass)
+            switch (modifier.Target)
             {
-                this.defenseClassChanged = true;
-            }
-            if (modifier.Target == Modifier.TargetType.AttackBonus)
-            {
-                this.attackBonusChanged = true;
+                case Modifier.TargetType.Strength:
+                case Modifier.TargetType.Agility:
+                case Modifier.TargetType.Constitution:
+                case Modifier.TargetType.Intellect:
+                case Modifier.TargetType.Arcana:
+                case Modifier.TargetType.Wisdom:
+                case Modifier.TargetType.Charisma:
+                case Modifier.TargetType.Presence:
+                    this.attributes.AddModifier(modifier, source);
+                    break;
+                case Modifier.TargetType.DefenseClass:
+                    this.defenseClassChanged = true;
+                    break;
+                case Modifier.TargetType.AttackBonus:
+                    this.attackBonusChanged = true;
+                    break;
+                default:
+                    break;
             }
 
             List<Modifier> targetList = modifiers[modifier.Target];
-            if (source is Item)
+            if (source is Item s)
             {
-                Item s = (Item)source;
                 foreach (var mod in targetList)
                 {
-                    if (mod.Source is Item && ((Item)mod.Source).Type == s.Type)
+                    if (mod.Source is Item item && item.Type == s.Type)
                     {
                         targetList.Remove(mod);
                         break;
