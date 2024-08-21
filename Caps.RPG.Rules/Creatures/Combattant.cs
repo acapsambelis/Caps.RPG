@@ -27,9 +27,8 @@ namespace Caps.RPG.Rules.Creatures
         public override bool Equals(object? obj)
         {
             if (obj == null) return false;
-            if (obj is Combattant)
+            if (obj is Combattant other)
             {
-                Combattant other = (Combattant)obj;
                 return this.ToString().Equals(other.ToString());
             }
             return false;
@@ -50,38 +49,43 @@ namespace Caps.RPG.Rules.Creatures
             return base.GetHashCode();
         }
 
-        public readonly static List<CombatAction> ActionList = new List<CombatAction>()
-            {
+        public readonly static List<CombatAction> ActionList =
+            [
                 new CombatAction("Attack", "Attack one target with a physical attack.", 1, Attack, true, 1),
                 new CombatAction("Pass", "Do nothing.", 99, Pass, false, 0),
                 new CombatAction("Dash", "Move your speed again.", 1, Dash, false, 0),
-            };
+            ];
         public static List<CombatAction> GetGenericList()
         {
             return ActionList;
         }
 
         // Generic Actions
-        public static void Attack(Creature source, Creature? target)
+        public static ActionResult Attack(Creature source, Creature? target)
         {
             if (target != null)
             {
-                bool hits = source.AttackBonus + new Die.DTwenty().Roll() > target.DefenseClass;
+                int damage = 0;
+                int toHit = new Die.DTwenty().Roll();
+                bool hits = source.AttackBonus + toHit > target.DefenseClass;
                 if (hits)
                 {
-                    target.Health -= Modifier.SumAll(source.Modifiers[Modifier.TargetType.AttackDamage], source.Attributes);
+                    damage = Modifier.SumAll(source.Modifiers[Modifier.TargetType.AttackDamage], source.Attributes);
+                    target.Health -= damage;
                 }
+                return new ActionResult(source.Name + " attacked " + target.Name + " with a " + (source.AttackBonus + toHit) + "(" + toHit + " + " + source.AttackBonus + ") to hit. " + damage + " was delt.");
             }
+            return new ActionResult(source.Name + " attacked an invalid target");
         }
 
-        public static void Pass(Creature source, Creature? target)
+        public static ActionResult Pass(Creature source, Creature? target)
         {
-
+            return new ActionResult();
         }
 
-        public static void Dash(Creature source, Creature? target)
+        public static ActionResult Dash(Creature source, Creature? target)
         {
-
+            return new ActionResult();
         }
     }
 }

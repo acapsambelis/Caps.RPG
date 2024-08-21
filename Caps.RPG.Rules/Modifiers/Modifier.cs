@@ -10,6 +10,14 @@ namespace Caps.RPG.Engine.Modifiers
         public enum TargetType
         {
             None,
+            Strength,
+            Agility,
+            Constitution,
+            Intellect,
+            Arcana,
+            Wisdom,
+            Presence,
+            Charisma,
             DefenseClass,
             AttackDamage,
             AttackBonus,
@@ -32,13 +40,13 @@ namespace Caps.RPG.Engine.Modifiers
         }
 
         #region privateMembers
-        private TargetType target;
-        private ActionType actionType;
-        private BonusType[] typesUsed;
-        private int bonus;
-        private Dictionary<Die, int> dice;
-        private Stat stat;
-        private object source;
+        private readonly TargetType target;
+        private readonly ActionType actionType;
+        private readonly BonusType[] typesUsed;
+        private readonly int bonus;
+        private readonly Dictionary<Die, int> dice;
+        private readonly Stat stat;
+        private readonly object source;
         #endregion
 
         #region PublicMembers
@@ -65,7 +73,6 @@ namespace Caps.RPG.Engine.Modifiers
         public object Source
         {
             get { return source; }
-            set { source = value; }
         }
         #endregion
 
@@ -85,9 +92,9 @@ namespace Caps.RPG.Engine.Modifiers
             this.actionType = actionType;
 
             this.typesUsed = typesUsed;
-            this.dice = dice != null ? dice : new Dictionary<Die, int>();
+            this.dice = dice ?? [];
             this.bonus = bonus != null ? (int)bonus : 0;
-            this.stat = stat != null ? stat : new Stat();
+            this.stat = stat ?? new Stat();
         }
         #endregion
 
@@ -104,6 +111,20 @@ namespace Caps.RPG.Engine.Modifiers
                 }
             }
             sum += SumModifierStat(modifiers, attributes);
+            return sum;
+        }
+        public static int SumAll(List<Modifier> modifiers)
+        {
+            int sum = 0;
+            sum += SumModifierFlat(modifiers);
+            Dictionary<Die, int> diceResult = SumModifierDie(modifiers);
+            foreach (Die d in diceResult.Keys)
+            {
+                for (int i = 0; i < diceResult[d]; i++)
+                {
+                    sum += d.Roll();
+                }
+            }
             return sum;
         }
         public static int SumModifierFlat(List<Modifier> modifiers)
@@ -130,7 +151,7 @@ namespace Caps.RPG.Engine.Modifiers
         }
         public static Dictionary<Die, int> SumModifierDie(List<Modifier> modifiers)
         {
-            Dictionary<Die, int> mods = new Dictionary<Die, int>();
+            Dictionary<Die, int> mods = [];
             foreach (Modifier modifier in modifiers)
             {
                 if (!modifier.typesUsed.Contains(BonusType.Die)) continue;
@@ -185,7 +206,7 @@ namespace Caps.RPG.Engine.Modifiers
         {
             { TargetType.DefenseClass, new List<Modifier>() { new Modifier(new Item("Unarmored", "You are wearing no armor.",  ItemType.Chest), TargetType.DefenseClass, ActionType.Base,  [BonusType.Flat], bonus:10) } },
             { TargetType.AttackDamage, new List<Modifier>() { new Modifier(new Item("Unarmed", "You are wielding no weapons.", ItemType.Hands), TargetType.AttackDamage, ActionType.Bonus, [BonusType.Die], dice: new Dictionary<Die, int> {{ new Die.DFour(), 1 }}) } },
-            { TargetType.AttackBonus,  new List<Modifier>() { new Modifier(new Item("Unarmed", "You are wielding no weapons.", ItemType.Hands), TargetType.AttackBonus,  ActionType.Base,  [BonusType.Flat, BonusType.Stat], bonus:1, stat:new Strength() )} }
+            { TargetType.AttackBonus,  new List<Modifier>() { new Modifier(new Item("Unarmed", "You are wielding no weapons.", ItemType.Hands), TargetType.AttackBonus,  ActionType.Base,  [BonusType.Flat, BonusType.Stat], bonus:1, stat: Stat.Strength )} }
         };
 
         #endregion
