@@ -23,16 +23,17 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
             { 1, new CombatAction("Firebolt", "You deal damage to one target equal to 5 times your Wizard level.", 1, Firebolt, true, 10) },
         };
 
-        public static void Firebolt(Creature source, Creature? target = null)
+        public static ActionResult Firebolt(Creature source, Creature? target = null)
         {
             if (target == null)
-                return;
+                return new ActionResult();
 
             ClassedCharacter? sourceClassed = source as ClassedCharacter;
             if (sourceClassed != null)
             {
                 target.Health -= sourceClassed.GetLevels(typeof(Wizard)) * 5;
             }
+            return new ActionResult();
         }
     }
 }

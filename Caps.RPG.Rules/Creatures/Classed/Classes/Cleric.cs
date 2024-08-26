@@ -25,16 +25,17 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
             { 1, new CombatAction("Healing Word", "You heal one target for Health equal to 5 times your Cleric level.", 1, HealingWord, true, 5) },
         };
 
-        public static void HealingWord(Creature source, Creature? target = null)
+        public static ActionResult HealingWord(Creature source, Creature? target = null)
         {
             if (target == null)
-                return;
+                return new ActionResult();
 
             ClassedCharacter? sourceClassed = source as ClassedCharacter;
             if (sourceClassed != null)
             {
                 target.Health += sourceClassed.GetLevels(typeof(Cleric)) * 5;
             }
+            return new ActionResult();
         }
     }
 }
