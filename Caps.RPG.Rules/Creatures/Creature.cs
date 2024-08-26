@@ -25,7 +25,7 @@ namespace Caps.RPG.Rules.Creatures
 
         // Combat
         private HealthStatus status;
-        private List<CombatAction> combatActions;
+        private readonly List<CombatAction> combatActions;
 
         // Inventory
         private readonly CreatureInventory inv;
@@ -33,9 +33,13 @@ namespace Caps.RPG.Rules.Creatures
         // Modifiers
         private bool defenseClassChanged = true;
         private bool attackBonusChanged = true;
-        private Dictionary<Modifier.TargetType, List<Modifier>> modifiers;
+        private bool initiativeChanged = true;
+        private bool moveSpeedChanged = true;
+        private readonly Dictionary<Modifier.TargetType, List<Modifier>> modifiers;
         private int defenseClass;
         private int attackBonus;
+        private int initiativeBonus;
+        private int moveSpeed;
 
         #endregion
 
@@ -104,13 +108,28 @@ namespace Caps.RPG.Rules.Creatures
                 return this.attackBonus;
             }
         }
-        public int Initiative
+        public int InitiativeModifier
         {
-            get { return new Random().Next(1, 21) + Attributes.InitiativeModifier(); }
+            get {
+                if (initiativeChanged)
+                {
+                    this.initiativeBonus = Modifier.SumAll(this.modifiers[Modifier.TargetType.Initiative], this.Attributes);
+                    this.initiativeChanged = false;
+                }
+                return this.initiativeBonus + Attributes.InitiativeModifier();
+            }
         }
         public int MoveSpeed
         {
-            get { return Attributes.MoveSpeed(); }
+            get
+            {
+                if (moveSpeedChanged)
+                {
+                    this.moveSpeed = Modifier.SumAll(this.modifiers[Modifier.TargetType.MovementSpeed], this.Attributes);
+                    this.moveSpeedChanged = false;
+                }
+                return this.moveSpeed + Attributes.MoveSpeed();
+            }
         }
 
         // Inventory
@@ -159,12 +178,18 @@ namespace Caps.RPG.Rules.Creatures
                 case Modifier.TargetType.Charisma:
                 case Modifier.TargetType.Presence:
                     this.attributes.AddModifier(modifier, source);
-                    break;
+                    return;
                 case Modifier.TargetType.DefenseClass:
                     this.defenseClassChanged = true;
                     break;
                 case Modifier.TargetType.AttackBonus:
                     this.attackBonusChanged = true;
+                    break;
+                case Modifier.TargetType.Initiative:
+                    this.initiativeChanged = true;
+                    break;
+                case Modifier.TargetType.MovementSpeed:
+                    this.moveSpeedChanged = true;
                     break;
                 default:
                     break;

@@ -21,6 +21,8 @@ namespace Caps.RPG.Engine.Modifiers
             DefenseClass,
             AttackDamage,
             AttackBonus,
+            Initiative,
+            MovementSpeed,
         }
 
         public enum ActionType

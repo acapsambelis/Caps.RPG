@@ -1,21 +1,16 @@
-﻿using Caps.RPG.Engine.Modifiers;
-using Caps.RPG.Rules.Creatures;
-using Caps.RPG.Rules.Creatures.Actions;
+﻿using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Helpers;
 
 namespace Caps.RPG.Rules
 {
     public class CombatState
     {
-        
-
-
         public List<Combattant> Teams { get; internal set; }
         public Combattant[] CombatOrder { get; internal set; }
         public CombatState()
         {
-            Teams = new List<Combattant>();
-            CombatOrder = Array.Empty<Combattant>();
+            Teams = [];
+            CombatOrder = [];
         }
 
         public void AddCombattant(string team, Creature creature, Vector2D position)
@@ -36,7 +31,7 @@ namespace Caps.RPG.Rules
 
         public Combattant[] GetNeighbors(Vector2D source, double distance)
         {
-            List<Combattant> neighbors = new List<Combattant>();
+            List<Combattant> neighbors = [];
             foreach (Combattant c in Teams)
             {
                 if (c.Position.Distance(source) <= distance)
@@ -74,10 +69,10 @@ namespace Caps.RPG.Rules
 
         public void BuildCombatOrder()
         {
-            Dictionary<Combattant, int> initiative = new Dictionary<Combattant, int>();
+            Dictionary<Combattant, int> initiative = [];
             foreach (Combattant c in Teams)
             {
-                initiative[c] = c.Creature.Initiative;
+                initiative[c] = c.Creature.InitiativeModifier + new Die.DTwenty().Roll();
             }
             CombatOrder = initiative.OrderBy(kv => kv.Value).Reverse().Select(kv => kv.Key).ToArray();
         }
