@@ -26,16 +26,17 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
             { 2, new CombatAction("Attack Twice", "You regain attack twice.", 1, HitTwice, true, 1) },
         };
 
-        public static void SecondWind(Creature source, Creature? target = null)
+        public static ActionResult SecondWind(Creature source, Creature? target = null)
         {
             ClassedCharacter? sourceClassed = source as ClassedCharacter;
             if (sourceClassed != null)
             {
                 sourceClassed.Health += sourceClassed.GetLevels(typeof(Fighter)) * 5;
             }
+            return new ActionResult();
         }
 
-        public static void HitTwice(Creature source, Creature? target)
+        public static ActionResult HitTwice(Creature source, Creature? target)
         {
             CombatAction? combatAction = source.GetCombatActions().Where(c => c.Name == "Attack").FirstOrDefault();
             if (combatAction != null)
@@ -43,6 +44,7 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
                 combatAction.Execution(source, target);
                 combatAction.Execution(source, target);
             }
+            return new ActionResult();
         }
     }
 }

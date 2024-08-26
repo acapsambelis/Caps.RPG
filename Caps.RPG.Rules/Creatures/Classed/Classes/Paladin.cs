@@ -23,16 +23,17 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
             { 1, new CombatAction("Smite", "You deal damage to one target equal to 5 times your Paladin level.", 1, Smite, true, 1) },
         };
 
-        public static void Smite(Creature source, Creature? target = null)
+        public static ActionResult Smite(Creature source, Creature? target = null)
         {
             if (target == null)
-                return;
+                return new ActionResult();
 
             ClassedCharacter? sourceClassed = source as ClassedCharacter;
             if (sourceClassed != null)
             {
                 target.Health -= sourceClassed.GetLevels(typeof(Paladin)) * 5;
             }
+            return new ActionResult();
         }
     }
 }

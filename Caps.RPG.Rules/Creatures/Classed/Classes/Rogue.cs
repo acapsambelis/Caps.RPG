@@ -23,16 +23,17 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
             { 1, new CombatAction("Sneak Attack", "You deal damage to one target equal to 5 times your Rogue level.", 1, SneakAttack, true, 5) },
         };
 
-        public static void SneakAttack(Creature source, Creature? target = null)
+        public static ActionResult SneakAttack(Creature source, Creature? target = null)
         {
             if (target == null)
-                return;
+                return new ActionResult();
 
             ClassedCharacter? sourceClassed = source as ClassedCharacter;
             if (sourceClassed != null)
             {
                 target.Health -= sourceClassed.GetLevels(typeof(Rogue)) * 5;
             }
+            return new ActionResult();
         }
     }
 }
