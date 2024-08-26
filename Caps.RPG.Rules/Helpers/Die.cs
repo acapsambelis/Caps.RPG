@@ -3,7 +3,7 @@ namespace Caps.RPG.Rules.Helpers
 {
     public class Die
     {
-        private int size;
+        private readonly int size;
         public Die(int size)
         {
             this.size = size;
@@ -17,7 +17,7 @@ namespace Caps.RPG.Rules.Helpers
 
         public class DFlat : Die
         {
-            private int x;
+            private readonly int x;
             public DFlat(int x) : base(x) { this.x = x; }
 
             public override int Roll() { return x; }
