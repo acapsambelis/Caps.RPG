@@ -7,18 +7,42 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Items\Crowns\" />
-    <Folder Include="Items\Faces\" />
-    <Folder Include="Items\Jewelry\" />
-    <Folder Include="Items\Necks\" />
-    <Folder Include="Items\Chests\" />
-    <Folder Include="Items\Backs\" />
-    <Folder Include="Items\Arms\" />
-    <Folder Include="Items\Gloves\" />
-    <Folder Include="Items\Belts\" />
-    <Folder Include="Items\Boots\" />
-    <Folder Include="Items\Pants\" />
-    <Folder Include="Items\Shoulders\" />
+    <Compile Remove="Items\Arms\**" />
+    <Compile Remove="Items\Backs\**" />
+    <Compile Remove="Items\Belts\**" />
+    <Compile Remove="Items\Boots\**" />
+    <Compile Remove="Items\Chests\**" />
+    <Compile Remove="Items\Crowns\**" />
+    <Compile Remove="Items\Faces\**" />
+    <Compile Remove="Items\Gloves\**" />
+    <Compile Remove="Items\Jewelry\**" />
+    <Compile Remove="Items\Necks\**" />
+    <Compile Remove="Items\Pants\**" />
+    <Compile Remove="Items\Shoulders\**" />
+    <EmbeddedResource Remove="Items\Arms\**" />
+    <EmbeddedResource Remove="Items\Backs\**" />
+    <EmbeddedResource Remove="Items\Belts\**" />
+    <EmbeddedResource Remove="Items\Boots\**" />
+    <EmbeddedResource Remove="Items\Chests\**" />
+    <EmbeddedResource Remove="Items\Crowns\**" />
+    <EmbeddedResource Remove="Items\Faces\**" />
+    <EmbeddedResource Remove="Items\Gloves\**" />
+    <EmbeddedResource Remove="Items\Jewelry\**" />
+    <EmbeddedResource Remove="Items\Necks\**" />
+    <EmbeddedResource Remove="Items\Pants\**" />
+    <EmbeddedResource Remove="Items\Shoulders\**" />
+    <None Remove="Items\Arms\**" />
+    <None Remove="Items\Backs\**" />
+    <None Remove="Items\Belts\**" />
+    <None Remove="Items\Boots\**" />
+    <None Remove="Items\Chests\**" />
+    <None Remove="Items\Crowns\**" />
+    <None Remove="Items\Faces\**" />
+    <None Remove="Items\Gloves\**" />
+    <None Remove="Items\Jewelry\**" />
+    <None Remove="Items\Necks\**" />
+    <None Remove="Items\Pants\**" />
+    <None Remove="Items\Shoulders\**" />
   </ItemGroup>
 
   <ItemGroup>
