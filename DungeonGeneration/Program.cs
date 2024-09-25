@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 
 namespace DungeonGenerator
@@ -67,6 +68,7 @@ namespace DungeonGenerator
                 }
                 else
                 {
+                    Room.roomCharRunning--;
                     i--;
                 }
             }
@@ -82,13 +84,13 @@ namespace DungeonGenerator
             {
                 for (int j = room.Y; j < room.Y + room.Height; j++)
                 {
-                    grid[i, j] = 'X';
+                    grid[i, j] = room.RoomChar.FirstOrDefault();
                 }
             }
         }
 
         // Connect rooms using corridors to the n closest rooms
-        private void ConnectClosestRooms(int maxConnections = 1)
+        private void ConnectClosestRooms(int n = 1)
         {
             // Create a list of connected rooms
             HashSet<Room> connectedRooms = new HashSet<Room>();
@@ -117,8 +119,7 @@ namespace DungeonGenerator
 
                     // Sort by distance and take the closest n
                     closestUnconnected.Sort((a, b) => a.Item2.CompareTo(b.Item2));
-                    int numToConnect = Math.Min(random.Next(1, maxConnections), closestUnconnected.Count);
-                    for (int i = 0; i < numToConnect; i++)
+                    for (int i = 0; i < Math.Min(n, closestUnconnected.Count); i++)
                     {
                         var (unconnected, distance) = closestUnconnected[i];
                         if (distance < closestDistance)
@@ -152,8 +153,6 @@ namespace DungeonGenerator
                 }
             }
         }
-
-
 
         // Find the closest points between the walls of two rooms
         private (int, int, int, int) FindClosestPoints(Room roomA, Room roomB)
@@ -288,6 +287,8 @@ namespace DungeonGenerator
     // Class to represent a room
     public class Room
     {
+        public static int roomCharRunning = 0; // max 16 rooms right now
+        public string RoomChar = (roomCharRunning++).ToString("X");
         public int X { get; }
         public int Y { get; }
         public int Width { get; }
@@ -317,6 +318,11 @@ namespace DungeonGenerator
                    X + Width + buffer > other.X &&
                    Y - buffer < other.Y + other.Height &&
                    Y + Height + buffer > other.Y;
+        }
+
+        public bool Contains(int x, int y)
+        {
+            return new Rectangle(X, Y, Width, Height).Contains(x, y);
         }
     }
 
