@@ -7,6 +7,8 @@ namespace DungeonGenerator
 {
     public class Dungeon
     {
+        private int scaleFactor = 2;
+
         private int width;
         private int height;
         private char[,] grid;
@@ -134,31 +136,39 @@ namespace DungeonGenerator
                 // If a closest room was found, connect them
                 if (closestRoom != null)
                 {
-                    (int startX, int startY, int endX, int endY) = FindClosestPoints(currentRoom, closestRoom);
-
-                    if (random.Next(2) == 0)
+                    List<(int startX, int startY, int endX, int endY)> closestPoints = FindClosestPoints(currentRoom, closestRoom);
+                    if (closestPoints != null && closestPoints.Count > 0)
                     {
-                        CreateHorizontalCorridor(startX, endX, startY);
-                        CreateVerticalCorridor(startY, endY, endX);
-                    }
-                    else
-                    {
-                        CreateVerticalCorridor(startY, endY, startX);
-                        CreateHorizontalCorridor(startX, endX, endY);
-                    }
+                        var randomPoint = closestPoints[random.Next(closestPoints.Count)];
+                        int startX = randomPoint.startX;
+                        int startY = randomPoint.startY;
+                        int endX = randomPoint.endX;
+                        int endY = randomPoint.endY;
 
-                    // Move the newly connected room to the connected list
-                    connectedRooms.Add(closestRoom);
-                    unconnectedRooms.Remove(closestRoom);
+                        if (random.Next(2) == 0)
+                        {
+                            CreateHorizontalCorridor(startX, endX, startY);
+                            CreateVerticalCorridor(startY, endY, endX);
+                        }
+                        else
+                        {
+                            CreateVerticalCorridor(startY, endY, startX);
+                            CreateHorizontalCorridor(startX, endX, endY);
+                        }
+
+                        // Move the newly connected room to the connected list
+                        connectedRooms.Add(closestRoom);
+                        unconnectedRooms.Remove(closestRoom);
+                    }
                 }
             }
         }
 
-        // Find the closest points between the walls of two rooms
-        private (int, int, int, int) FindClosestPoints(Room roomA, Room roomB)
+        // Find all closest points between the walls of two rooms
+        private List<(int, int, int, int)> FindClosestPoints(Room roomA, Room roomB)
         {
             int closestDistance = int.MaxValue;
-            int bestX1 = 0, bestY1 = 0, bestX2 = 0, bestY2 = 0;
+            List<(int, int, int, int)> closestPoints = [];
 
             // Check each wall point of roomA with each wall point of roomB
             for (int x1 = roomA.X; x1 < roomA.X + roomA.Width; x1++)
@@ -173,17 +183,19 @@ namespace DungeonGenerator
                             if (distance < closestDistance)
                             {
                                 closestDistance = distance;
-                                bestX1 = x1;
-                                bestY1 = y1;
-                                bestX2 = x2;
-                                bestY2 = y2;
+                                closestPoints.Clear();  // Clear previous closest points
+                                closestPoints.Add((x1, y1, x2, y2)); // Add new closest pair
+                            }
+                            else if (distance == closestDistance)
+                            {
+                                closestPoints.Add((x1, y1, x2, y2)); // Add to the list of closest pairs
                             }
                         }
                     }
                 }
             }
 
-            return (bestX1, bestY1, bestX2, bestY2);
+            return closestPoints;
         }
 
         // Calculate the distance between two rooms (center-to-center)
