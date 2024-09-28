@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
+﻿using System.Drawing;
 
 namespace DungeonGenerator
 {
     public class Dungeon
     {
-        private int scaleFactor = 2;
-
         private int width;
         private int height;
         private char[,] grid;
@@ -342,10 +337,10 @@ namespace DungeonGenerator
     {
         static void Main(string[] args)
         {
-            Dungeon dungeon = new Dungeon(40, 40);
+            Dungeon dungeon = new Dungeon(100, 100);
 
             // Generate a new dungeon
-            dungeon.GenerateDungeon(15, 3, 8);
+            dungeon.GenerateDungeon(15, 10, 20);
             dungeon.PrintDungeon();
 
             // Export to file
