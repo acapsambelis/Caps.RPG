@@ -35,7 +35,7 @@ namespace DungeonGenerator
         }
 
         // Generate a random dungeon layout with overlap detection
-        public void GenerateDungeon(int roomCount, int minRoomSize, int maxRoomSize)
+        public void GenerateDungeon(int roomCount, int minRoomSize, int maxRoomSize, int buffer = 2)
         {
             for (int i = 0; i < roomCount; i++)
             {
@@ -50,7 +50,7 @@ namespace DungeonGenerator
                 bool overlaps = false;
                 foreach (Room room in rooms)
                 {
-                    if (newRoom.Overlaps(room, 1))
+                    if (newRoom.Overlaps(room, buffer))
                     {
                         overlaps = true;
                         break;
@@ -90,51 +90,38 @@ namespace DungeonGenerator
         private void ConnectClosestRooms(int n = 1)
         {
             // Create a list of connected rooms
-            HashSet<Room> connectedRooms = new HashSet<Room>();
             List<Room> unconnectedRooms = new List<Room>(rooms);
-
-            // Start by connecting the first room
-            connectedRooms.Add(unconnectedRooms[0]);
-            unconnectedRooms.RemoveAt(0);
 
             while (unconnectedRooms.Count > 0)
             {
-                Room closestRoom = null;
-                int closestDistance = int.MaxValue;
-                Room currentRoom = null;
+                Room currentRoom = unconnectedRooms[random.Next(unconnectedRooms.Count)];
+                List<Room> roomsToConnect = [];
 
-                // For each connected room, find its n closest unconnected rooms
-                foreach (Room connected in connectedRooms)
+                // Calculate distance to each room
+                List<(Room, int)> closest = new List<(Room, int)>();
+                foreach (Room room in rooms)
                 {
-                    List<(Room, int)> closestUnconnected = new List<(Room, int)>();
-
-                    foreach (Room unconnected in unconnectedRooms)
-                    {
-                        int distance = CalculateDistance(connected, unconnected);
-                        closestUnconnected.Add((unconnected, distance));
-                    }
-
-                    // Sort by distance and take the closest n
-                    closestUnconnected.Sort((a, b) => a.Item2.CompareTo(b.Item2));
-                    for (int i = 0; i < Math.Min(n, closestUnconnected.Count); i++)
-                    {
-                        var (unconnected, distance) = closestUnconnected[i];
-                        if (distance < closestDistance)
-                        {
-                            closestDistance = distance;
-                            closestRoom = unconnected;
-                            currentRoom = connected;  // Remember the connected room as well
-                        }
-                    }
+                    int distance = CalculateDistance(currentRoom, room);
+                    closest.Add((room, distance));
                 }
 
+                // Sort by distance and take the closest n
+                closest.Sort((a, b) => a.Item2.CompareTo(b.Item2));
+                roomsToConnect.AddRange(closest.Where(r => r.Item1 != currentRoom).Take(random.Next(1, n)).Select(pair => pair.Item1));
+
                 // If a closest room was found, connect them
-                if (closestRoom != null)
+                foreach (Room room in roomsToConnect)
                 {
-                    List<(int startX, int startY, int endX, int endY)> closestPoints = FindClosestPoints(currentRoom, closestRoom);
-                    if (closestPoints != null && closestPoints.Count > 0)
+                    List<(int startX, int startY, int endX, int endY)> paths = FindPaths(currentRoom, room);
+                    if (paths != null && paths.Count > 0)
                     {
-                        var randomPoint = closestPoints[random.Next(closestPoints.Count)];
+                        int width = random.Next(3, 6);
+                        var randomPoint = paths[random.Next(paths.Count)];
+                        while (!IsWithinRoomBounds(currentRoom, room, randomPoint.startX, randomPoint.startY, randomPoint.endX, randomPoint.endY, width / 2))
+                        {
+                            randomPoint = paths[random.Next(paths.Count)];
+                        }
+
                         int startX = randomPoint.startX;
                         int startY = randomPoint.startY;
                         int endX = randomPoint.endX;
@@ -142,25 +129,23 @@ namespace DungeonGenerator
 
                         if (random.Next(2) == 0)
                         {
-                            CreateHorizontalCorridor(startX, endX, startY);
-                            CreateVerticalCorridor(startY, endY, endX);
+                            if (startX - endX != 0) CreateHorizontalCorridor(startX, endX, startY, width);
+                            if (startY - endY != 0) CreateVerticalCorridor(startY, endY, endX, width);
                         }
                         else
                         {
-                            CreateVerticalCorridor(startY, endY, startX);
-                            CreateHorizontalCorridor(startX, endX, endY);
+                            if (startY - endY != 0) CreateVerticalCorridor(startY, endY, startX, width);
+                            if (startX - endX != 0) CreateHorizontalCorridor(startX, endX, endY, width);
                         }
 
-                        // Move the newly connected room to the connected list
-                        connectedRooms.Add(closestRoom);
-                        unconnectedRooms.Remove(closestRoom);
+                        unconnectedRooms.Remove(room);
                     }
                 }
             }
         }
 
         // Find all closest points between the walls of two rooms
-        private List<(int, int, int, int)> FindClosestPoints(Room roomA, Room roomB)
+        private List<(int, int, int, int)> FindPaths(Room roomA, Room roomB)
         {
             int closestDistance = int.MaxValue;
             List<(int, int, int, int)> closestPoints = [];
@@ -204,22 +189,65 @@ namespace DungeonGenerator
             return Math.Abs(centerAx - centerBx) + Math.Abs(centerAy - centerBy);
         }
 
-        // Create a horizontal corridor between two points
-        private void CreateHorizontalCorridor(int x1, int x2, int y)
+        // Create a horizontal corridor between two points with random width
+        private void CreateHorizontalCorridor(int x1, int x2, int y, int width)
         {
-            for (int x = Math.Min(x1, x2); x <= Math.Max(x1, x2); x++)
+            // Adjust to expand by half the width on both sides of the central line
+
+            for (int i = -width / 2; i <= width / 2; i++)
             {
-                grid[x, y] = '#';
+                for (int x = Math.Min(x1, x2); x <= Math.Max(x1, x2); x++)
+                {
+                    int newY = y + i; // Expand vertically along y axis
+                    if (IsWithinBounds(x, newY))
+                    {
+                        grid[x, newY] = '#';  // Place corridor tiles
+                    }
+                }
             }
         }
 
-        // Create a vertical corridor between two points
-        private void CreateVerticalCorridor(int y1, int y2, int x)
+        // Create a vertical corridor between two points with random width
+        private void CreateVerticalCorridor(int y1, int y2, int x, int width)
         {
-            for (int y = Math.Min(y1, y2); y <= Math.Max(y1, y2); y++)
+            // Adjust to expand by half the width on both sides of the central line
+
+            for (int i = -width / 2; i <= width / 2; i++)
             {
-                grid[x, y] = '#';
+                for (int y = Math.Min(y1, y2); y <= Math.Max(y1, y2); y++)
+                {
+                    int newX = x + i;  // Expand horizontally along x axis
+                    if (IsWithinBounds(newX, y))
+                    {
+                        grid[newX, y] = '#';  // Place corridor tiles
+                    }
+                }
             }
+        }
+
+        private bool IsWithinRoomBounds(Room roomA, Room roomB, int startX, int startY, int endX, int endY, int widthFromCenterLine)
+        {
+            int successesStart = 0;
+            Room startRoom = roomA.Contains(startX, startY) ? roomA : roomB;
+            successesStart += startRoom.Contains(startX + widthFromCenterLine, startY) == true ? 1 : 0;
+            successesStart += startRoom.Contains(startX - widthFromCenterLine, startY) == true ? 1 : 0;
+            successesStart += startRoom.Contains(startX, startY + widthFromCenterLine) == true ? 1 : 0;
+            successesStart += startRoom.Contains(startX, startY - widthFromCenterLine) == true ? 1 : 0;
+
+            int successesEnd = 0;
+            Room endRoom = roomA.Contains(endX, endY) ? roomA : roomB;
+            successesEnd += endRoom.Contains(endX + widthFromCenterLine, endY) == true ? 1 : 0;
+            successesEnd += endRoom.Contains(endX - widthFromCenterLine, endY) == true ? 1 : 0;
+            successesEnd += endRoom.Contains(endX, endY + widthFromCenterLine) == true ? 1 : 0;
+            successesEnd += endRoom.Contains(endX, endY - widthFromCenterLine) == true ? 1 : 0;
+
+            return successesStart >= 3 && successesEnd >= 3;
+        }
+
+        // Helper method to ensure we're within the grid bounds
+        private bool IsWithinBounds(int x, int y)
+        {
+            return x >= 0 && x < width && y >= 0 && y < height;
         }
 
         // Export dungeon to a text file
@@ -347,9 +375,9 @@ namespace DungeonGenerator
             dungeon.ExportToFile("dungeon.txt");
 
             // Import from file and print
-            Dungeon loadedDungeon = new Dungeon(40, 20);
-            loadedDungeon.ImportFromFile("dungeon.txt");
-            loadedDungeon.PrintDungeon();
+            //Dungeon loadedDungeon = new Dungeon(40, 20);
+            //loadedDungeon.ImportFromFile("dungeon.txt");
+            //loadedDungeon.PrintDungeon();
         }
     }
 }
