@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 
-namespace MonoGameLibrary
+namespace Caps.RPG.MonoGame
 {
     public readonly struct Circle : IEquatable<Circle>
     {

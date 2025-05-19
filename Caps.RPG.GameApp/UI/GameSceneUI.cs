@@ -1,4 +1,6 @@
 ﻿using System;
+using Caps.RPG.MonoGame;
+using Caps.RPG.MonoGame.Graphics;
 using Gum.DataTypes;
 using Gum.Managers;
 using Microsoft.Xna.Framework;
@@ -7,8 +9,6 @@ using Microsoft.Xna.Framework.Content;
 using MonoGameGum;
 using MonoGameGum.Forms.Controls;
 using MonoGameGum.GueDeriving;
-using MonoGameLibrary;
-using MonoGameLibrary.Graphics;
 
 namespace Caps.RPG.GameApp.UI
 {

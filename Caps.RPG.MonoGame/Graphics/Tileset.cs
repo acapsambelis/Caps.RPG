@@ -1,4 +1,4 @@
-﻿namespace MonoGameLibrary.Graphics
+﻿namespace Caps.RPG.MonoGame.Graphics
 {
     public class Tileset
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Input;
 
-namespace MonoGameLibrary.Input
+namespace Caps.RPG.MonoGame.Input
 {
     public class KeyboardInfo
     {

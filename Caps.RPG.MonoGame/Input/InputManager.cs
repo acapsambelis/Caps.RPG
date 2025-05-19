@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace MonoGameLibrary.Input
+namespace Caps.RPG.MonoGame.Input
 {
     public class InputManager
     {

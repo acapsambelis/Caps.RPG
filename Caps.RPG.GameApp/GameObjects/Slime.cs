@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Caps.RPG.MonoGame;
+using Caps.RPG.MonoGame.Graphics;
 using Microsoft.Xna.Framework;
-using MonoGameLibrary;
-using MonoGameLibrary.Graphics;
 
 namespace Caps.RPG.GameApp.GameObjects
 {
