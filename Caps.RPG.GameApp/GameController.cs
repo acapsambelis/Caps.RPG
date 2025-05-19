@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using MonoGameLibrary;
-using MonoGameLibrary.Input;
+using Caps.RPG.MonoGame;
+using Caps.RPG.MonoGame.Input;
 
 namespace Caps.RPG.GameApp
 {

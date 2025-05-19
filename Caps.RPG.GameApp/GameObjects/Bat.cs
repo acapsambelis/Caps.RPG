@@ -1,8 +1,8 @@
 ﻿using System;
+using Caps.RPG.MonoGame;
+using Caps.RPG.MonoGame.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
-using MonoGameLibrary;
-using MonoGameLibrary.Graphics;
 
 namespace Caps.RPG.GameApp.GameObjects
 {

@@ -6,7 +6,7 @@ using Gum.Managers;
 using Microsoft.Xna.Framework.Input;
 using MonoGameGum.Forms.Controls;
 using MonoGameGum.GueDeriving;
-using MonoGameLibrary.Graphics;
+using Caps.RPG.MonoGame.Graphics;
 
 namespace Caps.RPG.GameApp.UI
 {

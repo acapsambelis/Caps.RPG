@@ -1,13 +1,13 @@
 ﻿using System;
 using Caps.RPG.GameApp.GameObjects;
 using Caps.RPG.GameApp.UI;
+using Caps.RPG.MonoGame;
+using Caps.RPG.MonoGame.Graphics;
+using Caps.RPG.MonoGame.Scenes;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameGum;
-using MonoGameLibrary;
-using MonoGameLibrary.Graphics;
-using MonoGameLibrary.Scenes;
 
 namespace Caps.RPG.GameApp.Scenes
 {

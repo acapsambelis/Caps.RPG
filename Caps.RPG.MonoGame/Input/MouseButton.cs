@@ -1,4 +1,4 @@
-﻿namespace MonoGameLibrary.Input
+﻿namespace Caps.RPG.MonoGame.Input
 {
     public enum MouseButton
     {

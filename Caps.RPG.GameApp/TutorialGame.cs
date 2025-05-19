@@ -1,8 +1,8 @@
 ﻿using Microsoft.Xna.Framework.Media;
-using MonoGameLibrary;
 using Caps.RPG.GameApp.Scenes;
 using MonoGameGum;
 using MonoGameGum.Forms.Controls;
+using Caps.RPG.MonoGame;
 
 namespace Caps.RPG.GameApp
 {
