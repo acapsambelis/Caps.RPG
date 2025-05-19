@@ -3,11 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.RPG", "Caps.RPG\Caps.RPG.csproj", "{914F090D-0D2B-456B-9065-9112498795EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Caps.RPG", "Caps.RPG\Caps.RPG.csproj", "{914F090D-0D2B-456B-9065-9112498795EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.RPG.Rules", "Caps.RPG.Rules\Caps.RPG.Rules.csproj", "{0C486C2B-5946-4631-B1A2-7795C3D56BD0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Caps.RPG.Rules", "Caps.RPG.Rules\Caps.RPG.Rules.csproj", "{0C486C2B-5946-4631-B1A2-7795C3D56BD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.RPG.Content", "Caps.RPG.Content\Caps.RPG.Content.csproj", "{1FF39815-8DD0-4EF4-B599-D919B1D05CE1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Caps.RPG.Content", "Caps.RPG.Content\Caps.RPG.Content.csproj", "{1FF39815-8DD0-4EF4-B599-D919B1D05CE1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Caps.RPG.GameApp", "Caps.RPG.GameApp\Caps.RPG.GameApp.csproj", "{43E242D6-BEE8-438B-98D5-F439B0CF818D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGameLibrary", "MonoGameLibrary\MonoGameLibrary.csproj", "{496E8707-AA8E-4E92-92B6-98E2D04E8B31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +31,14 @@ Global
 		{1FF39815-8DD0-4EF4-B599-D919B1D05CE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1FF39815-8DD0-4EF4-B599-D919B1D05CE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1FF39815-8DD0-4EF4-B599-D919B1D05CE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43E242D6-BEE8-438B-98D5-F439B0CF818D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43E242D6-BEE8-438B-98D5-F439B0CF818D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43E242D6-BEE8-438B-98D5-F439B0CF818D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43E242D6-BEE8-438B-98D5-F439B0CF818D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{496E8707-AA8E-4E92-92B6-98E2D04E8B31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{496E8707-AA8E-4E92-92B6-98E2D04E8B31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{496E8707-AA8E-4E92-92B6-98E2D04E8B31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{496E8707-AA8E-4E92-92B6-98E2D04E8B31}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
