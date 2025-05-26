@@ -1,4 +1,4 @@
-﻿using Caps.RPG.Engine.Modifiers;
+﻿using Caps.RPG.Rules.Modifiers;
 using Caps.RPG.Rules.Inventory;
 
 
@@ -10,12 +10,9 @@ namespace Caps.RPG.Content.Items.Hands
 
         public VeryLargeSword(string name, string description, ItemType type) : base(name, description, type)
         {
-        }
-        public override Modifier[] GetModifiers()
-        {
-            return [
-                new Modifier(this, Modifier.TargetType.AttackBonus,  Modifier.ActionType.Set, [Modifier.BonusType.Flat], bonus: 25),
-                new Modifier(this, Modifier.TargetType.AttackDamage, Modifier.ActionType.Set, [Modifier.BonusType.Flat], bonus: 15)
+            this.Modifiers = [
+                new Modifier(SourceType.Hands, TargetType.AttackBonus,  ActionType.Set, [BonusType.Flat], bonus: 25),
+                new Modifier(SourceType.Hands, TargetType.AttackDamage, ActionType.Set, [BonusType.Flat], bonus: 15)
             ];
         }
     }

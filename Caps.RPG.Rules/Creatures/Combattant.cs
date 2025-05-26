@@ -1,22 +1,35 @@
-﻿using Caps.RPG.Engine.Modifiers;
+﻿using Caps.RPG.Rules.Modifiers;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Helpers;
+using SNS.Data.DataSerializer;
 
 
 namespace Caps.RPG.Rules.Creatures
 {
-    public class Combattant
+    [DataClass("Combattants")]
+    public class Combattant : IGenericDataObject<Combattant>
     {
-        public readonly Creature Creature;
-        public string Team;
-        public Vector2D Position;
+        private Creature _creature;
+        private string _team;
+        private Vector2D _position;
         public readonly char ShortName;
 
+        [DataProperty("Creature")]
+        public Creature Creature { get { return _creature; } set { _creature = value; } }
+        [DataProperty("Team")]
+        public string Team { get { return _team; } set { _team = value; } }
+        [DataProperty("Position")]
+        public Vector2D Position { get { return _position; } set { _position = value; } }
+
+        private bool _wasLoaded = false;
+        public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
+
+        public Combattant() { }
         public Combattant(Creature creature, string team, Vector2D position)
         {
-            this.Creature = creature;
-            this.Team = team;
-            this.Position = position;
+            _creature = creature;
+            _team = team;
+            _position = position;
             ShortName = creature.Name[0];
         }
         public override string ToString()
@@ -36,7 +49,7 @@ namespace Caps.RPG.Rules.Creatures
 
         public void Move(Vector2D newPosition)
         {
-            this.Position = newPosition;
+            this._position = newPosition;
         }
 
         public static Creature[] GetTeam(string name, Combattant[] creatures)
@@ -66,11 +79,11 @@ namespace Caps.RPG.Rules.Creatures
             if (target != null)
             {
                 int damage = 0;
-                int toHit = new Die.DTwenty().Roll();
+                int toHit = Die.D20.Roll();
                 bool hits = source.AttackBonus + toHit > target.DefenseClass;
                 if (hits)
                 {
-                    damage = Modifier.SumAll(source.Modifiers[Modifier.TargetType.AttackDamage], source.Attributes);
+                    damage = Modifier.SumAll(source.Modifiers[TargetType.AttackDamage], source.Attributes);
                     target.Health -= damage;
                 }
                 return new ActionResult(source.Name + " attacked " + target.Name + " with a " + (source.AttackBonus + toHit) + "(" + toHit + " + " + source.AttackBonus + ") to hit. " + damage + " was delt.");

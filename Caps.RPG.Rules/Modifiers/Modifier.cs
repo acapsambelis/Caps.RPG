@@ -1,86 +1,154 @@
 ﻿using Caps.RPG.Rules.Attributes;
 using Caps.RPG.Rules.Helpers;
 using Caps.RPG.Rules.Inventory;
+using SNS.Data.DataSerializer;
 
-namespace Caps.RPG.Engine.Modifiers
+namespace Caps.RPG.Rules.Modifiers
 {
-    public class Modifier
+    public enum SourceType
     {
+        None = 0,
+        Base = 1,
+        Crown = 2,
+        Face = 3,
+        HeadJewelry = 4,
+        Neck = 5,
+        Chest = 6,
+        Shoulders = 7,
+        Back = 8,
+        Arms = 9,
+        Gloves = 10,
+        HandJewelry = 11,
+        Belt = 12,
+        Pants = 13,
+        Boots = 14,
+        Hands = 15,
+    }
 
-        public enum TargetType
+    public enum TargetType
+    {
+        None = 0,
+        Strength = 1,
+        Agility = 2,
+        Constitution = 3,
+        Intellect = 4,
+        Arcana = 5,
+        Wisdom = 6,
+        Presence = 7,
+        Charisma = 8,
+        DefenseClass = 9,
+        AttackDamage = 10,
+        AttackBonus = 11,
+        Initiative = 12,
+        MovementSpeed = 13,
+    }
+
+    public enum ActionType
+    {
+        None = 0,
+        Base = 1,
+        Set = 2,
+        Bonus = 3,
+    }
+
+    public enum BonusType
+    {
+        None = 0,
+        Flat = 1,
+        Die = 2,
+        Stat = 3,
+    }
+
+    public static class SourceTypeExtensions
+    {
+        public static bool IsItem(this SourceType type)
         {
-            None,
-            Strength,
-            Agility,
-            Constitution,
-            Intellect,
-            Arcana,
-            Wisdom,
-            Presence,
-            Charisma,
-            DefenseClass,
-            AttackDamage,
-            AttackBonus,
-            Initiative,
-            MovementSpeed,
+            return (int)type >= 2 && (int)type <= 15;
         }
 
-        public enum ActionType
+        public static ItemType ItemType(this SourceType type)
         {
-            None,
-            Base,
-            Set,
-            Bonus,
+            return type switch
+            {
+                SourceType.Crown       => Inventory.ItemType.Crown,
+                SourceType.Face        => Inventory.ItemType.Face,
+                SourceType.HeadJewelry => Inventory.ItemType.HeadJewelry,
+                SourceType.Neck        => Inventory.ItemType.Neck,
+                SourceType.Chest       => Inventory.ItemType.Chest,
+                SourceType.Shoulders   => Inventory.ItemType.Shoulders,
+                SourceType.Back        => Inventory.ItemType.Back,
+                SourceType.Arms        => Inventory.ItemType.Arms,
+                SourceType.Gloves      => Inventory.ItemType.Gloves,
+                SourceType.HandJewelry => Inventory.ItemType.HandJewelry,
+                SourceType.Belt        => Inventory.ItemType.Belt,
+                SourceType.Pants       => Inventory.ItemType.Pants,
+                SourceType.Boots       => Inventory.ItemType.Boots,
+                SourceType.Hands       => Inventory.ItemType.Hands,
+                _ => Inventory.ItemType.None
+            };
         }
+    }
 
-        public enum BonusType
-        {
-            None,
-            Flat,
-            Die,
-            Stat,
-        }
-
+    [DataClass("Modifiers")]
+    public class Modifier : IGenericDataObject<Modifier>
+    {
         #region privateMembers
-        private readonly TargetType target;
-        private readonly ActionType actionType;
-        private readonly BonusType[] typesUsed;
-        private readonly int bonus;
-        private readonly Dictionary<Die, int> dice;
-        private readonly Stat stat;
-        private readonly object source;
+        private TargetType target;
+        private ActionType actionType;
+        private BonusType[] typesUsed;
+        private int bonus;
+        private Dictionary<Die, int> dice;
+        private Stat stat;
+        private SourceType source;
         #endregion
 
         #region PublicMembers
+        [DataProperty("Target")]
         public TargetType Target
         {
             get { return target; }
+            set { target = value; }
         }
+        [DataProperty("ActionType")]
         public ActionType Type
         {
             get { return actionType; }
+            set { actionType = value; }
         }
+        [DataProperty("Bonus")]
         public int Bonus
         {
             get { return bonus; }
+            set { bonus = value; }
         }
+        //[DataProperty("Dice")]
         public Dictionary<Die, int> Dice
         {
             get { return dice; }
+            set { dice = value; }
         }
+        [DataProperty("Stat")]
         public Stat Stat
         {
             get { return stat; }
+            set { stat = value; }
         }
-        public object Source
+        [DataProperty("Source")]
+        public SourceType Source
         {
             get { return source; }
+            set { source = value; }
         }
+
+        private bool _wasLoaded = false;
+        public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
         #endregion
 
         #region Constructors
+        public Modifier() { }
+
         public Modifier(
-            object source,
+            SourceType source,
             TargetType target,
             ActionType actionType,
             BonusType[] typesUsed,
@@ -204,14 +272,43 @@ namespace Caps.RPG.Engine.Modifiers
             return clone;
         }
 
-        private static readonly Dictionary<TargetType, List<Modifier>> CreatureModifiers = new Dictionary<TargetType, List<Modifier>>()
+        private static readonly Dictionary<TargetType, List<Modifier>> CreatureModifiers = new()
         {
-            { TargetType.DefenseClass, new List<Modifier>() { new Modifier(new Item("Unarmored", "You are wearing no armor.",  ItemType.Chest), TargetType.DefenseClass, ActionType.Base,  [BonusType.Flat], bonus:10) } },
-            { TargetType.AttackDamage, new List<Modifier>() { new Modifier(new Item("Unarmed", "You are wielding no weapons.", ItemType.Hands), TargetType.AttackDamage, ActionType.Bonus, [BonusType.Die], dice: new Dictionary<Die, int> {{ new Die.DFour(), 1 }}) } },
-            { TargetType.AttackBonus,  new List<Modifier>() { new Modifier(new Item("Unarmed", "You are wielding no weapons.", ItemType.Hands), TargetType.AttackBonus,  ActionType.Base,  [BonusType.Flat, BonusType.Stat], bonus:1, stat: Stat.Strength )} }
+            { TargetType.DefenseClass, new List<Modifier>() { new(SourceType.Base, TargetType.DefenseClass, ActionType.Base,  [BonusType.Flat], bonus:10) } },
+            { TargetType.AttackDamage, new List<Modifier>() { new(SourceType.Base, TargetType.AttackDamage, ActionType.Bonus, [BonusType.Die], dice: new Dictionary<Die, int> {{ Die.D4, 1 }}) } },
+            { TargetType.AttackBonus,  new List<Modifier>() { new(SourceType.Base, TargetType.AttackBonus,  ActionType.Base,  [BonusType.Flat, BonusType.Stat], bonus:1, stat: Stat.Strength )} }
         };
 
         #endregion
 
+        #region Overrides
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Modifier modifier &&
+                   Target == modifier.Target &&
+                   Type == modifier.Type &&
+                   Bonus == modifier.Bonus &&
+                   Dice.Count == modifier.Dice.Count && !Dice.Except(modifier.Dice).Any() &&
+                   Stat == modifier.Stat &&
+                   Source == modifier.Source;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Target, Type, Bonus, Dice, Stat, Source);
+        }
+
+        public static bool operator ==(Modifier? left, Modifier? right)
+        {
+            return EqualityComparer<Modifier>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(Modifier? left, Modifier? right)
+        {
+            return !(left == right);
+        }
+
+        #endregion
     }
 }

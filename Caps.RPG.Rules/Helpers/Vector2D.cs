@@ -1,9 +1,19 @@
-﻿
+﻿using SNS.Data.DataSerializer;
+
 namespace Caps.RPG.Rules.Helpers
 {
-    public class Vector2D
+    [DataClass("Vector2D")]
+    public class Vector2D : IGenericDataObject<Vector2D>
     {
-        public double x; public double y;
+        [DataProperty("X")]
+        public double x { get; set; }
+        [DataProperty("Y")]
+        public double y { get; set; }
+
+        private bool _wasLoaded = false;
+        public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
+
+        public Vector2D() { }
         public Vector2D(double x, double y)
         {
             this.x = x; this.y = y;

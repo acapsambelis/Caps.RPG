@@ -1,0 +1,44 @@
+﻿<Dungeon>
+  <Name>Test Dungeon</Name>
+  <Description>description</Description>
+  <FloorList>
+    <Item>
+      <Id>0</Id>
+      <Encounters>
+        <Item>
+          <Id>1</Id>
+          <Participants>
+            <Item>
+            </Item>
+
+          </Participants>
+        </Item>
+
+      </Encounters>
+    </Item>
+
+    <Item>
+      <Id>1</Id>
+      <Encounters>
+      </Encounters>
+    </Item>
+
+    <Item>
+      <Id>2</Id>
+      <Encounters>
+      </Encounters>
+    </Item>
+
+  </FloorList>
+  <EncounterList>
+    <Item>
+      <Id>0</Id>
+      <Participants>
+        <Item>
+        </Item>
+
+      </Participants>
+    </Item>
+
+  </EncounterList>
+</Dungeon>

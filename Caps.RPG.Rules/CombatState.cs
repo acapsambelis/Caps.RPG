@@ -72,7 +72,7 @@ namespace Caps.RPG.Rules
             Dictionary<Combattant, int> initiative = [];
             foreach (Combattant c in Teams)
             {
-                initiative[c] = c.Creature.InitiativeModifier + new Die.DTwenty().Roll();
+                initiative[c] = c.Creature.InitiativeModifier + Die.D20.Roll();
             }
             CombatOrder = initiative.OrderBy(kv => kv.Value).Reverse().Select(kv => kv.Key).ToArray();
         }

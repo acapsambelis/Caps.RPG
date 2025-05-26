@@ -5,6 +5,8 @@ using Caps.RPG.Rules.Creatures.Classed;
 using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Helpers;
 using Caps.RPG.Rules.Creatures.Actions;
+using Caps.RPG.Rules.Dungeon;
+using SNS.Data.DataSerializer.XmlExtensions;
 
 namespace Caps.RPG
 {
@@ -12,6 +14,39 @@ namespace Caps.RPG
     {
         static void Main()
         {
+            //Combattant dummy = new Combattant(
+            //    new Creature("Dummy", new AttributeSet()),
+            //    "Blue",
+            //    new Vector2D(0, 0)
+            //);
+            //string dummyXml = dummy.ToXml();
+            //Combattant fromXml = Xml<Combattant>.LoadOneFromXml(dummyXml);
+            //bool t = dummy == fromXml;
+
+            //Creature c = new("Dummy", new AttributeSet());
+            //string dummyXml = dummy.ToXml();
+            //Creature fromXml = Xml<Creature>.LoadOneFromXml(dummyXml);
+            //bool t = dummy == fromXml;
+
+            //AttributeSet s = new AttributeSet();
+            //string dummyXml = s.ToXml();
+            //AttributeSet fromXml = Xml<AttributeSet>.LoadOneFromXml(dummyXml);
+            //bool t = s == fromXml;
+
+            //Dungeon dungeon = new Dungeon("Test Dungeon", "description");
+            //Floor f1 = new Floor();
+            //Floor f2 = new Floor();
+            //Floor f3 = new Floor();
+            //Encounter e1 = new Encounter([new Combattant(new Creature("Slime", new AttributeSet()), "enemy", new Vector2D(0, 0))]);
+            //Encounter e2 = new Encounter([new Combattant(new Creature("Zombie", new AttributeSet()), "enemy", new Vector2D(0, 0))]);
+            //dungeon.AddEncounter(e1);
+            //f1.AddEncounter(e2);
+            //dungeon.AddFloors([f1, f2, f3]);
+
+            //string xml = dungeon.ToXml();
+            //Dungeon loaded = Xml<Dungeon>.LoadOneFromXml(xml);
+            //bool test = dungeon == loaded;
+
             List<(string, Creature, Vector2D)> combattants = [];
             // blue team
 
@@ -72,6 +107,17 @@ namespace Caps.RPG
             MainLoop mainLoop = new MainLoop(combattants);
             mainLoop.BetterLoop(DisplayScoreboard, DrawMap, CreatureDisplay, GetDestination, GetAction, GetTarget);
         }
+
+        //public static ClassedCharacter BuildCharacter()
+        //{
+        //    // name
+
+        //    // attributes
+
+        //    // levels
+
+        //    return new ClassedCharacter();
+        //}
 
         public static int GetTextInput()
         {

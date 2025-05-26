@@ -1,11 +1,13 @@
 ﻿using Caps.RPG.Rules.Attributes;
 using Caps.RPG.Rules.Creatures.Actions;
-using Caps.RPG.Engine.Modifiers;
+using Caps.RPG.Rules.Modifiers;
 using Caps.RPG.Rules.Inventory;
+using SNS.Data.DataSerializer;
 
 namespace Caps.RPG.Rules.Creatures
 {
-    public class Creature
+    [DataClass("Creatures")]
+    public class Creature : IGenericDataObject<Creature>
     {
         public enum HealthStatus
         {
@@ -35,21 +37,25 @@ namespace Caps.RPG.Rules.Creatures
         private bool attackBonusChanged = true;
         private bool initiativeChanged = true;
         private bool moveSpeedChanged = true;
-        private readonly Dictionary<Modifier.TargetType, List<Modifier>> modifiers;
+        private readonly Dictionary<TargetType, List<Modifier>> modifiers;
         private int defenseClass;
         private int attackBonus;
         private int initiativeBonus;
         private int moveSpeed;
 
+        private bool _wasLoaded = false;
         #endregion
 
         #region PublicMembers
         // Basics
+        [DataProperty("Name")]
         public string Name
         {
             get { return name; }
             set { name = value; }
         }
+
+        [DataProperty("MaxHealth")]
         public int MaxHealth
         {
             get { return maxHealth; }
@@ -72,6 +78,8 @@ namespace Caps.RPG.Rules.Creatures
                 }
             }
         }
+
+        [DataProperty("Attributes")]
         public AttributeSet Attributes
         {
             get { return attributes; }
@@ -90,7 +98,7 @@ namespace Caps.RPG.Rules.Creatures
             {
                 if (defenseClassChanged)
                 {
-                    this.defenseClass = Modifier.SumAll(this.modifiers[Modifier.TargetType.DefenseClass], this.Attributes);
+                    this.defenseClass = Modifier.SumAll(this.modifiers[TargetType.DefenseClass], this.Attributes);
                     this.defenseClassChanged = false;
                 }
                 return this.defenseClass;
@@ -102,7 +110,7 @@ namespace Caps.RPG.Rules.Creatures
             {
                 if (attackBonusChanged)
                 {
-                    this.attackBonus = Modifier.SumAll(this.modifiers[Modifier.TargetType.AttackBonus], this.Attributes);
+                    this.attackBonus = Modifier.SumAll(this.modifiers[TargetType.AttackBonus], this.Attributes);
                     this.attackBonusChanged = false;
                 }
                 return this.attackBonus;
@@ -113,7 +121,7 @@ namespace Caps.RPG.Rules.Creatures
             get {
                 if (initiativeChanged)
                 {
-                    this.initiativeBonus = Modifier.SumAll(this.modifiers[Modifier.TargetType.Initiative], this.Attributes);
+                    this.initiativeBonus = Modifier.SumAll(this.modifiers[TargetType.Initiative], this.Attributes);
                     this.initiativeChanged = false;
                 }
                 return this.initiativeBonus + Attributes.InitiativeModifier();
@@ -125,27 +133,30 @@ namespace Caps.RPG.Rules.Creatures
             {
                 if (moveSpeedChanged)
                 {
-                    this.moveSpeed = Modifier.SumAll(this.modifiers[Modifier.TargetType.MovementSpeed], this.Attributes);
+                    this.moveSpeed = Modifier.SumAll(this.modifiers[TargetType.MovementSpeed], this.Attributes);
                     this.moveSpeedChanged = false;
                 }
                 return this.moveSpeed + Attributes.MoveSpeed();
             }
         }
 
-        // Inventory
+        [DataProperty("Inventory")]
         public CreatureInventory Inventory
         {
             get { return inv; }
         }
 
-        // Modifiers
-        public Dictionary<Modifier.TargetType, List<Modifier>> Modifiers
+        [DataProperty("Modifiers")]
+        public Dictionary<TargetType, List<Modifier>> Modifiers
         {
             get { return modifiers; }
         }
+
+        public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
         #endregion
 
         #region Constructors
+        public Creature() { }
         public Creature(string name, AttributeSet attributes)
         {
             this.status = HealthStatus.Alive;
@@ -169,26 +180,26 @@ namespace Caps.RPG.Rules.Creatures
         {
             switch (modifier.Target)
             {
-                case Modifier.TargetType.Strength:
-                case Modifier.TargetType.Agility:
-                case Modifier.TargetType.Constitution:
-                case Modifier.TargetType.Intellect:
-                case Modifier.TargetType.Arcana:
-                case Modifier.TargetType.Wisdom:
-                case Modifier.TargetType.Charisma:
-                case Modifier.TargetType.Presence:
+                case TargetType.Strength:
+                case TargetType.Agility:
+                case TargetType.Constitution:
+                case TargetType.Intellect:
+                case TargetType.Arcana:
+                case TargetType.Wisdom:
+                case TargetType.Charisma:
+                case TargetType.Presence:
                     this.attributes.AddModifier(modifier, source);
                     return;
-                case Modifier.TargetType.DefenseClass:
+                case TargetType.DefenseClass:
                     this.defenseClassChanged = true;
                     break;
-                case Modifier.TargetType.AttackBonus:
+                case TargetType.AttackBonus:
                     this.attackBonusChanged = true;
                     break;
-                case Modifier.TargetType.Initiative:
+                case TargetType.Initiative:
                     this.initiativeChanged = true;
                     break;
-                case Modifier.TargetType.MovementSpeed:
+                case TargetType.MovementSpeed:
                     this.moveSpeedChanged = true;
                     break;
                 default:
@@ -200,7 +211,7 @@ namespace Caps.RPG.Rules.Creatures
             {
                 foreach (var mod in targetList)
                 {
-                    if (mod.Source is Item item && item.Type == s.Type)
+                    if (mod.Source.IsItem() && mod.Source.ItemType() == s.Type)
                     {
                         targetList.Remove(mod);
                         break;
