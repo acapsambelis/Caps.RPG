@@ -1,53 +1,52 @@
 ﻿
+
 namespace Caps.RPG.Rules.Helpers
 {
-    public class Die
+    public enum Die
+    {
+        D4 = 4,
+        D6 = 6,
+        D8 = 8,
+        D10 = 10,
+        D12 = 12,
+        D20 = 20,
+    }
+
+    public static class DieExtensions
+    {
+        public static int Size(this Die die)
+        {
+            return (int)die;
+        }
+
+        public static int Roll(this Die die)
+        {
+            return new DieInterior(die.Size()).Roll();
+        }
+    }
+
+    internal class DieInterior
     {
         private readonly int size;
-        public Die(int size)
+        public DieInterior(int size)
         {
             this.size = size;
         }
 
+        public override bool Equals(object? obj)
+        {
+            return obj is DieInterior die &&
+                   size == die.size;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(size);
+        }
+
         public virtual int Roll()
         {
-            return Rules.Helpers.Roll.RollDie(size);
+            return Helpers.Roll.RollDie(size);
         }
-
-
-        public class DFlat : Die
-        {
-            private readonly int x;
-            public DFlat(int x) : base(x) { this.x = x; }
-
-            public override int Roll() { return x; }
-        }
-
-        public class DFour : Die
-        {
-            public DFour() : base(4) { }
-        }
-        public class DSix : Die
-        {
-            public DSix() : base(6) { }
-        }
-        public class DEight : Die
-        {
-            public DEight() : base(8) { }
-        }
-
-        public class DTen : Die
-        {
-            public DTen() : base(10) { }
-        }
-        public class DTwelve : Die
-        {
-            public DTwelve() : base(12) { }
-        }
-        public class DTwenty : Die
-        {
-            public DTwenty() : base(20) { }
-        }
-
     }
 }

@@ -165,6 +165,13 @@ namespace Caps.RPG.MonoGame
             base.Draw(gameTime);
         }
 
+
+        public static void ChangeResolution(int width, int height)
+        {
+            Graphics.PreferredBackBufferWidth = width;
+            Graphics.PreferredBackBufferHeight = height;
+        }
+
         public static void ChangeScene(Scene next)
         {
             // Only set the next scene value if it is not the same

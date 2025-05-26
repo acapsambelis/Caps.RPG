@@ -1,63 +1,75 @@
-﻿
-using Caps.RPG.Engine.Modifiers;
+﻿using Caps.RPG.Rules.Modifiers;
 using Caps.RPG.Rules.Inventory;
+using SNS.Data.DataSerializer;
 
 namespace Caps.RPG.Rules.Attributes
 {
     public enum Stat
     {
-        Strength,
-        Agility,
-        Constitution,
-        Intellect,
-        Arcana,
-        Wisdom,
-        Presence,
-        Charisma
+        Strength = 0,
+        Agility = 1,
+        Constitution = 2,
+        Intellect = 3,
+        Arcana = 4,
+        Wisdom = 5,
+        Presence = 6,
+        Charisma = 7
     }
-    public class AttributeSet
+
+    [DataClass("Attributes")]
+    public class AttributeSet : IGenericDataObject<AttributeSet>
     {
-        private readonly Dictionary<Modifier.TargetType, List<Modifier>> modifiers;
+        private Dictionary<TargetType, List<Modifier>> modifiers;
+        private bool _wasLoaded = false;
+
+        [DataProperty("Modifiers")]
+        public Dictionary<TargetType, List<Modifier>> Modifiers
+        {
+            get { return modifiers; }
+            set { modifiers = value; }
+        }
+
+        public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
 
         public AttributeSet()
         {
             modifiers = [];
 
-            modifiers.Add(Modifier.TargetType.Strength, [new Modifier("Base", Modifier.TargetType.Strength, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: 0)]);
-            modifiers.Add(Modifier.TargetType.Agility, [new Modifier("Base", Modifier.TargetType.Agility, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: 0)]);
-            modifiers.Add(Modifier.TargetType.Constitution, [new Modifier("Base", Modifier.TargetType.Constitution, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: 0)]);
-            modifiers.Add(Modifier.TargetType.Intellect, [new Modifier("Base", Modifier.TargetType.Intellect, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: 0)]);
-            modifiers.Add(Modifier.TargetType.Arcana, [new Modifier("Base", Modifier.TargetType.Arcana, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: 0)]);
-            modifiers.Add(Modifier.TargetType.Wisdom, [new Modifier("Base", Modifier.TargetType.Wisdom, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: 0)]);
-            modifiers.Add(Modifier.TargetType.Presence, [new Modifier("Base", Modifier.TargetType.Wisdom, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: 0)]);
-            modifiers.Add(Modifier.TargetType.Charisma, [new Modifier("Base", Modifier.TargetType.Charisma, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: 0)]);
+            modifiers.Add(TargetType.Strength,     [new Modifier(SourceType.Base, TargetType.Strength,     ActionType.Base, [BonusType.Flat], bonus: 0)]);
+            modifiers.Add(TargetType.Agility,      [new Modifier(SourceType.Base, TargetType.Agility,      ActionType.Base, [BonusType.Flat], bonus: 0)]);
+            modifiers.Add(TargetType.Constitution, [new Modifier(SourceType.Base, TargetType.Constitution, ActionType.Base, [BonusType.Flat], bonus: 0)]);
+            modifiers.Add(TargetType.Intellect,    [new Modifier(SourceType.Base, TargetType.Intellect,    ActionType.Base, [BonusType.Flat], bonus: 0)]);
+            modifiers.Add(TargetType.Arcana,       [new Modifier(SourceType.Base, TargetType.Arcana,       ActionType.Base, [BonusType.Flat], bonus: 0)]);
+            modifiers.Add(TargetType.Wisdom,       [new Modifier(SourceType.Base, TargetType.Wisdom,       ActionType.Base, [BonusType.Flat], bonus: 0)]);
+            modifiers.Add(TargetType.Presence,     [new Modifier(SourceType.Base, TargetType.Wisdom,       ActionType.Base, [BonusType.Flat], bonus: 0)]);
+            modifiers.Add(TargetType.Charisma,     [new Modifier(SourceType.Base, TargetType.Charisma,     ActionType.Base, [BonusType.Flat], bonus: 0)]);
         }
         public AttributeSet(int str, int agi, int con, int itl, int arc, int wis, int pre, int cha)
         {
             modifiers = [];
 
-            modifiers.Add(Modifier.TargetType.Strength, [new Modifier("Base", Modifier.TargetType.Strength, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: str)]);
-            modifiers.Add(Modifier.TargetType.Agility, [new Modifier("Base", Modifier.TargetType.Agility, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: agi)]);
-            modifiers.Add(Modifier.TargetType.Constitution, [new Modifier("Base", Modifier.TargetType.Constitution, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: con)]);
-            modifiers.Add(Modifier.TargetType.Intellect, [new Modifier("Base", Modifier.TargetType.Intellect, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: itl)]);
-            modifiers.Add(Modifier.TargetType.Arcana, [new Modifier("Base", Modifier.TargetType.Arcana, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: arc)]);
-            modifiers.Add(Modifier.TargetType.Wisdom, [new Modifier("Base", Modifier.TargetType.Wisdom, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: wis)]);
-            modifiers.Add(Modifier.TargetType.Presence, [new Modifier("Base", Modifier.TargetType.Wisdom, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: pre)]);
-            modifiers.Add(Modifier.TargetType.Charisma, [new Modifier("Base", Modifier.TargetType.Charisma, Modifier.ActionType.Base, [Modifier.BonusType.Flat], bonus: cha)]);
+            modifiers.Add(TargetType.Strength,     [new Modifier(SourceType.Base, TargetType.Strength,     ActionType.Base, [BonusType.Flat], bonus: str)]);
+            modifiers.Add(TargetType.Agility,      [new Modifier(SourceType.Base, TargetType.Agility,      ActionType.Base, [BonusType.Flat], bonus: agi)]);
+            modifiers.Add(TargetType.Constitution, [new Modifier(SourceType.Base, TargetType.Constitution, ActionType.Base, [BonusType.Flat], bonus: con)]);
+            modifiers.Add(TargetType.Intellect,    [new Modifier(SourceType.Base, TargetType.Intellect,    ActionType.Base, [BonusType.Flat], bonus: itl)]);
+            modifiers.Add(TargetType.Arcana,       [new Modifier(SourceType.Base, TargetType.Arcana,       ActionType.Base, [BonusType.Flat], bonus: arc)]);
+            modifiers.Add(TargetType.Wisdom,       [new Modifier(SourceType.Base, TargetType.Wisdom,       ActionType.Base, [BonusType.Flat], bonus: wis)]);
+            modifiers.Add(TargetType.Presence,     [new Modifier(SourceType.Base, TargetType.Wisdom,       ActionType.Base, [BonusType.Flat], bonus: pre)]);
+            modifiers.Add(TargetType.Charisma,     [new Modifier(SourceType.Base, TargetType.Charisma,     ActionType.Base, [BonusType.Flat], bonus: cha)]);
         }
 
         public int GetStatValue(Stat stat)
         {
             return stat switch
             {
-                Stat.Strength => Modifier.SumAll(modifiers[Modifier.TargetType.Strength]),
-                Stat.Agility => Modifier.SumAll(modifiers[Modifier.TargetType.Agility]),
-                Stat.Constitution => Modifier.SumAll(modifiers[Modifier.TargetType.Constitution]),
-                Stat.Intellect => Modifier.SumAll(modifiers[Modifier.TargetType.Intellect]),
-                Stat.Arcana => Modifier.SumAll(modifiers[Modifier.TargetType.Arcana]),
-                Stat.Wisdom => Modifier.SumAll(modifiers[Modifier.TargetType.Wisdom]),
-                Stat.Presence => Modifier.SumAll(modifiers[Modifier.TargetType.Presence]),
-                Stat.Charisma => Modifier.SumAll(modifiers[Modifier.TargetType.Charisma]),
+                Stat.Strength     => Modifier.SumAll(modifiers[TargetType.Strength]),
+                Stat.Agility      => Modifier.SumAll(modifiers[TargetType.Agility]),
+                Stat.Constitution => Modifier.SumAll(modifiers[TargetType.Constitution]),
+                Stat.Intellect    => Modifier.SumAll(modifiers[TargetType.Intellect]),
+                Stat.Arcana       => Modifier.SumAll(modifiers[TargetType.Arcana]),
+                Stat.Wisdom       => Modifier.SumAll(modifiers[TargetType.Wisdom]),
+                Stat.Presence     => Modifier.SumAll(modifiers[TargetType.Presence]),
+                Stat.Charisma     => Modifier.SumAll(modifiers[TargetType.Charisma]),
                 _ => throw new ArgumentException("Invalid Stat type")
             };
         }
@@ -69,7 +81,7 @@ namespace Caps.RPG.Rules.Attributes
             {
                 foreach (var mod in targetList)
                 {
-                    if (mod.Source is Item item && item.Type == s.Type)
+                    if (mod.Source.IsItem() && mod.Source.ItemType() == s.Type)
                     {
                         targetList.Remove(mod);
                         break;

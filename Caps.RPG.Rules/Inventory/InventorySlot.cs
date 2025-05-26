@@ -1,4 +1,4 @@
-﻿using Caps.RPG.Engine.Modifiers;
+﻿using Caps.RPG.Rules.Modifiers;
 
 namespace Caps.RPG.Rules.Inventory
 {
