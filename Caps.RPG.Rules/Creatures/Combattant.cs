@@ -14,11 +14,11 @@ namespace Caps.RPG.Rules.Creatures
         private Vector2D _position;
         public readonly char ShortName;
 
-        [DataProperty("Creature")]
+        [SubDataObject("Creature")]
         public Creature Creature { get { return _creature; } set { _creature = value; } }
         [DataProperty("Team")]
         public string Team { get { return _team; } set { _team = value; } }
-        [DataProperty("Position")]
+        [SubDataObject("Position")]
         public Vector2D Position { get { return _position; } set { _position = value; } }
 
         private bool _wasLoaded = false;

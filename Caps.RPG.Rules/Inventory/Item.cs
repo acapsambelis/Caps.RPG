@@ -38,23 +38,53 @@ namespace Caps.RPG.Rules.Inventory
         private bool _wasLoaded = false;
         public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
 
-        public Item() { }
+        public Item()
+        {
+            Name = "";
+            Description = "";
+            Type = ItemType.None;
+            Modifiers = [];
+        }
         public Item(string name, string description, ItemType type)
         {
-            this.Name = name;
-            this.Description = description;
-            this.Type = type;
-            this.Modifiers = [];
-        }
-
-        public virtual Modifier[] GetModifiers()
-        {
-            return Modifiers;
+            Name = name;
+            Description = description;
+            Type = type;
+            Modifiers = [];
         }
 
         public override string ToString()
         {
             return Name;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is not Item item)
+                return false;
+
+            bool equals = true;
+            equals &= Name == item.Name;
+            equals &= Description == item.Description;
+            equals &= Type == item.Type;
+            equals &= EqualityComparer<Modifier[]>.Default.Equals(Modifiers, item.Modifiers);
+
+            return equals;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Name, Description, Type, Modifiers);
+        }
+
+        public static bool operator ==(Item? left, Item? right)
+        {
+            return EqualityComparer<Item>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(Item? left, Item? right)
+        {
+            return !(left == right);
         }
     }
 }

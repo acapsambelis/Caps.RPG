@@ -22,7 +22,7 @@ namespace Caps.RPG.Rules.Attributes
         private Dictionary<TargetType, List<Modifier>> modifiers;
         private bool _wasLoaded = false;
 
-        [DataProperty("Modifiers")]
+        [DataProperty("ModifiersAttr")]
         public Dictionary<TargetType, List<Modifier>> Modifiers
         {
             get { return modifiers; }

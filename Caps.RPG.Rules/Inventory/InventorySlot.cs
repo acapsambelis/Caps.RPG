@@ -27,14 +27,40 @@ namespace Caps.RPG.Rules.Inventory
             this.ItemType = type;
         }
 
-        public Modifier[] SetItem(Item item)
+        public bool SetItem(Item item)
         {
             if (ItemType == ItemType.Any || ItemType == ItemType.None || item.Type == ItemType)
             {
                 this.item = item;
-                return item.GetModifiers();
+                return true;
             }
-            return [];
+            return false;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is not InventorySlot slot)
+                return false;
+
+            bool isEqual = true;
+            isEqual &= ItemType == slot?.ItemType;
+            isEqual &= EqualityComparer<Item?>.Default.Equals(Item, slot?.Item);
+            return isEqual;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(ItemType, Item);
+        }
+
+        public static bool operator ==(InventorySlot? left, InventorySlot? right)
+        {
+            return EqualityComparer<InventorySlot>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(InventorySlot? left, InventorySlot? right)
+        {
+            return !(left == right);
         }
     }
 }

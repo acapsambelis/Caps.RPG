@@ -16,30 +16,17 @@ namespace Caps.RPG
         {
             string dummyXml;
             bool t;
-            //Combattant dummy = new Combattant(
-            //    new Creature("Dummy", new AttributeSet()),
-            //    "Blue",
-            //    new Vector2D(0, 0)
-            //);
-            //string dummyXml = dummy.ToXml();
-            //Combattant fromXml = Xml<Combattant>.LoadOneFromXml(dummyXml);
-            //bool t = dummy == fromXml;
 
             AttributeSet s = new AttributeSet();
             dummyXml = s.ToXml();
             AttributeSet fromXmlS = Xml<AttributeSet>.LoadOneFromXml(dummyXml);
             t = s == fromXmlS;
 
-            TestCreature tc = new TestCreature("Dummy");
-            dummyXml = tc.ToXml();
-            TestCreature fromXmlTC = Xml<TestCreature>.LoadOneFromXml(dummyXml);
-            t = tc == fromXmlTC;
-
             Creature c = new("Dummy", new AttributeSet());
             dummyXml = c.ToXml();
             Creature fromXmlC = Xml<Creature>.LoadOneFromXml(dummyXml);
             t = c == fromXmlC;
-            int init = fromXmlC.InitiativeModifier;
+            //int init = fromXmlC.InitiativeModifier;
 
             Dungeon dungeon = new Dungeon("Test Dungeon", "description");
             Floor f1 = new Floor();
@@ -63,7 +50,7 @@ namespace Caps.RPG
                 new AttributeSet(0, 4, 3, 0, 0, 1, 2, 0),
                 new Dictionary<Type, int> { { typeof(Fighter), 2 } }
             );
-            blueDexFighter.Inventory.Equip(Content.Items.Hands.VeryLargeSword.Item);
+            blueDexFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
             combattants.Add(("Blue", blueDexFighter, new Vector2D(1,3)));
 
             ClassedCharacter blueStrFighter = new ClassedCharacter(
@@ -71,7 +58,7 @@ namespace Caps.RPG
                 new AttributeSet(4, 0, 3, 0, 0, 0, 1, 2),
                 new Dictionary<Type, int> { { typeof(Fighter), 1 } }
             );
-            blueStrFighter.Inventory.Equip(Content.Items.Hands.VeryLargeSword.Item);
+            blueStrFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
             combattants.Add(("Blue", blueStrFighter, new Vector2D(1,4)));
 
             combattants.Add(
@@ -91,7 +78,7 @@ namespace Caps.RPG
                 new AttributeSet(0, 4, 3, 0, 0, 1, 2, 0),
                 new Dictionary<Type, int> { { typeof(Fighter), 2 } }
             );
-            redDexFighter.Inventory.Equip(Content.Items.Hands.VeryLargeSword.Item);
+            redDexFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
             combattants.Add(("Red", redDexFighter, new Vector2D(8,3) ));
 
             ClassedCharacter redStrFighter = new ClassedCharacter(
@@ -99,7 +86,7 @@ namespace Caps.RPG
                 new AttributeSet(4, 0, 3, 0, 0, 0, 1, 2),
                 new Dictionary<Type, int> { { typeof(Fighter), 1 } }
             );
-            redStrFighter.Inventory.Equip(Content.Items.Hands.VeryLargeSword.Item);
+            redStrFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
             combattants.Add(("Red", redStrFighter, new Vector2D(8,4)));
 
             combattants.Add(
