@@ -27,7 +27,7 @@ namespace Caps.RPG.Rules.Creatures
 
         // Combat
         private HealthStatus status;
-        private readonly List<CombatAction> combatActions;
+        private List<CombatAction> combatActions;
 
         // Inventory
         private CreatureInventory inv;
@@ -87,6 +87,7 @@ namespace Caps.RPG.Rules.Creatures
         }
 
         // Combat
+        [DataProperty("Status")]
         public HealthStatus Status
         {
             get { return status; }
@@ -153,6 +154,12 @@ namespace Caps.RPG.Rules.Creatures
             get { return modifiers; }
             set { modifiers = value; }
         }
+        [DataProperty("CombatActions")]
+        public List<CombatAction> CombatActions
+        {
+            get { return combatActions; }
+            set { combatActions = value; }
+        }
 
         public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
         #endregion
@@ -168,7 +175,7 @@ namespace Caps.RPG.Rules.Creatures
             this.health = MaxHealth;
             this.combatActions = Combattant.GetGenericList();
 
-            this.inv = new CreatureInventory(this);
+            this.inv = new CreatureInventory();
             modifiers = Modifier.GetCreatureModifiers();
         }
         #endregion
@@ -176,6 +183,18 @@ namespace Caps.RPG.Rules.Creatures
         public virtual List<CombatAction> GetCombatActions()
         {
             return combatActions;
+        }
+
+        public void Equip(Item item)
+        {
+            Inventory.Equip(item);
+            if (item is not null)
+            {
+                foreach (Modifier m in item.Modifiers)
+                {
+                    AddModifier(m, item);
+                }
+            }
         }
 
         public void AddModifier(Modifier modifier, object? source)
@@ -229,6 +248,83 @@ namespace Caps.RPG.Rules.Creatures
         {
             return Name;
         }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is not Creature creature)
+                return false;
+
+            bool isEqual = true;
+            isEqual &= name == creature.name;
+            isEqual &= maxHealth == creature.maxHealth;
+            isEqual &= health == creature.health;
+            isEqual &= EqualityComparer<AttributeSet>.Default.Equals(attributes, creature.attributes);
+            isEqual &= status == creature.status;
+            foreach (CombatAction ca in combatActions)
+            {
+                if (!creature.combatActions.Contains(ca))
+                {
+                    return false;
+                }
+            }
+            //isEqual &= EqualityComparer<List<CombatAction>>.Default.Equals(combatActions, creature.combatActions);
+            isEqual &= inv == creature.inv;
+            isEqual &= Modifiers.Count == creature.Modifiers.Count;
+            // Check if all keys and their corresponding values are equal
+            foreach (var key in Modifiers.Keys)
+            {
+                if (!creature.Modifiers.TryGetValue(key, out List<Modifier>? value))
+                {
+                    return false;
+                }
+
+                // Compare the lists of modifiers for each key
+                var thisModifiers = value;
+                var otherModifiers = creature.Modifiers[key];
+
+                if (thisModifiers.Count != otherModifiers.Count ||
+                    !thisModifiers.SequenceEqual(otherModifiers))
+                {
+                    return false;
+                }
+            }
+
+            isEqual &= defenseClass == creature.defenseClass;
+            isEqual &= attackBonus == creature.attackBonus;
+            isEqual &= initiativeBonus == creature.initiativeBonus;
+            isEqual &= moveSpeed == creature.moveSpeed;
+
+            return isEqual;
+        }
+
+        public override int GetHashCode()
+        {
+            HashCode hash = new HashCode();
+            hash.Add(name);
+            hash.Add(maxHealth);
+            hash.Add(health);
+            hash.Add(attributes);
+            hash.Add(status);
+            hash.Add(combatActions);
+            hash.Add(inv);
+            hash.Add(modifiers);
+            hash.Add(defenseClass);
+            hash.Add(attackBonus);
+            hash.Add(initiativeBonus);
+            hash.Add(moveSpeed);
+            return hash.ToHashCode();
+        }
+
+        public static bool operator ==(Creature? left, Creature? right)
+        {
+            return EqualityComparer<Creature>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(Creature? left, Creature? right)
+        {
+            return !(left == right);
+        }
+
         #endregion
     }
 }

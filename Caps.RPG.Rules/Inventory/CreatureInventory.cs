@@ -1,5 +1,4 @@
-﻿using Caps.RPG.Rules.Modifiers;
-using Caps.RPG.Rules.Creatures;
+﻿using Caps.RPG.Rules.Creatures.Actions;
 using SNS.Data.DataSerializer;
 
 namespace Caps.RPG.Rules.Inventory
@@ -7,40 +6,50 @@ namespace Caps.RPG.Rules.Inventory
     [DataClass("CreatureInventories")]
     public class CreatureInventory : Inventory, IGenericDataObject<CreatureInventory>
     {
-        private Creature? _creature;
-        private bool _wasLoaded = false;
-
         [SubDataObject("EquippedItems")]
         public Equipment EquipedItems { get; set; }
-
-        public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
-
-        public CreatureInventory() { }
-        public CreatureInventory(Creature creature, int size = 15) : base(size)
+        
+        public CreatureInventory() : base (15)
         {
-            this._creature = creature;
             EquipedItems = new Equipment();
         }
-        public CreatureInventory(int size) : base(size)
+        public CreatureInventory(int size = 15) : base(size)
         {
-            _creature = null;
             EquipedItems = new Equipment();
         }
 
-        public void Equip(Item i)
+        internal void Equip(Item i)
         {
             var possibleNull = EquipedItems.GetSlotForItem(i);
-            InventorySlot slot = possibleNull != null ? possibleNull : new InventorySlot(ItemType.None);
-            Modifier[] modifiers = slot.SetItem(i);
-            foreach (Modifier m in modifiers)
-            {
-                _creature?.AddModifier(m, i);
-            }
+            InventorySlot slot = possibleNull ?? new InventorySlot(ItemType.None);
+            slot.SetItem(i);
         }
 
-        public void AssignCreature(Creature creature)
+        public override bool Equals(object? obj)
         {
-            _creature = creature;
+            if (obj is not CreatureInventory other)
+                return false;
+
+            bool isEqual = true;
+            isEqual &= base.Equals(obj);
+            isEqual &= ID == other.ID;
+            isEqual &= EquipedItems == other.EquipedItems;
+            return isEqual;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(base.GetHashCode(), ID, Slots, EquipedItems);
+        }
+
+        public static bool operator ==(CreatureInventory? left, CreatureInventory? right)
+        {
+            return EqualityComparer<CreatureInventory>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(CreatureInventory? left, CreatureInventory? right)
+        {
+            return !(left == right);
         }
     }
 }
