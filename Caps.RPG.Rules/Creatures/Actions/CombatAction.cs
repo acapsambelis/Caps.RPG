@@ -137,7 +137,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
             isEqual &= name == other.name;
             isEqual &= description == other.description;
             isEqual &= cost == other.cost;
-            isEqual &= EqualityComparer<Func<Creature, Creature?, ActionResult>>.Default.Equals(action, other.action);
+            isEqual &= EqualityComparer<Func<Combattant, Combattant?, Vector2D?, ActionResult>>.Default.Equals(action, other.action);
             isEqual &= needsTarget == other.needsTarget;
             isEqual &= distance == other.distance;
 

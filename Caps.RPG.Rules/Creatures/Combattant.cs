@@ -12,7 +12,7 @@ namespace Caps.RPG.Rules.Creatures
     {
         private Creature _creature;
         private string _team;
-        private Vector2D _position;
+        private Vector2D position;
         public readonly char ShortName;
         public MapTile[,] fieldOfView;
         public Map fullMap;
@@ -116,10 +116,10 @@ namespace Caps.RPG.Rules.Creatures
             {
                 int damage = 0;
                 int toHit = Die.D20.Roll();
-                bool hits = source.AttackBonus + toHit > target.DefenseClass;
+                bool hits = source.Creature.AttackBonus + toHit > target.Creature.DefenseClass;
                 if (hits)
                 {
-                    damage = Modifier.SumAll(source.Modifiers[TargetType.AttackDamage], source.Attributes);
+                    damage = Modifier.SumAll(source.Creature.Modifiers[TargetType.AttackDamage], source.Creature.Attributes);
                     target.Health -= damage;
                 }
                 return new ActionResult(source.Name + " attacked " + target.Name + " with a " + (source.Creature.AttackBonus + toHit) + "(" + toHit + " + " + source.Creature.AttackBonus + ") to hit. " + damage + " was delt.");

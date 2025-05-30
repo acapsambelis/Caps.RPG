@@ -99,9 +99,9 @@ namespace Caps.RPG.Rules.Creatures
         {
             get
             {
-                if (defenseClassChanged && modifiers.TryGetValue(TargetType.DefenseClass, out List<Modifier>? value))
+                if (defenseClassChanged)
                 {
-                    if (!modifiers.TryGetValue(Modifier.TargetType.DefenseClass, out List<Modifier>? value))
+                    if (!modifiers.TryGetValue(TargetType.DefenseClass, out List<Modifier>? value))
                         this.defenseClass = 0;
                     else
                         this.defenseClass = Modifier.SumAll(value, this.Attributes);
@@ -114,9 +114,9 @@ namespace Caps.RPG.Rules.Creatures
         {
             get
             {
-                if (attackBonusChanged && modifiers.TryGetValue(TargetType.AttackBonus, out List<Modifier>? value))
+                if (attackBonusChanged)
                 {
-                    if (!modifiers.TryGetValue(Modifier.TargetType.AttackBonus, out List<Modifier>? value))
+                    if (!modifiers.TryGetValue(TargetType.AttackBonus, out List<Modifier>? value))
                         this.attackBonus = 0;
                     else
                         this.attackBonus = Modifier.SumAll(value, this.Attributes);
@@ -131,7 +131,7 @@ namespace Caps.RPG.Rules.Creatures
             {
                 if (initiativeChanged)
                 {
-                    if (!modifiers.TryGetValue(Modifier.TargetType.Initiative, out List<Modifier>? value))
+                    if (!modifiers.TryGetValue(TargetType.Initiative, out List<Modifier>? value))
                         this.initiativeBonus = 0;
                     else
                         this.initiativeBonus = Modifier.SumAll(value, this.Attributes);
@@ -144,9 +144,9 @@ namespace Caps.RPG.Rules.Creatures
         {
             get
             {
-                if (moveSpeedChanged && modifiers.TryGetValue(TargetType.MovementSpeed, out List<Modifier>? value))
+                if (moveSpeedChanged)
                 {
-                    if (!modifiers.TryGetValue(Modifier.TargetType.MovementSpeed, out List<Modifier>? value))
+                    if (!modifiers.TryGetValue(TargetType.MovementSpeed, out List<Modifier>? value))
                         this.moveSpeed = 0;
                     else
                         this.moveSpeed = Modifier.SumAll(value, this.Attributes);
