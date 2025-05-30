@@ -121,7 +121,7 @@ namespace Caps.RPG.Rules.Modifiers
             get { return bonus; }
             set { bonus = value; }
         }
-        //[DataProperty("Dice")]
+        [DataProperty("Dice")]
         public Dictionary<Die, int> Dice
         {
             get { return dice; }

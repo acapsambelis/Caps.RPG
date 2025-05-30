@@ -35,7 +35,7 @@ namespace SNS.Data.DataSerializer
         public string ToXml(IDataObject SourceObject, bool UseBase64Arrays, IDataRelation[] Relations)
         {
             T2[] results = GetRelated();
-            return Xml<T2>.ToXml(results, UseBase64Arrays, Relations);
+            return Xml<T2>.ToXml(results, Relations);
 
         }
         public DataRelation(Expression<Func<T2, bool>> WhereExpression, params Expression<Func<T2, object>>[] OrderByExpressions)

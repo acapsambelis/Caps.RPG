@@ -16,7 +16,7 @@ namespace Caps.RPG.Rules.Attributes
         Charisma = 7
     }
 
-    [DataClass("Attributes")]
+    [DataClass("AttributeSet")]
     public class AttributeSet : IGenericDataObject<AttributeSet>
     {
         private Dictionary<TargetType, List<Modifier>> modifiers;
@@ -106,5 +106,54 @@ namespace Caps.RPG.Rules.Attributes
             return 5 + this.GetStatValue(Stat.Agility);
         }
 
+        public override bool Equals(object? obj)
+        {
+            if (obj is AttributeSet set)
+            {
+                bool ret = true;
+
+                // Check if the counts of the dictionaries are the same
+                ret &= Modifiers.Count == set.Modifiers.Count;
+
+                // Check if all keys and their corresponding values are equal
+                foreach (var key in Modifiers.Keys)
+                {
+                    if (!set.Modifiers.ContainsKey(key))
+                    {
+                        ret = false;
+                        break;
+                    }
+
+                    // Compare the lists of modifiers for each key
+                    var thisModifiers = Modifiers[key];
+                    var otherModifiers = set.Modifiers[key];
+
+                    if (thisModifiers.Count != otherModifiers.Count ||
+                        !thisModifiers.SequenceEqual(otherModifiers))
+                    {
+                        ret = false;
+                        break;
+                    }
+                }
+
+                return ret;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Modifiers);
+        }
+
+        public static bool operator ==(AttributeSet? left, AttributeSet? right)
+        {
+            return EqualityComparer<AttributeSet>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(AttributeSet? left, AttributeSet? right)
+        {
+            return !(left == right);
+        }
     }
 }

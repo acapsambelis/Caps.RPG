@@ -1,14 +1,21 @@
 ﻿using Caps.RPG.Rules.Modifiers;
 using Caps.RPG.Rules.Creatures;
+using SNS.Data.DataSerializer;
 
 namespace Caps.RPG.Rules.Inventory
 {
-    public class CreatureInventory : Inventory
+    [DataClass("CreatureInventories")]
+    public class CreatureInventory : Inventory, IGenericDataObject<CreatureInventory>
     {
         private Creature? _creature;
+        private bool _wasLoaded = false;
 
-        public Equipment EquipedItems { get; }
+        [SubDataObject("EquippedItems")]
+        public Equipment EquipedItems { get; set; }
 
+        public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
+
+        public CreatureInventory() { }
         public CreatureInventory(Creature creature, int size = 15) : base(size)
         {
             this._creature = creature;
