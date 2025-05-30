@@ -30,14 +30,14 @@ namespace Caps.RPG.Rules.Creatures
         private readonly List<CombatAction> combatActions;
 
         // Inventory
-        private readonly CreatureInventory inv;
+        private CreatureInventory inv;
 
         // Modifiers
         private bool defenseClassChanged = true;
         private bool attackBonusChanged = true;
         private bool initiativeChanged = true;
         private bool moveSpeedChanged = true;
-        private readonly Dictionary<TargetType, List<Modifier>> modifiers;
+        private Dictionary<TargetType, List<Modifier>> modifiers;
         private int defenseClass;
         private int attackBonus;
         private int initiativeBonus;
@@ -79,7 +79,7 @@ namespace Caps.RPG.Rules.Creatures
             }
         }
 
-        [DataProperty("Attributes")]
+        [SubDataObject("Attributes")]
         public AttributeSet Attributes
         {
             get { return attributes; }
@@ -140,16 +140,18 @@ namespace Caps.RPG.Rules.Creatures
             }
         }
 
-        [DataProperty("Inventory")]
+        [SubDataObject("Inventory")]
         public CreatureInventory Inventory
         {
             get { return inv; }
+            set { inv = value; }
         }
 
         [DataProperty("Modifiers")]
         public Dictionary<TargetType, List<Modifier>> Modifiers
         {
             get { return modifiers; }
+            set { modifiers = value; }
         }
 
         public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }

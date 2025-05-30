@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace SNS.Data.DataSerializer.XmlExtensions
 {
     public static class Xml<T> where T : IGenericDataObject<T>, new()
     {
+        static CultureInfo invC = new CultureInfo("");
+        static Type openGeneric = typeof(Xml<>);
         public static string ToXml(T Object)
         {
             return Object.ToXml();
@@ -21,7 +24,7 @@ namespace SNS.Data.DataSerializer.XmlExtensions
         {
             return Objects.ToXml();
         }
-        public static string ToXml(IEnumerable<T> Objects, bool UseBase64Arrays, IDataRelation[] Relationships)
+        public static string ToXml(IEnumerable<T> Objects, IDataRelation[] Relationships)
         {
             int count = Objects.Count();
             if (count == 0)
@@ -30,16 +33,28 @@ namespace SNS.Data.DataSerializer.XmlExtensions
             StringBuilder sb = new StringBuilder("<" + rootNodeName + " Count=\"" + count + "\">\r\n");
             foreach (T obj in Objects)
             {
-                sb.Append(
-                obj.ToXml(UseBase64Arrays,Relationships));
+                //sb.Append(
+                //obj.ToXml(Relationships));
             }
             sb.Append("</" + rootNodeName + ">\r\n");
 
             return sb.ToString();
         }
+        public static DataPropertyInfo[] PrecacheDataProperties()
+        {
+            return ReflectionCache<T>.GetDataProperties();
+        }
         public static T LoadOneFromXml(string XmlString)
         {
-            T[] results = LoadFromXml(XmlString, false);
+            T[] results = LoadFromXml(XmlString, true);
+            if (results.Length > 0)
+                return results[0];
+            else
+                return default(T);
+        }
+        public static T LoadOneFromXmlWithProperties(string XmlString, DataPropertyInfo[] ReflectedDataProperties)
+        {
+            T[] results = LoadFromXml(XmlString, true, ReflectedDataProperties);
             if (results.Length > 0)
                 return results[0];
             else
@@ -51,12 +66,18 @@ namespace SNS.Data.DataSerializer.XmlExtensions
         }
         internal static T[] LoadFromXml(string XmlString, bool LoadingOne)
         {
+            return LoadFromXml(XmlString, LoadingOne, null);
+        }
+        internal static T[] LoadFromXml(string XmlString, bool LoadingOne, DataPropertyInfo[] ReflectedDataProperties)
+        {
             try
             {
                 T returnObj = default(T);
                 List<T> objs = new List<T>();
                 if (XmlString == "")
                     return objs.ToArray();
+
+                DataPropertyInfo[] typeProps = ReflectedDataProperties == null ? ReflectionCache<T>.GetDataProperties() : ReflectedDataProperties;
                 using (MemoryStream ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(XmlString)))
                 {
                     using (XmlTextReader reader = new XmlTextReader(ms))
@@ -64,11 +85,9 @@ namespace SNS.Data.DataSerializer.XmlExtensions
                         Type thisType = typeof(T);
                         string typeName = thisType.Name;
                         bool inType = false;
-                        bool readContent = false;
 
-                        while (readContent || reader.Read())
+                        while (reader.Read())
                         {
-                            readContent = false;
                             if (!inType && reader.Name == typeName && reader.IsStartElement() && reader.GetAttribute("Count") == null)
                             {
                                 returnObj = new T();
@@ -85,7 +104,7 @@ namespace SNS.Data.DataSerializer.XmlExtensions
                             {
                                 //if (reader.HasValue)
                                 //{
-                                if (reader.Name != "" && reader.IsStartElement())
+                                if (reader.Name != "")
                                 {
                                     if (reader["Count"] == null)
                                     {
@@ -103,18 +122,17 @@ namespace SNS.Data.DataSerializer.XmlExtensions
                                                 }
                                                 objectPath = objectPath.Remove(objectPath.Length - 1, 1);
                                                 propName = classPath[classPath.Length - 1];
-                                                setOnObj = ReflectionUtility.GetSubObjectValue(returnObj.GetType(), returnObj, objectPath.Split("|".ToCharArray()), 0, true);
+                                                setOnObj = ReflectionCache<T>.GetSubObjectValue(returnObj, objectPath.Split("|".ToCharArray()), 0, true);
                                                 if (setOnObj == null) //No longer exists
-                                                    continue; 
+                                                    continue;
                                             }
-                                            CultureInfo invC = new CultureInfo("");
+
                                             object value = reader.ReadElementContentAsObject();
-                                            readContent = true;
-                                            DataPropertyInfo matchPropInfo = ReflectionUtility.GetDataProperties(typeof(T)).Where(p => p.PropertyAttribute != null && (p.PropertyInfo.DeclaringType == setOnObj.GetType() || setOnObj.GetType().IsSubclassOf(p.PropertyInfo.DeclaringType)) && p.PropertyAttribute.GetColumn.ToLower() == propName.ToLower()).FirstOrDefault();
+                                            DataPropertyInfo matchPropInfo = typeProps.Where(p => p.PropertyAttribute != null && (p.PropertyInfo.DeclaringType == setOnObj.GetType() || setOnObj.GetType().IsSubclassOf(p.PropertyInfo.DeclaringType)) && p.PropertyAttribute.GetColumn.ToLower() == propName.ToLower()).FirstOrDefault();
                                             if (matchPropInfo == null)
                                                 continue;
                                             PropertyInfo info = matchPropInfo.PropertyInfo;//matchPropInfo.PropertyInfo;//setOnObj.GetType().GetProperty(propName);
-                                            Type changeToType;
+                                            Type changeToType = null;
                                             if (info != null)
                                             {
                                                 //TODO: Consolidate these blocks of code to a function
@@ -133,6 +151,7 @@ namespace SNS.Data.DataSerializer.XmlExtensions
                                                     changeToType = info.PropertyType;
                                                     value = Convert.ChangeType(value, changeToType, invC);
                                                 }
+
                                                 info.SetValue(setOnObj, value, null);
                                             }
                                         }
@@ -160,7 +179,7 @@ namespace SNS.Data.DataSerializer.XmlExtensions
                 }
                 return objs.ToArray();
             }
-            catch(Exception err)
+            catch (Exception err)
             {
                 Console.WriteLine(err.Message + " " + err.StackTrace);
             }
@@ -186,10 +205,10 @@ namespace SNS.Data.DataSerializer.XmlExtensions
                     }
                     objectPath = objectPath.Remove(objectPath.Length - 1, 1);
                     propName = classPath[classPath.Length - 1];
-                    setOnObj = ReflectionUtility.GetSubObjectValue(returnObj.GetType(), returnObj, objectPath.Split("|".ToCharArray()), 0, true);
+                    setOnObj = ReflectionCache<T>.GetSubObjectValue(returnObj, objectPath.Split("|".ToCharArray()), 0, true);
 
                 }
-                DataPropertyInfo matchPropInfo = ReflectionUtility.GetDataProperties(typeof(T)).Where(p => p.PropertyAttribute != null && p.PropertyAttribute.GetColumn.ToLower() == propName.ToLower()).FirstOrDefault();
+                DataPropertyInfo matchPropInfo = ReflectionCache<T>.GetDataProperties().Where(p => p.PropertyAttribute != null && p.PropertyAttribute.GetColumn.ToLower() == propName.ToLower()).FirstOrDefault();
                 if (matchPropInfo == null) //Property Removed...? just skip it and 
                 {
                     while (reader.Read())
@@ -206,11 +225,13 @@ namespace SNS.Data.DataSerializer.XmlExtensions
             IDictionary setDictionary = null;
             Type itemType = null;
             Type keyType = null;
+            Type[] deserializeTypes = null;
             if (!IsSubList)
             {
                 if (info.PropertyType.IsArray)
                 {
                     itemType = info.PropertyType.GetElementType();
+
                     setArray = Array.CreateInstance(itemType, countEle);
                     //info.SetValue(setOnObj, setArray, null);
                 }
@@ -218,6 +239,7 @@ namespace SNS.Data.DataSerializer.XmlExtensions
                 {
                     keyType = info.PropertyType.GetGenericArguments()[0];
                     itemType = info.PropertyType.GetGenericArguments()[1];
+
                     setDictionary = (IDictionary)info.PropertyType.InvokeMember("", BindingFlags.CreateInstance, null, null, null);
 
                 }
@@ -252,6 +274,11 @@ namespace SNS.Data.DataSerializer.XmlExtensions
             }
             int j = 0;
             object currentKey = null;
+            //if (itemType.IsInterface)
+            //{
+            //    DataPropertyInfo matchPropInfo = ReflectionCache<T>.GetDataProperties().Where(p => p.PropertyAttribute != null && p.PropertyAttribute.GetColumn.ToLower() == info.Name.ToLower()).FirstOrDefault();
+            //    deserializeTypes = matchPropInfo.PropertyAttribute.XMLDeserializeTypes;
+            //}
             while (reader.Read())
             {
 
@@ -262,9 +289,8 @@ namespace SNS.Data.DataSerializer.XmlExtensions
                     if (keyType.GetInterfaces().Any(t => t == typeof(IDataObject)))
                     {
                         string innerXml = reader.ReadInnerXml();
-                        Type openGeneric = typeof(Xml<>);
                         // Make a type for a specific value of T
-                        Type closedGeneric = openGeneric.MakeGenericType(itemType);
+                        Type closedGeneric = openGeneric.MakeGenericType(keyType);
                         MethodInfo method = closedGeneric.GetMethod("LoadOneFromXml", BindingFlags.Static | BindingFlags.Public | BindingFlags.InvokeMethod);
                         // Invoke the static method
                         currentKey = method.Invoke(null, new object[] { innerXml });
@@ -276,31 +302,48 @@ namespace SNS.Data.DataSerializer.XmlExtensions
                             currentKey = Enum.Parse(keyType, (string)reader.ReadElementContentAsObject(), false);
                         }
                         else
-                        {
                             currentKey = Convert.ChangeType(reader.ReadElementContentAsObject(), keyType);
-                        }
-                    }
-                }
-                else if (reader.Name == "ItemByteArray" && reader.IsStartElement())
-                {
-                    string b64ByteArray = reader.ReadString();
-                    byte[] bytes = Convert.FromBase64String(b64ByteArray);
-                    if (setArray != null && setArray is byte[])
-                    {
-                        setArray = bytes;
-                    }
-                    else if (setList != null && setList is IList<byte>)
-                    {
-                        foreach (byte b in bytes)
-                            ((IList<byte>)setList).Add(b);
                     }
                 }
                 else if (reader.Name == "Item" && reader.IsStartElement())
                 {
-                    if (itemType.GetInterfaces().Any(t => t == typeof(IDataObject)))
+                    if (itemType.IsInterface)
                     {
                         string innerXml = reader.ReadInnerXml();
-                        Type openGeneric = typeof(Xml<>);
+                        if (deserializeTypes != null)
+                        {
+                            foreach (Type checkT in deserializeTypes)
+                            {
+                                // Make a type for a specific value of T
+                                Type closedGeneric = openGeneric.MakeGenericType(checkT);
+                                MethodInfo method = closedGeneric.GetMethod("LoadOneFromXml", BindingFlags.Static | BindingFlags.Public | BindingFlags.InvokeMethod);
+                                // Invoke the static method
+                                object value = method.Invoke(null, new object[] { innerXml });
+                                if (value == null)
+                                    continue;
+                                else if (value.GetType() == checkT)
+                                {
+                                    if (setArray != null)
+                                    {
+                                        setArray.SetValue(Convert.ChangeType(value, checkT), j);
+                                    }
+                                    else if (setDictionary != null)
+                                    {
+                                        setDictionary.Add(currentKey, Convert.ChangeType(value, checkT));
+                                    }
+                                    else
+                                    {
+                                        ((IList)setList).Add(Convert.ChangeType(value, checkT));
+                                    }
+                                    break;
+                                }
+                            }
+
+                        }
+                    }
+                    else if (itemType.GetInterfaces().Any(t => t == typeof(IDataObject)))
+                    {
+                        string innerXml = reader.ReadInnerXml();
                         // Make a type for a specific value of T
                         Type closedGeneric = openGeneric.MakeGenericType(itemType);
                         MethodInfo method = closedGeneric.GetMethod("LoadOneFromXml", BindingFlags.Static | BindingFlags.Public | BindingFlags.InvokeMethod);
@@ -318,10 +361,11 @@ namespace SNS.Data.DataSerializer.XmlExtensions
                         {
                             ((IList)setList).Add(Convert.ChangeType(value, itemType));
                         }
+
                     }
                     else if (itemType.IsArray || itemType.GetInterfaces().Any(t => t == typeof(IList)))
                     {
-                        
+
                         reader.Read();
                         while (reader.Name == "")
                             reader.Read();
@@ -334,15 +378,31 @@ namespace SNS.Data.DataSerializer.XmlExtensions
                         object value = reader.ReadElementContentAsObject();
                         if (setArray != null)
                         {
-                            setArray.SetValue(Convert.ChangeType(value, itemType), j);
+                            if (itemType.IsEnum)
+                            {
+                                setArray.SetValue(Enum.Parse(itemType, value.ToString()), j);
+
+                            }
+                            else
+                                setArray.SetValue(Convert.ChangeType(value, itemType), j);
                         }
                         else if (setDictionary != null)
                         {
-                            setDictionary.Add(currentKey, Convert.ChangeType(value, itemType));
+                            if (itemType.IsEnum)
+                            {
+                                setDictionary.Add(currentKey, Enum.Parse(itemType, value.ToString()));
+                            }
+                            else
+                                setDictionary.Add(currentKey, Convert.ChangeType(value, itemType));
                         }
                         else
                         {
-                            ((IList)setList).Add(Convert.ChangeType(value, itemType));
+                            if (itemType.IsEnum)
+                            {
+                                ((IList)setList).Add(Enum.Parse(itemType, value.ToString()));
+                            }
+                            else
+                                ((IList)setList).Add(Convert.ChangeType(value, itemType));
                         }
                     }
                     j++;
@@ -383,7 +443,7 @@ namespace SNS.Data.DataSerializer.XmlExtensions
                     return setList;
                 }
             }
-            
+
 
         }
     }

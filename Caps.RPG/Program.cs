@@ -14,6 +14,8 @@ namespace Caps.RPG
     {
         static void Main()
         {
+            string dummyXml;
+            bool t;
             //Combattant dummy = new Combattant(
             //    new Creature("Dummy", new AttributeSet()),
             //    "Blue",
@@ -23,29 +25,35 @@ namespace Caps.RPG
             //Combattant fromXml = Xml<Combattant>.LoadOneFromXml(dummyXml);
             //bool t = dummy == fromXml;
 
-            //Creature c = new("Dummy", new AttributeSet());
-            //string dummyXml = dummy.ToXml();
-            //Creature fromXml = Xml<Creature>.LoadOneFromXml(dummyXml);
-            //bool t = dummy == fromXml;
+            AttributeSet s = new AttributeSet();
+            dummyXml = s.ToXml();
+            AttributeSet fromXmlS = Xml<AttributeSet>.LoadOneFromXml(dummyXml);
+            t = s == fromXmlS;
 
-            //AttributeSet s = new AttributeSet();
-            //string dummyXml = s.ToXml();
-            //AttributeSet fromXml = Xml<AttributeSet>.LoadOneFromXml(dummyXml);
-            //bool t = s == fromXml;
+            TestCreature tc = new TestCreature("Dummy");
+            dummyXml = tc.ToXml();
+            TestCreature fromXmlTC = Xml<TestCreature>.LoadOneFromXml(dummyXml);
+            t = tc == fromXmlTC;
 
-            //Dungeon dungeon = new Dungeon("Test Dungeon", "description");
-            //Floor f1 = new Floor();
-            //Floor f2 = new Floor();
-            //Floor f3 = new Floor();
-            //Encounter e1 = new Encounter([new Combattant(new Creature("Slime", new AttributeSet()), "enemy", new Vector2D(0, 0))]);
-            //Encounter e2 = new Encounter([new Combattant(new Creature("Zombie", new AttributeSet()), "enemy", new Vector2D(0, 0))]);
-            //dungeon.AddEncounter(e1);
-            //f1.AddEncounter(e2);
-            //dungeon.AddFloors([f1, f2, f3]);
+            Creature c = new("Dummy", new AttributeSet());
+            dummyXml = c.ToXml();
+            Creature fromXmlC = Xml<Creature>.LoadOneFromXml(dummyXml);
+            t = c == fromXmlC;
+            int init = fromXmlC.InitiativeModifier;
 
-            //string xml = dungeon.ToXml();
-            //Dungeon loaded = Xml<Dungeon>.LoadOneFromXml(xml);
-            //bool test = dungeon == loaded;
+            Dungeon dungeon = new Dungeon("Test Dungeon", "description");
+            Floor f1 = new Floor();
+            Floor f2 = new Floor();
+            Floor f3 = new Floor();
+            Encounter e1 = new Encounter([new Combattant(new Creature("Slime", new AttributeSet()), "enemy", new Vector2D(0, 0))]);
+            Encounter e2 = new Encounter([new Combattant(new Creature("Zombie", new AttributeSet()), "enemy", new Vector2D(0, 0))]);
+            dungeon.AddEncounter(e1);
+            f1.AddEncounter(e2);
+            dungeon.AddFloors([f1, f2, f3]);
+
+            string xml = dungeon.ToXml();
+            Dungeon loaded = Xml<Dungeon>.LoadOneFromXml(xml);
+            bool test = dungeon == loaded;
 
             List<(string, Creature, Vector2D)> combattants = [];
             // blue team
