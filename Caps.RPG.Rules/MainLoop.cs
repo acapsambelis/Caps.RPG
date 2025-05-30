@@ -1,4 +1,5 @@
-﻿using Caps.RPG.Rules.Creatures;
+﻿using Caps.RPG.Rules.CombatMap;
+using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Helpers;
 
@@ -8,14 +9,24 @@ namespace Caps.RPG.Rules
     {
         public CombatState State;
 
-        public MainLoop(List<(string, Creature, Vector2D)> combattants)
+        public MainLoop(List<(string, Creature, Vector2D)> combattants, ref Map map)
         {
             State = new CombatState();
             foreach ((string, Creature, Vector2D) c in combattants)
             {
-                State.AddCombattant(c.Item1, c.Item2, c.Item3);
+                State.AddCombattant(c.Item1, c.Item2, c.Item3, ref map);
             }
 
+            State.BuildCombatOrder();
+        }
+
+        public MainLoop(List<Combattant> combattants)
+        {
+            State = new CombatState();
+            foreach (Combattant c in combattants)
+            {
+                State.AddCombattant(c);
+            }
             State.BuildCombatOrder();
         }
 
@@ -23,9 +34,9 @@ namespace Caps.RPG.Rules
             Action<Combattant[]> ScoreboardFunction,
             Func<Combattant[], Combattant[,]> MapFunction,
             Action<Combattant> CreatureDisplayFunction,
-            Func<Combattant, Vector2D> GetDestination,
+            Func<Combattant, double, Vector2D> GetDestination,
             Func<List<CombatAction>, CombatAction> GetAction,
-            Func<CombatState, Combattant, double, Creature> GetTarget
+            Func<CombatState, Combattant, double, Combattant> GetTarget
         )
         {
             int rounds = 0;
@@ -41,28 +52,27 @@ namespace Caps.RPG.Rules
                     Combattant[,] map = MapFunction(State.CombatOrder);
                     CreatureDisplayFunction(currentCreature);
 
-                    // movement
-                    Vector2D destination = new Vector2D(-Double.MaxValue, -Double.MaxValue);
-                    while (currentCreature.Position.Distance(destination) > currentCreature.Creature.MoveSpeed)
-                    {
-                        Vector2D tmp = GetDestination(currentCreature);
-
-                        if (map[tmp.IntX, tmp.IntY] != null && map[tmp.IntX, tmp.IntY] != currentCreature) continue;
-
-                        destination = tmp;
-                    }
-                    currentCreature.Move(destination);
-                    MapFunction(State.CombatOrder);
-
                     // action
-                    List<CombatAction> availableActions = currentCreature.Creature.GetCombatActions();
-                    CombatAction chosen = GetAction(availableActions);
-                    Creature? target = null;
-                    if (chosen.NeedsTarget)
+                    int actionsAvailable = 3;
+                    while (actionsAvailable > 0 && currentCreature.Creature.Status == Creature.HealthStatus.Alive)
                     {
-                        target = GetTarget(State, currentCreature, chosen.Distance);
+                        MapFunction(State.CombatOrder);
+
+                        List<CombatAction> availableActions = currentCreature.Creature.GetCombatActions();
+                        CombatAction chosen = GetAction(availableActions);
+                        Combattant? target = null;
+                        Vector2D? location = null;
+                        if (chosen.NeedsTarget)
+                        {
+                            target = GetTarget(State, currentCreature, chosen.Distance);
+                        }
+                        if (chosen.NeedsLocation)
+                        {
+                            location = GetDestination(currentCreature, chosen.Distance);
+                        }
+                        chosen.Execution(currentCreature, target, location);
+                        actionsAvailable -= chosen.Cost;
                     }
-                    chosen.Execution(currentCreature.Creature, target);
                 }
             }
         }

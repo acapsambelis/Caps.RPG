@@ -50,6 +50,12 @@ namespace Caps.RPG.Rules.Creatures
             get { return name; }
             set { name = value; }
         }
+
+        public int VisionRange
+        {
+            get { return 5; }
+        }
+
         public int MaxHealth
         {
             get { return maxHealth; }
@@ -90,7 +96,10 @@ namespace Caps.RPG.Rules.Creatures
             {
                 if (defenseClassChanged)
                 {
-                    this.defenseClass = Modifier.SumAll(this.modifiers[Modifier.TargetType.DefenseClass], this.Attributes);
+                    if (!modifiers.TryGetValue(Modifier.TargetType.DefenseClass, out List<Modifier>? value))
+                        this.defenseClass = 0;
+                    else
+                        this.defenseClass = Modifier.SumAll(value, this.Attributes);
                     this.defenseClassChanged = false;
                 }
                 return this.defenseClass;
@@ -102,7 +111,10 @@ namespace Caps.RPG.Rules.Creatures
             {
                 if (attackBonusChanged)
                 {
-                    this.attackBonus = Modifier.SumAll(this.modifiers[Modifier.TargetType.AttackBonus], this.Attributes);
+                    if (!modifiers.TryGetValue(Modifier.TargetType.AttackBonus, out List<Modifier>? value))
+                        this.attackBonus = 0;
+                    else
+                        this.attackBonus = Modifier.SumAll(value, this.Attributes);
                     this.attackBonusChanged = false;
                 }
                 return this.attackBonus;
@@ -110,10 +122,14 @@ namespace Caps.RPG.Rules.Creatures
         }
         public int InitiativeModifier
         {
-            get {
+            get
+            {
                 if (initiativeChanged)
                 {
-                    this.initiativeBonus = Modifier.SumAll(this.modifiers[Modifier.TargetType.Initiative], this.Attributes);
+                    if (!modifiers.TryGetValue(Modifier.TargetType.Initiative, out List<Modifier>? value))
+                        this.initiativeBonus = 0;
+                    else
+                        this.initiativeBonus = Modifier.SumAll(value, this.Attributes);
                     this.initiativeChanged = false;
                 }
                 return this.initiativeBonus + Attributes.InitiativeModifier();
@@ -125,7 +141,10 @@ namespace Caps.RPG.Rules.Creatures
             {
                 if (moveSpeedChanged)
                 {
-                    this.moveSpeed = Modifier.SumAll(this.modifiers[Modifier.TargetType.MovementSpeed], this.Attributes);
+                    if (!modifiers.TryGetValue(Modifier.TargetType.MovementSpeed, out List<Modifier>? value))
+                        this.moveSpeed = 0;
+                    else
+                        this.moveSpeed = Modifier.SumAll(value, this.Attributes);
                     this.moveSpeedChanged = false;
                 }
                 return this.moveSpeed + Attributes.MoveSpeed();

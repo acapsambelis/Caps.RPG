@@ -1,4 +1,5 @@
 ﻿using Caps.RPG.Rules.Creatures.Actions;
+using Caps.RPG.Rules.Helpers;
 
 namespace Caps.RPG.Rules.Creatures.Classed.Classes
 {
@@ -20,15 +21,15 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
 
         public readonly static Dictionary<int, CombatAction> actionDictionary = new Dictionary<int, CombatAction>()
         {
-            { 1, new CombatAction("Sneak Attack", "You deal damage to one target equal to 5 times your Rogue level.", 1, SneakAttack, true, 5) },
+            { 1, new CombatAction("Sneak Attack", "You deal damage to one target equal to 5 times your Rogue level.", 1, SneakAttack, true, false, 5) },
         };
 
-        public static ActionResult SneakAttack(Creature source, Creature? target = null)
+        public static ActionResult SneakAttack(Combattant source, Combattant? target = null, Vector2D? location = null)
         {
             if (target == null)
                 return new ActionResult();
 
-            ClassedCharacter? sourceClassed = source as ClassedCharacter;
+            ClassedCharacter? sourceClassed = source.Creature as ClassedCharacter;
             if (sourceClassed != null)
             {
                 target.Health -= sourceClassed.GetLevels(typeof(Rogue)) * 5;

@@ -6,7 +6,6 @@ namespace Caps.RPG.Engine.Modifiers
 {
     public class Modifier
     {
-
         public enum TargetType
         {
             None,

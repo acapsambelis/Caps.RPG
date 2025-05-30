@@ -1,5 +1,7 @@
 ﻿
 
+using Caps.RPG.Rules.Helpers;
+
 namespace Caps.RPG.Rules.Creatures.Actions
 {
     public class CombatAction
@@ -8,8 +10,9 @@ namespace Caps.RPG.Rules.Creatures.Actions
         private string name;
         private string description;
         private int cost;
-        private Func<Creature, Creature?, ActionResult> action;
+        private Func<Combattant, Combattant?, Vector2D?, ActionResult> action;
         private bool needsTarget;
+        private bool needsLocation;
         private double distance;
         #endregion
 
@@ -29,7 +32,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
             get { return cost; }
             set { cost = value; }
         }
-        public Func<Creature, Creature?, ActionResult> Execution
+        public Func<Combattant, Combattant?, Vector2D?, ActionResult> Execution
         {
             get { return action; }
             set { action = value; }
@@ -39,6 +42,11 @@ namespace Caps.RPG.Rules.Creatures.Actions
             get { return needsTarget; }
             set { needsTarget = value; }
         }
+        public bool NeedsLocation
+        {
+            get { return needsLocation; }
+            set { needsLocation = value; }
+        }
         public double Distance
         {
             get { return distance; }
@@ -47,13 +55,22 @@ namespace Caps.RPG.Rules.Creatures.Actions
         #endregion
 
         #region Constructors
-        public CombatAction(string name, string description, int cost, Func<Creature, Creature?, ActionResult> action, bool needsTarget, double distance)
+        public CombatAction(
+            string name,
+            string description,
+            int cost,
+            Func<Combattant, Combattant?, Vector2D?, ActionResult> action,
+            bool needsTarget,
+            bool needsLocation,
+            double distance
+        )
         {
             this.name = name;
             this.description = description;
             this.cost = cost;
             this.action = action;
             this.needsTarget = needsTarget;
+            this.needsLocation = needsLocation;
             this.distance = distance;
         }
         #endregion

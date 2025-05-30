@@ -1,4 +1,5 @@
 ﻿using Caps.RPG.Rules.Creatures.Actions;
+using Caps.RPG.Rules.Helpers;
 
 namespace Caps.RPG.Rules.Creatures.Classed.Classes
 {
@@ -20,15 +21,15 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
 
         public readonly static Dictionary<int, CombatAction> actionDictionary = new Dictionary<int, CombatAction>()
         {
-            { 1, new CombatAction("Smite", "You deal damage to one target equal to 5 times your Paladin level.", 1, Smite, true, 1) },
+            { 1, new CombatAction("Smite", "You deal damage to one target equal to 5 times your Paladin level.", 1, Smite, true, false, 1) },
         };
 
-        public static ActionResult Smite(Creature source, Creature? target = null)
+        public static ActionResult Smite(Combattant source, Combattant? target = null, Vector2D? location = null)
         {
             if (target == null)
                 return new ActionResult();
 
-            ClassedCharacter? sourceClassed = source as ClassedCharacter;
+            ClassedCharacter? sourceClassed = source.Creature as ClassedCharacter;
             if (sourceClassed != null)
             {
                 target.Health -= sourceClassed.GetLevels(typeof(Paladin)) * 5;
