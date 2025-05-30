@@ -1,4 +1,5 @@
 ﻿using Caps.RPG.Rules.Creatures.Actions;
+using Caps.RPG.Rules.Helpers;
 
 
 namespace Caps.RPG.Rules.Creatures.Classed.Classes
@@ -22,15 +23,15 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
 
         public readonly static Dictionary<int, CombatAction> actionDictionary = new Dictionary<int, CombatAction>()
         {
-            { 1, new CombatAction("Healing Word", "You heal one target for Health equal to 5 times your Cleric level.", 1, HealingWord, true, 5) },
+            { 1, new CombatAction("Healing Word", "You heal one target for Health equal to 5 times your Cleric level.", 1, HealingWord, true, false, 5) },
         };
 
-        public static ActionResult HealingWord(Creature source, Creature? target = null)
+        public static ActionResult HealingWord(Combattant source, Combattant? target = null, Vector2D? location = null)
         {
             if (target == null)
                 return new ActionResult();
 
-            ClassedCharacter? sourceClassed = source as ClassedCharacter;
+            ClassedCharacter? sourceClassed = source.Creature as ClassedCharacter;
             if (sourceClassed != null)
             {
                 target.Health += sourceClassed.GetLevels(typeof(Cleric)) * 5;

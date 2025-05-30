@@ -1,5 +1,7 @@
-﻿using SNS.Data.DataSerializer;
+using SNS.Data.DataSerializer;
 using System.Reflection;
+
+using Caps.RPG.Rules.Helpers;
 
 namespace Caps.RPG.Rules.Creatures.Actions
 {
@@ -10,8 +12,9 @@ namespace Caps.RPG.Rules.Creatures.Actions
         private string name;
         private string description;
         private int cost;
-        private Func<Creature, Creature?, ActionResult> action;
+        private Func<Combattant, Combattant?, Vector2D?, ActionResult> action;
         private bool needsTarget;
+        private bool needsLocation;
         private double distance;
         private bool _wasLoaded = false;
         #endregion
@@ -62,14 +65,14 @@ namespace Caps.RPG.Rules.Creatures.Actions
                             var method = type.GetMethod(parts[1], BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
                             if (method != null)
                             {
-                                Execution = (Func<Creature, Creature?, ActionResult>)Delegate.CreateDelegate(typeof(Func<Creature, Creature?, ActionResult>), method.IsStatic ? null : Activator.CreateInstance(type), method);
+                                Execution = (Func<Combattant, Combattant?, Vector2D?, ActionResult>)Delegate.CreateDelegate(typeof(Func<Combattant, Combattant?, Vector2D?, ActionResult>), method.IsStatic ? null : Activator.CreateInstance(type), method);
                             }
                         }
                     }
                 }
             }
         }
-        public Func<Creature, Creature?, ActionResult> Execution
+        public Func<Combattant, Combattant?, Vector2D?, ActionResult> Execution
         {
             get { return action; }
             set { action = value; }
@@ -79,6 +82,12 @@ namespace Caps.RPG.Rules.Creatures.Actions
         {
             get { return needsTarget; }
             set { needsTarget = value; }
+        }
+        [DataProperty("NeedsLocation")]
+        public bool NeedsLocation
+        {
+            get { return needsLocation; }
+            set { needsLocation = value; }
         }
         [DataProperty("Distance")]
         public double Distance
@@ -92,13 +101,23 @@ namespace Caps.RPG.Rules.Creatures.Actions
 
         #region Constructors
         public CombatAction() { }
-        public CombatAction(string name, string description, int cost, Func<Creature, Creature?, ActionResult> action, bool needsTarget, double distance)
+        
+        public CombatAction(
+            string name,
+            string description,
+            int cost,
+            Func<Combattant, Combattant?, Vector2D?, ActionResult> action,
+            bool needsTarget,
+            bool needsLocation,
+            double distance
+        )
         {
             this.name = name;
             this.description = description;
             this.cost = cost;
             this.action = action;
             this.needsTarget = needsTarget;
+            this.needsLocation = needsLocation;
             this.distance = distance;
         }
         #endregion

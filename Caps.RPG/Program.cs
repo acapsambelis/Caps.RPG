@@ -7,6 +7,7 @@ using Caps.RPG.Rules.Helpers;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Dungeon;
 using SNS.Data.DataSerializer.XmlExtensions;
+using Caps.RPG.Rules.CombatMap;
 
 namespace Caps.RPG
 {
@@ -14,35 +15,9 @@ namespace Caps.RPG
     {
         static void Main()
         {
-            string dummyXml;
-            bool t;
-
-            AttributeSet s = new AttributeSet();
-            dummyXml = s.ToXml();
-            AttributeSet fromXmlS = Xml<AttributeSet>.LoadOneFromXml(dummyXml);
-            t = s == fromXmlS;
-
-            Creature c = new("Dummy", new AttributeSet());
-            dummyXml = c.ToXml();
-            Creature fromXmlC = Xml<Creature>.LoadOneFromXml(dummyXml);
-            t = c == fromXmlC;
-            //int init = fromXmlC.InitiativeModifier;
-
-            Dungeon dungeon = new Dungeon("Test Dungeon", "description");
-            Floor f1 = new Floor();
-            Floor f2 = new Floor();
-            Floor f3 = new Floor();
-            Encounter e1 = new Encounter([new Combattant(new Creature("Slime", new AttributeSet()), "enemy", new Vector2D(0, 0))]);
-            Encounter e2 = new Encounter([new Combattant(new Creature("Zombie", new AttributeSet()), "enemy", new Vector2D(0, 0))]);
-            dungeon.AddEncounter(e1);
-            f1.AddEncounter(e2);
-            dungeon.AddFloors([f1, f2, f3]);
-
-            string xml = dungeon.ToXml();
-            Dungeon loaded = Xml<Dungeon>.LoadOneFromXml(xml);
-            bool test = dungeon == loaded;
-
-            List<(string, Creature, Vector2D)> combattants = [];
+            Map map = new Map(21, 21);
+            List<Combattant> combattants = [];
+            
             // blue team
 
             ClassedCharacter blueDexFighter = new ClassedCharacter(
@@ -51,7 +26,7 @@ namespace Caps.RPG
                 new Dictionary<Type, int> { { typeof(Fighter), 2 } }
             );
             blueDexFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
-            combattants.Add(("Blue", blueDexFighter, new Vector2D(1,3)));
+            combattants.Add(new Combattant(blueDexFighter, "Blue", new Vector2D(1,3), ref map));
 
             ClassedCharacter blueStrFighter = new ClassedCharacter(
                 "Str F",
@@ -59,16 +34,17 @@ namespace Caps.RPG
                 new Dictionary<Type, int> { { typeof(Fighter), 1 } }
             );
             blueStrFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
-            combattants.Add(("Blue", blueStrFighter, new Vector2D(1,4)));
+            combattants.Add(new Combattant(blueStrFighter, "Blue", new Vector2D(1,4), ref map));
 
-            combattants.Add(
-                ("Blue",
+            combattants.Add(new Combattant(
                 new ClassedCharacter(
                     "Cleric",
                     new AttributeSet(0, 0, 2, 0, 3, 4, 1, 0),
                     new Dictionary<Type, int> { { typeof(Cleric), 1 } }
                 ),
-                new Vector2D(1,5)
+                "Blue",
+                new Vector2D(1,5),
+                ref map
             ));
 
             // red team
@@ -79,7 +55,7 @@ namespace Caps.RPG
                 new Dictionary<Type, int> { { typeof(Fighter), 2 } }
             );
             redDexFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
-            combattants.Add(("Red", redDexFighter, new Vector2D(8,3) ));
+            combattants.Add(new Combattant(redDexFighter, "Red", new Vector2D(8,3), ref map));
 
             ClassedCharacter redStrFighter = new ClassedCharacter(
                 "Str F",
@@ -87,16 +63,17 @@ namespace Caps.RPG
                 new Dictionary<Type, int> { { typeof(Fighter), 1 } }
             );
             redStrFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
-            combattants.Add(("Red", redStrFighter, new Vector2D(8,4)));
+            combattants.Add(new Combattant(redStrFighter, "Red", new Vector2D(8,4), ref map));
 
-            combattants.Add(
-                ("Red",
+            combattants.Add(new Combattant(
                 new ClassedCharacter(
                     "Cleric",
                     new AttributeSet(0, 0, 2, 0, 3, 4, 1, 0),
                     new Dictionary<Type, int> { { typeof(Cleric), 1 } }
                 ),
-                new Vector2D(8,5)
+                "Red",
+                new Vector2D(8,5),
+                ref map
             ));
 
             MainLoop mainLoop = new MainLoop(combattants);
@@ -179,15 +156,21 @@ namespace Caps.RPG
             Console.WriteLine("=== " + currentCreature.Creature.Health + "/" + currentCreature.Creature.MaxHealth + " ===");
         }
 
-        public static Vector2D GetDestination(Combattant currentCreature)
+        public static Vector2D GetDestination(Combattant currentCreature, double range = double.MaxValue)
         {
-            Console.WriteLine("Your speed is " + currentCreature.Creature.MoveSpeed + ".");
-            Console.WriteLine("Choose a valid location.");
-            Console.WriteLine("X Destination:");
-            int x = GetTextInput();
-            Console.WriteLine("Y Destination:");
-            int y = GetTextInput();
-            return new Vector2D(x, y);
+            Vector2D destination;
+            do
+            {
+                Console.WriteLine("Your range is " + currentCreature.Creature.MoveSpeed + ".");
+                Console.WriteLine("Choose a valid location.");
+                Console.WriteLine("X Destination:");
+                int x = GetTextInput();
+                Console.WriteLine("Y Destination:");
+                int y = GetTextInput();
+
+                destination = new Vector2D(x, y);
+            } while (currentCreature.Position.Distance(destination) > range && range != -1);
+            return destination;
         }
 
         public static CombatAction GetAction(List<CombatAction> combatActions)
@@ -202,7 +185,7 @@ namespace Caps.RPG
             return combatActions[chosenActionIndex];
         }
 
-        public static Creature GetTarget(CombatState state, Combattant currentCreature, double distance)
+        public static Combattant GetTarget(CombatState state, Combattant currentCreature, double distance)
         {
             Console.WriteLine("Choose a target:");
             Combattant[] nearbyCombattants = state.GetNeighbors(currentCreature.Position, distance);
@@ -216,7 +199,7 @@ namespace Caps.RPG
             }
             int chosenTargetIndex = GetTextInput();
 
-            return nearbyCombattants[chosenTargetIndex].Creature;
+            return nearbyCombattants[chosenTargetIndex];
         }
     }
 }

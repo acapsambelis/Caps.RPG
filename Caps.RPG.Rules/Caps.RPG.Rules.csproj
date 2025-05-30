@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Creatures\Classless\" />
+    <Compile Remove="Creatures\Classless\**" />
+    <EmbeddedResource Remove="Creatures\Classless\**" />
+    <None Remove="Creatures\Classless\**" />
   </ItemGroup>
 
   <ItemGroup>
