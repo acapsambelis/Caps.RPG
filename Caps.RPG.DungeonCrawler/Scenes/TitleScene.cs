@@ -1,11 +1,8 @@
 ﻿using System;
 using Caps.RPG.MonoGame;
 using Caps.RPG.MonoGame.Graphics;
-using Caps.RPG.MonoGame.Scenes;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using MonoGameGum;
 using MonoGameGum.GueDeriving;
 using MonoGameGum.Forms.Controls;
@@ -13,31 +10,21 @@ using Caps.RPG.DungeonCrawler.UI;
 
 namespace Caps.RPG.DungeonCrawler.Scenes
 {
-    public class TitleScene : Scene
+    public class TitleScene : BaseScene
     {
-        private const string DUNGEON_TEXT = "Dungeon";
-        private const string SLIME_TEXT = "Crawler";
-        private const string BYLINE_TEXT = "a game by Alex Capsambelis";
-
-        // The font to use to render normal text.
-        private SpriteFont _font;
-
-        // The font used to render the title text.
-        private SpriteFont _font5x;
-
-        // dungeon text data
+        private const string FIRST_LINE_TEXT = "Dungeon";
         private Vector2 _dungeonTextPos;
         private Vector2 _dungeonTextOrigin;
-
-        // Slime text data
+        private const string SECOND_LINE_TEXT = "Crawler";
         private Vector2 _slimeTextPos;
         private Vector2 _slimeTextOrigin;
-
-        // Byline text data
+        private const string BYLINE_TEXT = "a game by Alex Capsambelis";
         private Vector2 _bylineTextPos;
         private Vector2 _bylineTextOrigin;
 
-        private SoundEffect _uiSoundEffect;
+        // The font used to render the title text.
+        private SpriteFont _titleFont;
+
         private Panel _titleScreenButtonsPanel;
         private Panel _optionsPanel;
 
@@ -61,17 +48,17 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             Core.ExitOnEscape = true;
 
             // Set the position and origin for the Dungeon text.
-            Vector2 size = _font5x.MeasureString(DUNGEON_TEXT);
+            Vector2 size = _titleFont.MeasureString(FIRST_LINE_TEXT);
             _dungeonTextPos = new Vector2(640, 200);
             _dungeonTextOrigin = size * 0.5f;
 
             // Set the position and origin for the Slime text.
-            size = _font5x.MeasureString(SLIME_TEXT);
+            size = _titleFont.MeasureString(SECOND_LINE_TEXT);
             _slimeTextPos = new Vector2(640, 307);
             _slimeTextOrigin = size * 0.5f;
 
             // Set the position and origin for the by line text.
-            size = _font.MeasureString(BYLINE_TEXT);
+            size = Font.MeasureString(BYLINE_TEXT);
             _bylineTextPos = new Vector2(640, 414);
             _bylineTextOrigin = size * 0.5f;
 
@@ -80,26 +67,16 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
         private void InitializeUI()
         {
-            // Clear out any previous UI in case we came here from
-            // a different screen:
-            GumService.Default.Root.Children.Clear();
-
             CreateTitlePanel();
             CreateOptionsPanel();
         }
 
         public override void LoadContent()
         {
-            // Load the font for the standard text.
-            _font = Core.Content.Load<SpriteFont>("fonts/alagard_standard");
+            base.LoadContent();
 
             // Load the font for the title text
-            _font5x = Content.Load<SpriteFont>("fonts/alagard_large");
-
-            // Load the sound effect to play when ui actions occur.
-            _uiSoundEffect = Core.Content.Load<SoundEffect>("audio/ui");
-            RustButton._uiHoverChange = Core.Content.Load<SoundEffect>("audio/ui_hover_change");
-            BlueButton._uiHoverChange = Core.Content.Load<SoundEffect>("audio/ui_hover_change");
+            _titleFont = Content.Load<SpriteFont>("fonts/alagard_large");
 
             // Load the texture atlas from the xml configuration file.
             _atlas = TextureAtlas.FromFile(Core.Content, "images/atlas-definition.xml");
@@ -112,11 +89,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
         public override void Draw(GameTime gameTime)
         {
-            Core.GraphicsDevice.Clear(new Color(196, 196, 196, 255));
-
-            // Draw the background pattern first using the PointWrap sampler state.
-            Core.SpriteBatch.Begin(samplerState: SamplerState.PointWrap);
-            Core.SpriteBatch.End();
+            base.Draw(gameTime);
 
             if (_titleScreenButtonsPanel.IsVisible)
             {
@@ -127,15 +100,15 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 Color dropShadowColor = Color.Black * 0.5f;
 
                 // Draw the Dungeon text
-                Core.SpriteBatch.DrawString(_font5x, DUNGEON_TEXT, _dungeonTextPos + new Vector2(10, 10), dropShadowColor, 0.0f, _dungeonTextOrigin, 1.0f, SpriteEffects.None, 1.0f); // shadow
-                Core.SpriteBatch.DrawString(_font5x, DUNGEON_TEXT, _dungeonTextPos, Color.White, 0.0f, _dungeonTextOrigin, 1.0f, SpriteEffects.None, 1.0f);
+                Core.SpriteBatch.DrawString(_titleFont, FIRST_LINE_TEXT, _dungeonTextPos + new Vector2(10, 10), dropShadowColor, 0.0f, _dungeonTextOrigin, 1.0f, SpriteEffects.None, 1.0f); // shadow
+                Core.SpriteBatch.DrawString(_titleFont, FIRST_LINE_TEXT, _dungeonTextPos, Color.White, 0.0f, _dungeonTextOrigin, 1.0f, SpriteEffects.None, 1.0f);
 
                 // Draw the Slime text
-                Core.SpriteBatch.DrawString(_font5x, SLIME_TEXT, _slimeTextPos + new Vector2(10, 10), dropShadowColor, 0.0f, _slimeTextOrigin, 1.0f, SpriteEffects.None, 1.0f); // shadow
-                Core.SpriteBatch.DrawString(_font5x, SLIME_TEXT, _slimeTextPos, Color.White, 0.0f, _slimeTextOrigin, 1.0f, SpriteEffects.None, 1.0f);
+                Core.SpriteBatch.DrawString(_titleFont, SECOND_LINE_TEXT, _slimeTextPos + new Vector2(10, 10), dropShadowColor, 0.0f, _slimeTextOrigin, 1.0f, SpriteEffects.None, 1.0f); // shadow
+                Core.SpriteBatch.DrawString(_titleFont, SECOND_LINE_TEXT, _slimeTextPos, Color.White, 0.0f, _slimeTextOrigin, 1.0f, SpriteEffects.None, 1.0f);
 
                 // Draw the byline text
-                Core.SpriteBatch.DrawString(_font, BYLINE_TEXT, _bylineTextPos, Color.White, 0.0f, _bylineTextOrigin, 1.0f, SpriteEffects.None, 1.0f);
+                Core.SpriteBatch.DrawString(Font, BYLINE_TEXT, _bylineTextPos, Color.White, 0.0f, _bylineTextOrigin, 1.0f, SpriteEffects.None, 1.0f);
 
                 // Always end the sprite batch when finished.
                 Core.SpriteBatch.End();
@@ -173,18 +146,12 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
         private void HandleStartClicked(object sender, EventArgs e)
         {
-            // A UI interaction occurred, play the sound effect
-            Core.Audio.PlaySoundEffect(_uiSoundEffect);
-
             // Change to the game scene to start the game.
-            Core.ChangeScene(new PartyCreation());
+            Core.ChangeScene(new LoadDungeonScene());
         }
 
         private void HandleOptionsClicked(object sender, EventArgs e)
         {
-            // A UI interaction occurred, play the sound effect
-            Core.Audio.PlaySoundEffect(_uiSoundEffect);
-
             // Set the title panel to be invisible.
             _titleScreenButtonsPanel.IsVisible = false;
 
@@ -265,7 +232,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         private void HandleSfxSliderChangeCompleted(object sender, EventArgs e)
         {
             // Play the UI Sound effect so the player can hear the difference in audio.
-            Core.Audio.PlaySoundEffect(_uiSoundEffect);
+            Core.Audio.PlaySoundEffect(Click);
         }
 
         private void HandleMusicSliderValueChanged(object sender, EventArgs args)
@@ -284,14 +251,11 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         private void HandleMusicSliderValueChangeCompleted(object sender, EventArgs args)
         {
             // A UI interaction occurred, play the sound effect
-            Core.Audio.PlaySoundEffect(_uiSoundEffect);
+            Core.Audio.PlaySoundEffect(Click);
         }
 
         private void HandleOptionsButtonBack(object sender, EventArgs e)
         {
-            // A UI interaction occurred, play the sound effect
-            Core.Audio.PlaySoundEffect(_uiSoundEffect);
-
             // Set the title panel to be visible.
             _titleScreenButtonsPanel.IsVisible = true;
 

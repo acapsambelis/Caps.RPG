@@ -1,8 +1,6 @@
-﻿using Caps.RPG.MonoGame.Scenes;
-
-namespace Caps.RPG.DungeonCrawler.Scenes
+﻿namespace Caps.RPG.DungeonCrawler.Scenes
 {
-    public class PartyCreation : Scene
+    public class PartyCreation : BaseScene
     {
 
     }

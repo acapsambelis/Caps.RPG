@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.ConstrainedExecution;
 using Caps.RPG.MonoGame.Graphics;
 using Gum.DataTypes;
 using Gum.DataTypes.Variables;
@@ -13,7 +12,8 @@ namespace Caps.RPG.DungeonCrawler.UI
 {
     public class RustButton : Button
     {
-        public static SoundEffect _uiHoverChange;
+        private static SoundEffect _uiHoverChange;
+        private static SoundEffect _clickEffect;
 
         /// <summary>
         /// Creates a new AnimatedButton instance using graphics from the specified texture atlas.
@@ -136,8 +136,20 @@ namespace Caps.RPG.DungeonCrawler.UI
             topLevelContainer.RollOn += HandleRollOn;
             topLevelContainer.RollOff += HandleRollOff;
 
+            topLevelContainer.Click += ClickEffect;
+
             // Assign the configured container as this button's visual
             Visual = topLevelContainer;
+        }
+
+        public static void SetHoverSound(SoundEffect hoverSound)
+        {
+            _uiHoverChange = hoverSound;
+        }
+
+        public static void SetClickSound(SoundEffect clickSound)
+        {
+            _clickEffect = clickSound;
         }
 
         /// <summary>
@@ -155,6 +167,11 @@ namespace Caps.RPG.DungeonCrawler.UI
         private void HandleRollOff(object sender, EventArgs e)
         {
             IsFocused = false;
+        }
+
+        private void ClickEffect(object sender, EventArgs e)
+        {
+            _clickEffect?.Play();
         }
     }
 }
