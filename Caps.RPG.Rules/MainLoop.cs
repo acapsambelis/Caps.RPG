@@ -1,5 +1,4 @@
-﻿using Caps.RPG.Rules.CombatMap;
-using Caps.RPG.Rules.Creatures;
+﻿using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Helpers;
 
@@ -9,12 +8,12 @@ namespace Caps.RPG.Rules
     {
         public CombatState State;
 
-        public MainLoop(List<(string, Creature, Vector2D)> combattants, ref Map map)
+        public MainLoop(List<(string, Creature, Vector2D)> combattants)
         {
             State = new CombatState();
             foreach ((string, Creature, Vector2D) c in combattants)
             {
-                State.AddCombattant(c.Item1, c.Item2, c.Item3, ref map);
+                State.AddCombattant(c.Item1, c.Item2, c.Item3);
             }
 
             State.BuildCombatOrder();

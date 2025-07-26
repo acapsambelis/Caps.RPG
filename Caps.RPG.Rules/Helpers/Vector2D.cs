@@ -1,4 +1,5 @@
 ﻿using SNS.Data.DataSerializer;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Caps.RPG.Rules.Helpers
 {
@@ -10,10 +11,15 @@ namespace Caps.RPG.Rules.Helpers
         [DataProperty("Y")]
         public double y { get; set; }
 
+        private bool useIntegerEquality = true;
+        [DataProperty("UseIntegerEquality")]
+        public bool UseIntegerEquality { get { return useIntegerEquality; } set { useIntegerEquality = value; } }
+
         private bool _wasLoaded = false;
         public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
 
         public Vector2D() { }
+        public Vector2D(bool useIntegerEquality) { this.useIntegerEquality = useIntegerEquality; }
         public Vector2D(double x, double y)
         {
             this.x = x; this.y = y;
@@ -33,14 +39,58 @@ namespace Caps.RPG.Rules.Helpers
             return new Vector2D(a.x - b.x, a.y - b.y);
         }
 
-        public static Vector2D operator *(Vector2D a, double scalar)
-        {
-            return new Vector2D(a.x * scalar, a.y * scalar);
-        }
+        // Multiplication with double
+        public static Vector2D operator *(Vector2D a, double scalar) => new Vector2D(a.x * scalar, a.y * scalar);
+        public static Vector2D operator *(double scalar, Vector2D a) => a * scalar;
+
+        // Multiplication with float
+        public static Vector2D operator *(Vector2D a, float scalar) => a * (double)scalar;
+        public static Vector2D operator *(float scalar, Vector2D a) => a * (double)scalar;
+
+        // Multiplication with int
+        public static Vector2D operator *(Vector2D a, int scalar) => a * (double)scalar;
+        public static Vector2D operator *(int scalar, Vector2D a) => a * (double)scalar;
 
         public static Vector2D operator +(Vector2D a, Vector2D b)
         {
             return new Vector2D(a.x + b.x, a.y + b.y);
+        }
+
+        public static bool operator ==(Vector2D a, Vector2D b)
+        {
+            if (a is null && b is null) return true;
+            if (a is null || b is null) return false;
+            if (a.useIntegerEquality && b.useIntegerEquality)
+            {
+                return a.IntX == b.IntX && a.IntY == b.IntY;
+            }
+            else
+            {
+                return a.x == b.x && a.y == b.y;
+            }
+        }
+
+        public static bool operator !=(Vector2D a, Vector2D b)
+        {
+            return !(a == b);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is Vector2D other)
+            {
+                return this == other;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            if (useIntegerEquality)
+            {
+                return HashCode.Combine(IntX, IntY, useIntegerEquality);
+            }
+            return HashCode.Combine(x, y, useIntegerEquality);
         }
 
         // convert to unit vector
@@ -57,21 +107,11 @@ namespace Caps.RPG.Rules.Helpers
             return Math.Sqrt(xDif * xDif + yDif * yDif);
         }
 
-        public double TileDistance(Vector2D other)
-        {
-            return Math.Abs(this.IntX - other.IntX) + Math.Abs(this.IntY - other.IntY);
-        }
-
         public static double Distance(Vector2D one, Vector2D two)
         {
             var xDif = one.x - two.x;
             var yDif = one.y - two.y;
             return Math.Sqrt(xDif * xDif + yDif * yDif);
-        }
-
-        public static double TileDistance(Vector2D one, Vector2D two)
-        {
-            return Math.Abs(one.IntX - two.IntX) + Math.Abs(one.IntY - two.IntY);
         }
     }
 }

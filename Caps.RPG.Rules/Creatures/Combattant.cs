@@ -1,5 +1,4 @@
 using Caps.RPG.Rules.Modifiers;
-using Caps.RPG.Rules.CombatMap;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Helpers;
 using SNS.Data.DataSerializer;
@@ -14,8 +13,8 @@ namespace Caps.RPG.Rules.Creatures
         private string _team;
         private Vector2D position;
         public readonly char ShortName;
-        public MapTile[,] fieldOfView;
-        public Map fullMap;
+        //public MapTile[,] fieldOfView;
+        //public Map fullMap;
         private bool _wasLoaded = false;
 
         [SubDataObject("Creature")]
@@ -28,12 +27,12 @@ namespace Caps.RPG.Rules.Creatures
             get { return position; }
             set
             {
-                if (position != null)
-                {
-                    fieldOfView[position.IntX, position.IntY].RemoveContent(this);
-                    fieldOfView[value.IntX, value.IntY].AddContent(this);
-                    fieldOfView = fullMap.GetVisionRange(Position, Creature.VisionRange);
-                }
+                //if (position != null)
+                //{
+                //    fieldOfView[position.IntX, position.IntY].RemoveContent(this);
+                //    fieldOfView[value.IntX, value.IntY].AddContent(this);
+                //    fieldOfView = fullMap.GetVisionRange(Position, Creature.VisionRange);
+                //}
                 position = value;
             }
         }
@@ -53,14 +52,13 @@ namespace Caps.RPG.Rules.Creatures
 
         public Combattant() { }
         
-        public Combattant(Creature creature, string team, Vector2D position, ref Map fullMap)
+        public Combattant(Creature creature, string team, Vector2D position)
         {
             Creature = creature;
             Team = team;
             Position = position;
             
             ShortName = creature.Name[0];
-            this.fullMap = fullMap;
         }
 
         public List<CombatAction> GetCombatActions()
@@ -134,29 +132,31 @@ namespace Caps.RPG.Rules.Creatures
 
         public static ActionResult Move(Combattant source, Combattant? target = null, Vector2D? location = null)
         {
-            if (location != null)
-            {
-                // Use the pathfinding algorithm to calculate the path
-                List<Vector2D> path = Pathfinding.Search(source.Position, location, source.fullMap);
+            //if (location != null)
+            //{
+            //    // Use the pathfinding algorithm to calculate the path
+            //    List<Vector2D> path = Pathfinding.Search(source.Position, location, source.fullMap);
 
-                if (path == null || path.Count == 0)
-                {
-                    return new ActionResult(source.Name + " could not find a path to the destination.");
-                }
+            //    if (path == null || path.Count == 0)
+            //    {
+            //        return new ActionResult(source.Name + " could not find a path to the destination.");
+            //    }
 
-                int remainingMovement = source.Creature.MoveSpeed;
+            //    int remainingMovement = source.Creature.MoveSpeed;
 
-                // Follow the path step by step
-                foreach (var step in path)
-                {
-                    if (remainingMovement <= 0)
-                        break;
+            //    // Follow the path step by step
+            //    foreach (var step in path)
+            //    {
+            //        if (remainingMovement <= 0)
+            //            break;
 
-                    // Move to the next step in the path
-                    source.Position = step;
-                    remainingMovement--;
-                }
-            }
+            //        // Move to the next step in the path
+            //        source.Position = step;
+            //        remainingMovement--;
+            //    }
+            //}
+
+            source.Position = location ?? source.Position; // If no location is provided, stay in the same position
 
             return new ActionResult(source.Name + " moved to " + source.Position.ToString());
         }

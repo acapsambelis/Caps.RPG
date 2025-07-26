@@ -1,5 +1,4 @@
-﻿using Caps.RPG.Rules.CombatMap;
-using Caps.RPG.Rules.Creatures;
+﻿using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Helpers;
 
 namespace Caps.RPG.Rules
@@ -14,9 +13,9 @@ namespace Caps.RPG.Rules
             CombatOrder = [];
         }
 
-        public void AddCombattant(string team, Creature creature, Vector2D position, ref Map map)
+        public void AddCombattant(string team, Creature creature, Vector2D position)
         {
-            AddCombattant(new Combattant(creature, team, position, ref map));
+            AddCombattant(new Combattant(creature, team, position));
         }
         public void AddCombattant(Combattant combattant)
         {
