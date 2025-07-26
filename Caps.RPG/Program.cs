@@ -5,9 +5,7 @@ using Caps.RPG.Rules.Creatures.Classed;
 using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Helpers;
 using Caps.RPG.Rules.Creatures.Actions;
-using Caps.RPG.Rules.Dungeon;
-using SNS.Data.DataSerializer.XmlExtensions;
-using Caps.RPG.Rules.CombatMap;
+using Caps.RPG.Rules.Maps;
 
 namespace Caps.RPG
 {
@@ -15,7 +13,14 @@ namespace Caps.RPG
     {
         static void Main()
         {
-            Map map = new Map(21, 21);
+            TileMap hexMap = HexMap.GenerateRandom(0, 3);
+            hexMap.PrintToConsole();
+            Console.WriteLine("_____________________________________");
+            var start = hexMap.RandomTile();
+            var target = hexMap.RandomTile();
+            var path = Pathfinding.FindPath(start, target);
+            hexMap.PrintWithPath(path);
+
             List<Combattant> combattants = [];
             
             // blue team
@@ -26,7 +31,7 @@ namespace Caps.RPG
                 new Dictionary<Type, int> { { typeof(Fighter), 2 } }
             );
             blueDexFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
-            combattants.Add(new Combattant(blueDexFighter, "Blue", new Vector2D(1,3), ref map));
+            combattants.Add(new Combattant(blueDexFighter, "Blue", new Vector2D(1,3)));
 
             ClassedCharacter blueStrFighter = new ClassedCharacter(
                 "Str F",
@@ -34,7 +39,7 @@ namespace Caps.RPG
                 new Dictionary<Type, int> { { typeof(Fighter), 1 } }
             );
             blueStrFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
-            combattants.Add(new Combattant(blueStrFighter, "Blue", new Vector2D(1,4), ref map));
+            combattants.Add(new Combattant(blueStrFighter, "Blue", new Vector2D(1,4)));
 
             combattants.Add(new Combattant(
                 new ClassedCharacter(
@@ -43,8 +48,7 @@ namespace Caps.RPG
                     new Dictionary<Type, int> { { typeof(Cleric), 1 } }
                 ),
                 "Blue",
-                new Vector2D(1,5),
-                ref map
+                new Vector2D(1,5)
             ));
 
             // red team
@@ -55,7 +59,7 @@ namespace Caps.RPG
                 new Dictionary<Type, int> { { typeof(Fighter), 2 } }
             );
             redDexFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
-            combattants.Add(new Combattant(redDexFighter, "Red", new Vector2D(8,3), ref map));
+            combattants.Add(new Combattant(redDexFighter, "Red", new Vector2D(8,3)));
 
             ClassedCharacter redStrFighter = new ClassedCharacter(
                 "Str F",
@@ -63,7 +67,7 @@ namespace Caps.RPG
                 new Dictionary<Type, int> { { typeof(Fighter), 1 } }
             );
             redStrFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
-            combattants.Add(new Combattant(redStrFighter, "Red", new Vector2D(8,4), ref map));
+            combattants.Add(new Combattant(redStrFighter, "Red", new Vector2D(8,4)));
 
             combattants.Add(new Combattant(
                 new ClassedCharacter(
@@ -72,8 +76,7 @@ namespace Caps.RPG
                     new Dictionary<Type, int> { { typeof(Cleric), 1 } }
                 ),
                 "Red",
-                new Vector2D(8,5),
-                ref map
+                new Vector2D(8,5)
             ));
 
             MainLoop mainLoop = new MainLoop(combattants);
