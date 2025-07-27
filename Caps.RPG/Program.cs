@@ -16,10 +16,13 @@ namespace Caps.RPG
             TileMap hexMap = HexMap.GenerateRandom(0, 3);
             hexMap.PrintToConsole();
             Console.WriteLine("_____________________________________");
-            var start = hexMap.RandomTile();
-            var target = hexMap.RandomTile();
+            var start = hexMap.RandomTile(walkable: true);
+            var target = hexMap.RandomTile(walkable: true);
             var path = Pathfinding.FindPath(start, target);
             hexMap.PrintWithPath(path);
+            Console.WriteLine("_____________________________________");
+            var explosionSource = hexMap.RandomTile();
+            hexMap.PrintWithNodesInRange(explosionSource, 3);
 
             List<Combattant> combattants = [];
             

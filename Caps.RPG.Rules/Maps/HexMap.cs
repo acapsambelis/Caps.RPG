@@ -8,17 +8,16 @@ namespace Caps.RPG.Rules.Maps
 {
     public class HexMap : TileMap
     {
-        private static readonly int _gridWidth = 16;
-        private static readonly int _gridDepth = 9;
+        public HexMap() : base(gridWidth: 16, gridDepth: 9) { }
 
         public static HexMap GenerateRandom(int seed, int obstacleWeight)
         {
             var map = new HexMap();
             var random = new Random(seed);
-            for (var r = 0; r < _gridDepth; r++)
+            for (var r = 0; r < map._gridDepth; r++)
             {
                 var rOffset = r >> 1;
-                for (var q = -rOffset; q < _gridWidth -rOffset; q++)
+                for (var q = -rOffset; q < map._gridWidth -rOffset; q++)
                 {
                     var tile = new HexTile(random.Next(1, 20) > obstacleWeight, new HexCoords(q, r));
                     map.Tiles.Add(tile.Coords.Pos, tile);
@@ -29,62 +28,10 @@ namespace Caps.RPG.Rules.Maps
 
             return map;
         }
-        public override void PrintToConsole()
-        {
-            for (int r = 0; r < _gridDepth; r++)
-            {
-                // Indent every other row for hex alignment
-                Console.Write(new string(' ', r % 2 == 0 ? 0 : 2));
-                int rOffset = r >> 1;
-                for (int q = -rOffset; q < _gridWidth - rOffset; q++)
-                {
-                    var coords = new HexCoords(q, r);
-                    if (Tiles.TryGetValue(coords.Pos, out var node))
-                    {
-                        // Print walkable as '.' and obstacle as '#'
-                        Console.Write(node.Walkable ? ". " : "# ");
-                    }
-                    else
-                    {
-                        Console.Write("  ");
-                    }
-                }
-                Console.WriteLine();
-            }
-        }
 
-        public override void PrintWithPath(List<NodeBase> path)
+        protected override string GetOffset(int rowNumber)
         {
-            for (int r = 0; r < _gridDepth; r++)
-            {
-                // Indent every other row for hex alignment
-                Console.Write(new string(' ', r % 2 == 0 ? 0 : 2));
-                int rOffset = r >> 1;
-                for (int q = -rOffset; q < _gridWidth - rOffset; q++)
-                {
-                    var coords = new HexCoords(q, r);
-                    if (Tiles.TryGetValue(coords.Pos, out var node))
-                    {
-                        if (path.Contains(node))
-                        {
-                            // Print path nodes as '*'
-                            Console.ForegroundColor = ConsoleColor.Blue;
-                            Console.Write("* ");
-                            Console.ForegroundColor = ConsoleColor.White;
-                        }
-                        else
-                        {
-                            // Print walkable as '.' and obstacle as '#'
-                            Console.Write(node.Walkable ? ". " : "# ");
-                        }
-                    }
-                    else
-                    {
-                        Console.Write("  ");
-                    }
-                }
-                Console.WriteLine();
-            }
+            return new string(' ', rowNumber % 2 == 0 ? 0 : 2);
         }
     }
 }
