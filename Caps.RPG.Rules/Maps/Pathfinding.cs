@@ -37,7 +37,7 @@ namespace Caps.RPG.Rules.Maps
                         path.Add(currentrPathTile);
                         currentrPathTile = currentrPathTile.Connection;
                     }
-
+                    path.Add(startNode);
                     return path;
                 }
 

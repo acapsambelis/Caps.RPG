@@ -1,6 +1,7 @@
 ﻿using Caps.RPG.Rules.Helpers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -21,7 +22,7 @@ namespace Caps.RPG.Rules.Maps
 
         public override void CacheNeighbors(TileMap map)
         {
-            Neighbors = map.Tiles.Where(t => Coords.GetDistance(t.Value.Coords) == 1).Select(t => t.Value).ToList();
+            Neighbors = map.Tiles.Where(t => t.Value != null && Coords.GetDistance(t.Value.Coords) == 1).Select(t => t.Value).ToList();
         }
 
         public override List<NodeBase> GetLineTo(NodeBase target, TileMap map)
@@ -32,14 +33,19 @@ namespace Caps.RPG.Rules.Maps
             }
 
             List<NodeBase> line = [];
-            line.Add(this);
+            //line.Add(this);
             var n = HexCoords.CubeDistance(this, (HexTile)target);
 
             for (int i = 0; i < n; i++)
             {
-                line.Add(HexCoords.CubeLerp(this, (HexTile)target, 1.0 / n * i, (HexMap)map));
+                var temp = HexCoords.CubeLerp(this, (HexTile)target, 1.0 / n * i, (HexMap)map);
+                if (temp != null)
+                {
+                    line.Add(temp);
+                }
             }
 
+            line.Add(target);
             return line;
         }
 
@@ -143,6 +149,11 @@ namespace Caps.RPG.Rules.Maps
                        z == cube.z;
             }
 
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(x, y, z);
+            }
+
             public static bool operator ==(Cube left, Cube right)
             {
                 return left.Equals(right);
@@ -154,7 +165,7 @@ namespace Caps.RPG.Rules.Maps
             }
         }
 
-        internal static NodeBase CubeLerp(HexTile a, HexTile b, double t, HexMap map)
+        internal static NodeBase? CubeLerp(HexTile a, HexTile b, double t, HexMap map)
         {
             Cube target = new Cube(NodeBase.LinearInterp(a.CubeCoords.x, b.CubeCoords.x, t),
                                    NodeBase.LinearInterp(a.CubeCoords.y, b.CubeCoords.y, t),
