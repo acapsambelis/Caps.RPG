@@ -13,7 +13,7 @@ namespace Caps.RPG.Rules.Maps
         public float G { get; private set; }
         public float H { get; private set; }
         public float F => G + H;
-        public List<NodeBase> Neighbors { get; protected set; }
+        public List<NodeBase?> Neighbors { get; protected set; }
         public bool Walkable { get; protected set; }
 
         public ICoords Coords;
@@ -25,6 +25,11 @@ namespace Caps.RPG.Rules.Maps
         public void SetH(float h) => H = h;
 
         public abstract List<NodeBase> GetLineTo(NodeBase target, TileMap map);
+
+        public static bool IsWalkable(IEnumerable<NodeBase> path)
+        {
+            return path.All(n => n.Walkable);
+        }
 
         public static double LinearInterp(double a, double b, double t)
         {

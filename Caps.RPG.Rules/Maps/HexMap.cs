@@ -24,12 +24,12 @@ namespace Caps.RPG.Rules.Maps
                 }
             }
 
-            foreach (var tile in map.Tiles.Values) tile.CacheNeighbors(map);
+            foreach (var tile in map.Tiles.Values) tile?.CacheNeighbors(map);
 
             return map;
         }
 
-        protected override string GetOffset(int rowNumber)
+        protected override string GetPrintingOffset(int rowNumber)
         {
             return new string(' ', rowNumber % 2 == 0 ? 0 : 2);
         }

@@ -13,7 +13,7 @@ namespace Caps.RPG
     {
         static void Main()
         {
-            TileMap hexMap = HexMap.GenerateRandom(0, 3);
+            TileMap hexMap = HexMap.GenerateRandom(0, 1);
             hexMap.PrintToConsole();
             for (var i = 0; i < 15; i++)
             {
@@ -21,7 +21,7 @@ namespace Caps.RPG
                 var start = hexMap.RandomTile(walkable: true);
                 var target = hexMap.RandomTile(walkable: true);
                 var path = Pathfinding.FindPath(start, target);
-                hexMap.PrintWithPath(path);
+                hexMap.PrintWithTileHighlights(path);
             }
             for (var i = 0; i < 15; i++)
             {
@@ -35,7 +35,14 @@ namespace Caps.RPG
                 var lineSource = hexMap.RandomTile();
                 var targetSource = hexMap.RandomTile();
                 var linePath = Pathfinding.FindStraightline(lineSource, targetSource, hexMap);
-                hexMap.PrintWithPath(linePath);
+                hexMap.PrintWithTileHighlights(linePath);
+            }
+            for (var i = 0; i < 15; i++)
+            {
+                Console.WriteLine("_____________________________________");
+                var lineOfSightSource = hexMap.RandomTile(walkable: true);
+                var lineOfSightTiles = hexMap.GetLineOfSight(lineOfSightSource, 2);
+                hexMap.PrintWithTileHighlights(lineOfSightTiles);
             }
 
             List<Combattant> combattants = [];
