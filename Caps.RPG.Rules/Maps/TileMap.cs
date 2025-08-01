@@ -13,6 +13,12 @@
             _gridDepth = gridDepth;
         }
 
+        public NodeBase this[Helpers.Vector2D pos]
+        {
+            get { return Tiles[pos]; }
+            set { Tiles[pos] = value; }
+        }
+
         public NodeBase RandomTile(bool walkable = false)
         {
             var random = new Random();

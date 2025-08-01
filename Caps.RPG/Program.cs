@@ -15,14 +15,28 @@ namespace Caps.RPG
         {
             TileMap hexMap = HexMap.GenerateRandom(0, 3);
             hexMap.PrintToConsole();
-            Console.WriteLine("_____________________________________");
-            var start = hexMap.RandomTile(walkable: true);
-            var target = hexMap.RandomTile(walkable: true);
-            var path = Pathfinding.FindPath(start, target);
-            hexMap.PrintWithPath(path);
-            Console.WriteLine("_____________________________________");
-            var explosionSource = hexMap.RandomTile();
-            hexMap.PrintWithNodesInRange(explosionSource, 3);
+            for (var i = 0; i < 15; i++)
+            {
+                Console.WriteLine("_____________________________________");
+                var start = hexMap.RandomTile(walkable: true);
+                var target = hexMap.RandomTile(walkable: true);
+                var path = Pathfinding.FindPath(start, target);
+                hexMap.PrintWithPath(path);
+            }
+            for (var i = 0; i < 15; i++)
+            {
+                Console.WriteLine("_____________________________________");
+                var explosionSource = hexMap.RandomTile();
+                hexMap.PrintWithNodesInRange(explosionSource, 3);
+            }
+            for (var i = 0; i < 15; i++)
+            {
+                Console.WriteLine("_____________________________________");
+                var lineSource = hexMap.RandomTile();
+                var targetSource = hexMap.RandomTile();
+                var linePath = Pathfinding.FindStraightline(lineSource, targetSource, hexMap);
+                hexMap.PrintWithPath(linePath);
+            }
 
             List<Combattant> combattants = [];
             
@@ -82,8 +96,8 @@ namespace Caps.RPG
                 new Vector2D(8,5)
             ));
 
-            MainLoop mainLoop = new MainLoop(combattants);
-            mainLoop.BetterLoop(DisplayScoreboard, DrawMap, CreatureDisplay, GetDestination, GetAction, GetTarget);
+            //MainLoop mainLoop = new MainLoop(combattants);
+            //mainLoop.BetterLoop(DisplayScoreboard, DrawMap, CreatureDisplay, GetDestination, GetAction, GetTarget);
         }
 
         //public static ClassedCharacter BuildCharacter()
