@@ -24,7 +24,12 @@ namespace Caps.RPG.Rules.Maps
         public void SetG(float g) => G = g;
         public void SetH(float h) => H = h;
 
-        
+        public abstract List<NodeBase> GetLineTo(NodeBase target, TileMap map);
+
+        public static double LinearInterp(double a, double b, double t)
+        {
+            return a + (b - a) * t;
+        }
     }
 
     public interface ICoords

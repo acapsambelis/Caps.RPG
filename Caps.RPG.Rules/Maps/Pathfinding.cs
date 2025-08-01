@@ -56,11 +56,16 @@ namespace Caps.RPG.Rules.Maps
                             neighbor.SetH(neighbor.GetDistance(targetNode));
                             toSearch.Add(neighbor);
                         }
-                    }
+                    }   
                 }
             }
 
             return [];
+        }
+
+        public static List<NodeBase> FindStraightline(NodeBase startNode, NodeBase targetNode, TileMap map)
+        {
+            return startNode.GetLineTo(targetNode, map);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using SNS.Data.DataSerializer;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Caps.RPG.Rules.Helpers
 {
@@ -73,6 +72,11 @@ namespace Caps.RPG.Rules.Helpers
         public static bool operator !=(Vector2D a, Vector2D b)
         {
             return !(a == b);
+        }
+
+        public override string ToString()
+        {
+            return $"Vector2D({x}, {y})";
         }
 
         public override bool Equals(object? obj)
