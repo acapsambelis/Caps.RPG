@@ -1,7 +1,6 @@
 using SNS.Data.DataSerializer;
 using System.Reflection;
-
-using Caps.RPG.Rules.Helpers;
+using Caps.RPG.Rules.Maps;
 
 namespace Caps.RPG.Rules.Creatures.Actions
 {
@@ -12,7 +11,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
         private string name;
         private string description;
         private int cost;
-        private Func<Combattant, Combattant?, Vector2D?, ActionResult> action;
+        private Func<Combattant, TileBase?, ActionResult> action;
         private bool needsTarget;
         private bool needsLocation;
         private double distance;
@@ -65,14 +64,14 @@ namespace Caps.RPG.Rules.Creatures.Actions
                             var method = type.GetMethod(parts[1], BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
                             if (method != null)
                             {
-                                Execution = (Func<Combattant, Combattant?, Vector2D?, ActionResult>)Delegate.CreateDelegate(typeof(Func<Combattant, Combattant?, Vector2D?, ActionResult>), method.IsStatic ? null : Activator.CreateInstance(type), method);
+                                Execution = (Func<Combattant, TileBase?, ActionResult>)Delegate.CreateDelegate(typeof(Func<Combattant, TileBase?, ActionResult>), method.IsStatic ? null : Activator.CreateInstance(type), method);
                             }
                         }
                     }
                 }
             }
         }
-        public Func<Combattant, Combattant?, Vector2D?, ActionResult> Execution
+        public Func<Combattant, TileBase?, ActionResult> Execution
         {
             get { return action; }
             set { action = value; }
@@ -106,7 +105,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
             string name,
             string description,
             int cost,
-            Func<Combattant, Combattant?, Vector2D?, ActionResult> action,
+            Func<Combattant, TileBase?, ActionResult> action,
             bool needsTarget,
             bool needsLocation,
             double distance
@@ -137,7 +136,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
             isEqual &= name == other.name;
             isEqual &= description == other.description;
             isEqual &= cost == other.cost;
-            isEqual &= EqualityComparer<Func<Combattant, Combattant?, Vector2D?, ActionResult>>.Default.Equals(action, other.action);
+            isEqual &= EqualityComparer<Func<Combattant, TileBase?, ActionResult>>.Default.Equals(action, other.action);
             isEqual &= needsTarget == other.needsTarget;
             isEqual &= distance == other.distance;
 

@@ -13,110 +13,74 @@ namespace Caps.RPG
     {
         static void Main()
         {
-            TileMap hexMap = HexMap.GenerateRandom(0, 1);
-            hexMap.PrintToConsole();
-            for (var i = 0; i < 15; i++)
-            {
-                Console.WriteLine("_____________________________________");
-                var start = hexMap.RandomTile(walkable: true);
-                var target = hexMap.RandomTile(walkable: true);
-                var path = Pathfinding.FindPath(start, target);
-                hexMap.PrintWithTileHighlights(path);
-            }
-            for (var i = 0; i < 15; i++)
-            {
-                Console.WriteLine("_____________________________________");
-                var explosionSource = hexMap.RandomTile();
-                hexMap.PrintWithNodesInRange(explosionSource, 3);
-            }
-            for (var i = 0; i < 15; i++)
-            {
-                Console.WriteLine("_____________________________________");
-                var lineSource = hexMap.RandomTile();
-                var targetSource = hexMap.RandomTile();
-                var linePath = Pathfinding.FindStraightline(lineSource, targetSource, hexMap);
-                hexMap.PrintWithTileHighlights(linePath);
-            }
-            for (var i = 0; i < 15; i++)
-            {
-                Console.WriteLine("_____________________________________");
-                var lineOfSightSource = hexMap.RandomTile(walkable: true);
-                var lineOfSightTiles = hexMap.GetLineOfSight(lineOfSightSource, 2);
-                hexMap.PrintWithTileHighlights(lineOfSightTiles);
-            }
-
+            TileMap hexMap = HexMap.GenerateRandom(0, 0);
             List<Combattant> combattants = [];
-            
+
             // blue team
 
-            ClassedCharacter blueDexFighter = new ClassedCharacter(
+            ClassedCharacter blueDexFighter = new(
                 "Dex F",
                 new AttributeSet(0, 4, 3, 0, 0, 1, 2, 0),
-                new Dictionary<Type, int> { { typeof(Fighter), 2 } }
+                new Dictionary<Type, int> { { typeof(Fighter), 2 } },
+                sightRange: 5
             );
             blueDexFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
-            combattants.Add(new Combattant(blueDexFighter, "Blue", new Vector2D(1,3)));
+            combattants.Add(new Combattant(blueDexFighter, MapColors.Blue, hexMap[1, 0]));
 
-            ClassedCharacter blueStrFighter = new ClassedCharacter(
+            ClassedCharacter blueStrFighter = new(
                 "Str F",
                 new AttributeSet(4, 0, 3, 0, 0, 0, 1, 2),
-                new Dictionary<Type, int> { { typeof(Fighter), 1 } }
+                new Dictionary<Type, int> { { typeof(Fighter), 1 } },
+                sightRange: 5
             );
             blueStrFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
-            combattants.Add(new Combattant(blueStrFighter, "Blue", new Vector2D(1,4)));
+            combattants.Add(new Combattant(blueStrFighter, MapColors.Blue, hexMap[6, 3]));
 
             combattants.Add(new Combattant(
                 new ClassedCharacter(
                     "Cleric",
                     new AttributeSet(0, 0, 2, 0, 3, 4, 1, 0),
-                    new Dictionary<Type, int> { { typeof(Cleric), 1 } }
+                    new Dictionary<Type, int> { { typeof(Cleric), 1 } },
+                    sightRange: 5
                 ),
-                "Blue",
-                new Vector2D(1,5)
+                MapColors.Blue,
+                hexMap[1, 3]
             ));
 
-            // red team
+            //// red team
 
-            ClassedCharacter redDexFighter = new ClassedCharacter(
+            ClassedCharacter redDexFighter = new(
                 "Dex F",
                 new AttributeSet(0, 4, 3, 0, 0, 1, 2, 0),
-                new Dictionary<Type, int> { { typeof(Fighter), 2 } }
+                new Dictionary<Type, int> { { typeof(Fighter), 2 } },
+                    sightRange: 5
             );
             redDexFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
-            combattants.Add(new Combattant(redDexFighter, "Red", new Vector2D(8,3)));
+            combattants.Add(new Combattant(redDexFighter, MapColors.Red, hexMap[5, 3]));
 
-            ClassedCharacter redStrFighter = new ClassedCharacter(
+            ClassedCharacter redStrFighter = new(
                 "Str F",
                 new AttributeSet(4, 0, 3, 0, 0, 0, 1, 2),
-                new Dictionary<Type, int> { { typeof(Fighter), 1 } }
+                new Dictionary<Type, int> { { typeof(Fighter), 1 } },
+                    sightRange: 5
             );
             redStrFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
-            combattants.Add(new Combattant(redStrFighter, "Red", new Vector2D(8,4)));
+            combattants.Add(new Combattant(redStrFighter, MapColors.Red, hexMap[4, 2]));
 
             combattants.Add(new Combattant(
                 new ClassedCharacter(
                     "Cleric",
                     new AttributeSet(0, 0, 2, 0, 3, 4, 1, 0),
-                    new Dictionary<Type, int> { { typeof(Cleric), 1 } }
+                    new Dictionary<Type, int> { { typeof(Cleric), 1 } },
+                    sightRange: 5
                 ),
-                "Red",
-                new Vector2D(8,5)
+                MapColors.Red,
+                hexMap[5, 4]
             ));
 
-            //MainLoop mainLoop = new MainLoop(combattants);
-            //mainLoop.BetterLoop(DisplayScoreboard, DrawMap, CreatureDisplay, GetDestination, GetAction, GetTarget);
+            MainLoop mainLoop = new MainLoop(hexMap, combattants);
+            mainLoop.BetterLoop(DisplayScoreboard, DrawMap, CreatureDisplay, GetDestination, GetAction, GetTarget);
         }
-
-        //public static ClassedCharacter BuildCharacter()
-        //{
-        //    // name
-
-        //    // attributes
-
-        //    // levels
-
-        //    return new ClassedCharacter();
-        //}
 
         public static int GetTextInput()
         {
@@ -135,57 +99,23 @@ namespace Caps.RPG
             }
         }
 
-        public static Combattant[,] DrawMap(Combattant[] combattants)
+        public static void DrawMap(TileMap map, Dictionary<TileBase, ConsoleColor?>? highlights)
         {
-            Console.WriteLine("Map");
-            Combattant[,] map = new Combattant[11, 11];
-            foreach (Combattant combattant in combattants)
-            {
-                map[combattant.Position.IntX, combattant.Position.IntY] = combattant;
-            }
-
-            Console.Write("    ");
-            for (int x = 0; x < 10; x++)
-            {
-                Console.Write(x + " ");
-            }
-            Console.Write("\n");
-            for (int y = 0; y < 10; y++)
-            {
-                Console.Write(y + ":  ");
-                for (int x = 0; x < 10; x++)
-                {
-                    char slot = map[x, y] != null ? map[x, y].ShortName : '.';
-                    if (map[x, y] != null)
-                    {
-                        Console.ForegroundColor = map[x, y].Team == "Blue" ? ConsoleColor.Blue : ConsoleColor.Red;
-                        if (map[x, y].Creature.Status != Creature.HealthStatus.Alive)
-                        {
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                        }
-                    }
-                    else
-                    {
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                    Console.Write(slot + " ");
-                }
-                Console.Write('\n');
-            }
-            Console.Write('\n');
-
-            return map;
+            map.PrintToConsole(highlights);
         }
 
         public static void CreatureDisplay(Combattant currentCreature)
         {
+            Console.ForegroundColor = currentCreature.Team.Color;
             Console.WriteLine("=== (" + currentCreature.Team + ") " + currentCreature.Creature.Name + " ===");
             Console.WriteLine("=== " + currentCreature.Creature.Health + "/" + currentCreature.Creature.MaxHealth + " ===");
+            Console.ForegroundColor = ConsoleColor.White;
         }
 
-        public static Vector2D GetDestination(Combattant currentCreature, double range = double.MaxValue)
+        public static TileBase GetDestination(TileMap map, TileBase source, double range = double.MaxValue, bool needsCharacter = false)
         {
-            Vector2D destination;
+            TileBase destination;
+            Combattant currentCreature = source.Features.Where(f => f.Value is Combattant).FirstOrDefault().Value as Combattant ?? throw new Exception("No valid Combattant found.");
             do
             {
                 Console.WriteLine("Your range is " + currentCreature.Creature.MoveSpeed + ".");
@@ -195,8 +125,8 @@ namespace Caps.RPG
                 Console.WriteLine("Y Destination:");
                 int y = GetTextInput();
 
-                destination = new Vector2D(x, y);
-            } while (currentCreature.Position.Distance(destination) > range && range != -1);
+                destination = map[new Vector2D(x, y)];
+            } while (source.GetDistance(destination) > range && range != -1);
             return destination;
         }
 

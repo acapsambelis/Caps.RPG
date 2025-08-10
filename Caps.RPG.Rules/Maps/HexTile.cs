@@ -1,39 +1,29 @@
 ﻿using Caps.RPG.Rules.Helpers;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Caps.RPG.Rules.Maps
 {
-    public class HexTile : NodeBase
+    public class HexTile : TileBase
     {
         internal HexCoords.Cube CubeCoords;
 
-        public HexTile(bool walkable, HexCoords coords)
+        public HexTile(HexCoords coords, bool walkable) : base(coords, walkable)
         {
-            Coords = coords;
-            Walkable = walkable;
             CubeCoords = coords.ToCube();
         }
 
-        public override void CacheNeighbors(TileMap map)
+        internal override void CacheNeighbors(TileMap map)
         {
-            Neighbors = map.Tiles.Where(t => t.Value != null && Coords.GetDistance(t.Value.Coords) == 1).Select(t => t.Value).ToList();
+            Neighbors = [.. map.Tiles.Where(t => t.Value != null && Coords.GetDistance(t.Value.Coords) == 1).Select(t => t.Value)];
         }
 
-        public override List<NodeBase> GetLineTo(NodeBase target, TileMap map)
+        public override List<TileBase> GetLineTo(TileBase target, TileMap map)
         {
             if (target is not HexTile)
             {
                 throw new ArgumentException("Incompatible NodeBase type");
             }
 
-            List<NodeBase> line = [];
-            //line.Add(this);
+            List<TileBase> line = [];
             var n = HexCoords.CubeDistance(this, (HexTile)target);
 
             for (int i = 0; i < n; i++)
@@ -51,7 +41,7 @@ namespace Caps.RPG.Rules.Maps
 
         public override string ToString()
         {
-            return $"HexTile at {Coords.ToString()} (Walkable: {Walkable})";
+            return $"HexTile at {Coords} (Walkable: {Walkable})";
         }
     }
 
@@ -71,14 +61,14 @@ namespace Caps.RPG.Rules.Maps
             Pos = q * new Vector2D(Sqrt3, 0) + r * new Vector2D(Sqrt3 / 2, 1.5f);
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"r {r} + q {q}";
         }
 
-        public float GetDistance(ICoords other) => (this - (HexCoords)other).AxialLength();
+        public readonly float GetDistance(ICoords other) => (this - (HexCoords)other).AxialLength();
 
-        private int AxialLength()
+        private readonly int AxialLength()
         {
             if (q == 0 && r == 0) return 0;
             if (q > 0 && r >= 0) return q + r;
@@ -96,6 +86,11 @@ namespace Caps.RPG.Rules.Maps
             };
             ret.y = -ret.x - ret.z;
             return ret;
+        }
+
+        public readonly Vector2D ToRowColumn()
+        {
+            return new Vector2D(q, r);
         }
 
         public static HexCoords operator -(HexCoords a, HexCoords b)
@@ -136,12 +131,12 @@ namespace Caps.RPG.Rules.Maps
                 return new Cube(rx, ry, rz);
             }
 
-            public (double r, double q) ToAxial()
+            public readonly (double r, double q) ToAxial()
             {
                 return (x, z);
             }
 
-            public override bool Equals(object? obj)
+            public readonly override bool Equals(object? obj)
             {
                 return obj is Cube cube &&
                        x == cube.x &&
@@ -149,7 +144,7 @@ namespace Caps.RPG.Rules.Maps
                        z == cube.z;
             }
 
-            public override int GetHashCode()
+            public readonly override int GetHashCode()
             {
                 return HashCode.Combine(x, y, z);
             }
@@ -165,11 +160,11 @@ namespace Caps.RPG.Rules.Maps
             }
         }
 
-        internal static NodeBase? CubeLerp(HexTile a, HexTile b, double t, HexMap map)
+        internal static TileBase? CubeLerp(HexTile a, HexTile b, double t, HexMap map)
         {
-            Cube target = new Cube(NodeBase.LinearInterp(a.CubeCoords.x, b.CubeCoords.x, t),
-                                   NodeBase.LinearInterp(a.CubeCoords.y, b.CubeCoords.y, t),
-                                   NodeBase.LinearInterp(a.CubeCoords.z, b.CubeCoords.z, t)).CubeRound();
+            Cube target = new Cube(TileBase.LinearInterp(a.CubeCoords.x, b.CubeCoords.x, t),
+                                   TileBase.LinearInterp(a.CubeCoords.y, b.CubeCoords.y, t),
+                                   TileBase.LinearInterp(a.CubeCoords.z, b.CubeCoords.z, t)).CubeRound();
             return map[new HexCoords((int)target.x, (int)target.z).Pos];
         }
 

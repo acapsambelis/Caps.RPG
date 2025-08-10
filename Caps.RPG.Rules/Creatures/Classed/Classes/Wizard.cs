@@ -1,5 +1,6 @@
 ﻿using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Helpers;
+using Caps.RPG.Rules.Maps;
 
 namespace Caps.RPG.Rules.Creatures.Classed.Classes
 {
@@ -24,15 +25,16 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
             { 1, new CombatAction("Firebolt", "You deal damage to one target equal to 5 times your Wizard level.", 1, Firebolt, true, false, 10) },
         };
 
-        public static ActionResult Firebolt(Combattant source, Combattant? target = null, Vector2D? location = null)
+        public static ActionResult Firebolt(Combattant source, TileBase? target = null)
         {
             if (target == null)
                 return new ActionResult();
 
+            Combattant targetCreature = (Combattant)target.Features.Values.Where(f => f is Combattant);
             ClassedCharacter? sourceClassed = source.Creature as ClassedCharacter;
             if (sourceClassed != null)
             {
-                target.Health -= sourceClassed.GetLevels(typeof(Wizard)) * 5;
+                targetCreature.Health -= sourceClassed.GetLevels(typeof(Wizard)) * 5;
             }
             return new ActionResult();
         }
