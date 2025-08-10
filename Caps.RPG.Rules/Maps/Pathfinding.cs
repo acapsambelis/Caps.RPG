@@ -8,10 +8,10 @@ namespace Caps.RPG.Rules.Maps
 {
     public class Pathfinding
     {
-        public static List<NodeBase> FindPath(NodeBase startNode, NodeBase targetNode)
+        public static List<TileBase> FindPath(TileBase startNode, TileBase targetNode)
         {
-            var toSearch = new List<NodeBase>() { startNode };
-            var processed = new List<NodeBase>();
+            var toSearch = new List<TileBase>() { startNode };
+            var processed = new List<TileBase>();
 
             while (toSearch.Count != 0)
             {
@@ -30,7 +30,7 @@ namespace Caps.RPG.Rules.Maps
                 if (current == targetNode)
                 {
                     var currentrPathTile = targetNode;
-                    var path = new List<NodeBase>();
+                    var path = new List<TileBase>();
                     // build path walking from target to start
                     while (currentrPathTile != startNode)
                     {
@@ -63,7 +63,7 @@ namespace Caps.RPG.Rules.Maps
             return [];
         }
 
-        public static List<NodeBase> FindStraightline(NodeBase startNode, NodeBase targetNode, TileMap map)
+        public static List<TileBase> FindStraightline(TileBase startNode, TileBase targetNode, TileMap map)
         {
             return startNode.GetLineTo(targetNode, map);
         }

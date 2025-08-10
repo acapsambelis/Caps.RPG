@@ -1,14 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Caps.RPG.Rules.Helpers;
 
 namespace Caps.RPG.Rules.Maps
 {
     public class HexMap : TileMap
     {
         public HexMap() : base(gridWidth: 16, gridDepth: 9) { }
+
+        public override TileBase this[Vector2D pos]
+        {
+            get
+            {
+                //0, 3
+                //q, r
+                // input = odd-r
+                // odd-r => cube => axial
+
+                var q = pos.IntX - (pos.IntY - (pos.IntY & 1)) / 2;
+                var r = pos.IntY;
+
+
+                if (!Tiles.TryGetValue(new HexCoords(q, r).Pos, out TileBase? value))
+                    throw new ArgumentException($"Tile does not exist: {pos.x} + {pos.y}");
+                return value;
+            }
+            set
+            {
+                Tiles[pos] = value;
+            }
+        }
 
         public static HexMap GenerateRandom(int seed, int obstacleWeight)
         {
@@ -19,7 +38,7 @@ namespace Caps.RPG.Rules.Maps
                 var rOffset = r >> 1;
                 for (var q = -rOffset; q < map._gridWidth -rOffset; q++)
                 {
-                    var tile = new HexTile(random.Next(1, 20) > obstacleWeight, new HexCoords(q, r));
+                    var tile = new HexTile(new HexCoords(q, r), random.Next(1, 20) > obstacleWeight);
                     map.Tiles.Add(tile.Coords.Pos, tile);
                 }
             }
@@ -31,7 +50,7 @@ namespace Caps.RPG.Rules.Maps
 
         protected override string GetPrintingOffset(int rowNumber)
         {
-            return new string(' ', rowNumber % 2 == 0 ? 0 : 2);
+            return new string(' ', rowNumber % 2 == 0 ? 0 : 1);
         }
     }
 }

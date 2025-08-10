@@ -2,34 +2,35 @@ using Caps.RPG.Rules.Modifiers;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Helpers;
 using SNS.Data.DataSerializer;
+using Caps.RPG.Rules.Maps;
 
 
 namespace Caps.RPG.Rules.Creatures
 {
     [DataClass("Combattants")]
-    public class Combattant : IGenericDataObject<Combattant>
+    public class Combattant : TileFeature, IGenericDataObject<Combattant>
     {
         private Creature _creature;
-        private string _team;
-        private Vector2D position;
+        private MapColor _team;
+        private TileBase position;
         public readonly char ShortName;
-        //public MapTile[,] fieldOfView;
-        //public Map fullMap;
+        public TileMap fieldOfView;
+        public TileMap fullMap;
         private bool _wasLoaded = false;
 
         [SubDataObject("Creature")]
         public Creature Creature { get { return _creature; } set { _creature = value; } }
-        [DataProperty("Team")]
-        public string Team { get { return _team; } set { _team = value; } }
+        [SubDataObject("Team")]
+        public MapColor Team { get { return _team; } set { _team = value; } }
         [SubDataObject("Position")]
-        public Vector2D Position
+        public TileBase Position
         {
             get { return position; }
             set
             {
                 //if (position != null)
                 //{
-                //    fieldOfView[position.IntX, position.IntY].RemoveContent(this);
+                //    fieldOfView = fullMap.GetLineOfSight(position, _creature.SightRange);
                 //    fieldOfView[value.IntX, value.IntY].AddContent(this);
                 //    fieldOfView = fullMap.GetVisionRange(Position, Creature.VisionRange);
                 //}
@@ -50,14 +51,15 @@ namespace Caps.RPG.Rules.Creatures
             set { Creature.Health = value; }
         }
 
-        public Combattant() { }
-        
-        public Combattant(Creature creature, string team, Vector2D position)
+        public Combattant() : base(" ", true, MapColors.Gray) { }
+
+        public Combattant(Creature creature, MapColor team, TileBase position) : base(creature.Name, false, team)
         {
             Creature = creature;
             Team = team;
             Position = position;
-            
+            position.Features.Add(0, this);
+
             ShortName = creature.Name[0];
         }
 
@@ -81,12 +83,18 @@ namespace Caps.RPG.Rules.Creatures
             return false;
         }
 
-        public void Move(Vector2D newPosition)
+        public void Move(TileBase newPosition)
         {
+            var oldPosition = position.Features.Where(f => f.Value is Combattant comb && comb == this).FirstOrDefault();
+            if (oldPosition.Value != null)
+            {
+                position.Features.Remove(oldPosition.Key);
+            }
             Position = newPosition;
+            newPosition.Features.Add(oldPosition.Key, this);
         }
 
-        public static Creature[] GetTeam(string name, Combattant[] creatures)
+        public static Creature[] GetTeam(MapColor name, Combattant[] creatures)
         {
             return creatures.Where(c => c.Team == name).Select(c => c.Creature).ToArray();
         }
@@ -97,66 +105,46 @@ namespace Caps.RPG.Rules.Creatures
         }
 
         public readonly static List<CombatAction> ActionList =
-            [
-                new CombatAction("Attack", "Attack one target with a physical attack.", 1, Attack, true, false, 1),
-                new CombatAction("Pass", "Do nothing.", 99, Pass, false, false, 0),
-                new CombatAction("Move", "Move your speed.", 1, Move, false, true, -1),
-            ];
+        [
+            new CombatAction("Attack", "Attack one target with a physical attack.", 1, Attack, true, false, 1),
+            new CombatAction("Pass", "Do nothing.", 99, Pass, false, false, 0),
+            new CombatAction("Move", "Move your speed.", 1, Move, false, true, -1),
+        ];
         public static List<CombatAction> GetGenericList()
         {
             return ActionList;
         }
 
         // Generic Actions
-        public static ActionResult Attack(Combattant source, Combattant? target = null, Vector2D? location = null)
+        public static ActionResult Attack(Combattant source, TileBase? target = null)
         {
             if (target != null)
             {
+                Combattant creature = (Combattant)target.Features.Values.Where(f => f is Combattant);
                 int damage = 0;
                 int toHit = Die.D20.Roll();
-                bool hits = source.Creature.AttackBonus + toHit > target.Creature.DefenseClass;
+                bool hits = source.Creature.AttackBonus + toHit > creature.Creature.DefenseClass;
                 if (hits)
                 {
                     damage = Modifier.SumAll(source.Creature.Modifiers[TargetType.AttackDamage], source.Creature.Attributes);
-                    target.Health -= damage;
+                    creature.Health -= damage;
                 }
-                return new ActionResult(source.Name + " attacked " + target.Name + " with a " + (source.Creature.AttackBonus + toHit) + "(" + toHit + " + " + source.Creature.AttackBonus + ") to hit. " + damage + " was delt.");
+                return new ActionResult(source.Name + " attacked " + creature.Name + " with a " + (source.Creature.AttackBonus + toHit) + "(" + toHit + " + " + source.Creature.AttackBonus + ") to hit. " + damage + " was delt.");
             }
             return new ActionResult(source.Name + " attacked an invalid target");
         }
 
-        public static ActionResult Pass(Combattant source, Combattant? target = null, Vector2D? location = null)
+        public static ActionResult Pass(Combattant source, TileBase? target = null)
         {
             return new ActionResult();
         }
 
-        public static ActionResult Move(Combattant source, Combattant? target = null, Vector2D? location = null)
+        public static ActionResult Move(Combattant source, TileBase? target = null)
         {
-            //if (location != null)
-            //{
-            //    // Use the pathfinding algorithm to calculate the path
-            //    List<Vector2D> path = Pathfinding.Search(source.Position, location, source.fullMap);
-
-            //    if (path == null || path.Count == 0)
-            //    {
-            //        return new ActionResult(source.Name + " could not find a path to the destination.");
-            //    }
-
-            //    int remainingMovement = source.Creature.MoveSpeed;
-
-            //    // Follow the path step by step
-            //    foreach (var step in path)
-            //    {
-            //        if (remainingMovement <= 0)
-            //            break;
-
-            //        // Move to the next step in the path
-            //        source.Position = step;
-            //        remainingMovement--;
-            //    }
-            //}
-
-            source.Position = location ?? source.Position; // If no location is provided, stay in the same position
+            if (target != null)
+            {
+                source.Move(target);
+            }
 
             return new ActionResult(source.Name + " moved to " + source.Position.ToString());
         }

@@ -1,5 +1,6 @@
 ﻿using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Helpers;
+using Caps.RPG.Rules.Maps;
 
 namespace Caps.RPG.Rules
 {
@@ -7,13 +8,15 @@ namespace Caps.RPG.Rules
     {
         public List<Combattant> Teams { get; internal set; }
         public Combattant[] CombatOrder { get; internal set; }
-        public CombatState()
+        public TileMap Map { get; internal set; }
+        public CombatState(TileMap map)
         {
             Teams = [];
             CombatOrder = [];
+            Map = map;
         }
 
-        public void AddCombattant(string team, Creature creature, Vector2D position)
+        public void AddCombattant(Creature creature, MapColor team, TileBase position)
         {
             AddCombattant(new Combattant(creature, team, position));
         }
@@ -34,17 +37,10 @@ namespace Caps.RPG.Rules
             }
         }
 
-        public Combattant[] GetNeighbors(Vector2D source, double distance)
+        public Combattant[] GetNeighbors(TileBase source, double distance)
         {
-            List<Combattant> neighbors = [];
-            foreach (Combattant c in Teams)
-            {
-                if (c.Position.Distance(source) <= distance)
-                {
-                    neighbors.Add(c);
-                }
-            }
-            return neighbors.ToArray();
+            var nodesInRange = Map.NodesInRange(source, (float)distance);
+            return [.. nodesInRange.SelectMany(n => n.Features).OfType<Combattant>()];
         }
 
         public bool HasNoVictor()
@@ -56,7 +52,7 @@ namespace Caps.RPG.Rules
                 {
                     if (aliveTeamName.Equals(""))
                     {
-                        aliveTeamName = c.Team;
+                        aliveTeamName = c.Team.ToString();
                     }
                     if (!aliveTeamName.Equals(c.Team))
                     {
@@ -69,7 +65,7 @@ namespace Caps.RPG.Rules
 
         public string? GetVictorTeamName()
         {
-            return Teams.Where(c => c.Creature.Status == Creature.HealthStatus.Alive).Select(c => c.Team).FirstOrDefault();
+            return Teams.Where(c => c.Creature.Status == Creature.HealthStatus.Alive).Select(c => c.Team).FirstOrDefault().ToString();
         }
 
         public void BuildCombatOrder()

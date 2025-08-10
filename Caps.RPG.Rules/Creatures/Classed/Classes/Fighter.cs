@@ -1,5 +1,6 @@
 ﻿using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Helpers;
+using Caps.RPG.Rules.Maps;
 
 
 namespace Caps.RPG.Rules.Creatures.Classed.Classes
@@ -27,7 +28,7 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
             { 2, new CombatAction("Attack Twice", "You attack twice.", 1, HitTwice, true, false, 1) },
         };
 
-        public static ActionResult SecondWind(Combattant source, Combattant? target = null, Vector2D? location = null)
+        public static ActionResult SecondWind(Combattant source, TileBase? target = null)
         {
             ClassedCharacter? sourceClassed = source.Creature as ClassedCharacter;
             if (sourceClassed != null)
@@ -37,13 +38,13 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
             return new ActionResult();
         }
 
-        public static ActionResult HitTwice(Combattant source, Combattant? target = null, Vector2D? location = null)
+        public static ActionResult HitTwice(Combattant source, TileBase? target = null)
         {
             CombatAction? combatAction = source.GetCombatActions().Where(c => c.Name == "Attack").FirstOrDefault();
             if (combatAction != null)
             {
-                combatAction.Execution(source, target, location);
-                combatAction.Execution(source, target, location);
+                combatAction.Execution(source, target);
+                combatAction.Execution(source, target);
             }
             return new ActionResult();
         }
