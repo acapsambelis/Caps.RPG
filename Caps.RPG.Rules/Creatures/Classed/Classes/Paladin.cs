@@ -1,5 +1,4 @@
 ﻿using Caps.RPG.Rules.Creatures.Actions;
-using Caps.RPG.Rules.Helpers;
 using Caps.RPG.Rules.Maps;
 
 namespace Caps.RPG.Rules.Creatures.Classed.Classes
@@ -22,15 +21,15 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
 
         public readonly static Dictionary<int, CombatAction> actionDictionary = new Dictionary<int, CombatAction>()
         {
-            { 1, new CombatAction("Smite", "You deal damage to one target equal to 5 times your Paladin level.", 1, Smite, true, false, 1) },
+            { 1, new CombatAction("Smite", "You deal damage to one target equal to 5 times your Paladin level.", 1, Smite, new ActionSetup(true, 1, ActionSetup.SourceType.SingleCreature)) },
         };
 
-        public static ActionResult Smite(Combattant source, TileBase? target = null)
+        public static ActionResult Smite(Combattant source, TileBase[] targets)
         {
-            if (target == null)
+            if (targets.Length != 1)
                 return new ActionResult();
 
-            Combattant targetCreature = (Combattant)target.Features.Values.Where(f => f is Combattant);
+            Combattant targetCreature = targets[0].GetFeature<Combattant>();
             ClassedCharacter? sourceClassed = source.Creature as ClassedCharacter;
             if (sourceClassed != null)
             {

@@ -1,4 +1,6 @@
-﻿namespace Caps.RPG.Rules.Maps
+﻿using Caps.RPG.Rules.Helpers;
+
+namespace Caps.RPG.Rules.Maps
 {
     public abstract class TileBase
     {
@@ -31,7 +33,7 @@
             H = 0;
             if (!walkable)
             {
-                Features.Add(0, new TileFeature("#Obstacle", false, MapColors.Gray));
+                Features.Add(0, new TileFeature("#Obstacle", false, TerminalColors.Gray));
             }
         }
 
@@ -67,6 +69,11 @@
         public T GetFeature<T>() where T : TileFeature
         {
             return Features.Values.OfType<T>().FirstOrDefault() ?? throw new InvalidOperationException($"No feature of type {typeof(T).Name} found.");
+        }
+
+        public bool IsEmpty()
+        {
+            return Features.Count == 0;
         }
     }
 

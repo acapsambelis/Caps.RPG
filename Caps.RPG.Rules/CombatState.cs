@@ -16,10 +16,6 @@ namespace Caps.RPG.Rules
             Map = map;
         }
 
-        public void AddCombattant(Creature creature, MapColor team, TileBase position)
-        {
-            AddCombattant(new Combattant(creature, team, position));
-        }
         public void AddCombattant(Combattant combattant)
         {
             Teams.Add(combattant);
@@ -35,12 +31,6 @@ namespace Caps.RPG.Rules
                     break;
                 }
             }
-        }
-
-        public Combattant[] GetNeighbors(TileBase source, double distance)
-        {
-            var nodesInRange = Map.NodesInRange(source, (float)distance);
-            return [.. nodesInRange.SelectMany(n => n.Features).OfType<Combattant>()];
         }
 
         public bool HasNoVictor()

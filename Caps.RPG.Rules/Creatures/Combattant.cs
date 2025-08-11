@@ -11,7 +11,7 @@ namespace Caps.RPG.Rules.Creatures
     public class Combattant : TileFeature, IGenericDataObject<Combattant>
     {
         private Creature _creature;
-        private MapColor _team;
+        private TerminalColor _team;
         private TileBase position;
         public readonly char ShortName;
         public TileMap fieldOfView;
@@ -21,19 +21,13 @@ namespace Caps.RPG.Rules.Creatures
         [SubDataObject("Creature")]
         public Creature Creature { get { return _creature; } set { _creature = value; } }
         [SubDataObject("Team")]
-        public MapColor Team { get { return _team; } set { _team = value; } }
+        public TerminalColor Team { get { return _team; } set { _team = value; } }
         [SubDataObject("Position")]
         public TileBase Position
         {
             get { return position; }
             set
             {
-                //if (position != null)
-                //{
-                //    fieldOfView = fullMap.GetLineOfSight(position, _creature.SightRange);
-                //    fieldOfView[value.IntX, value.IntY].AddContent(this);
-                //    fieldOfView = fullMap.GetVisionRange(Position, Creature.VisionRange);
-                //}
                 position = value;
             }
         }
@@ -51,9 +45,14 @@ namespace Caps.RPG.Rules.Creatures
             set { Creature.Health = value; }
         }
 
-        public Combattant() : base(" ", true, MapColors.Gray) { }
+        public int MoveSpeed
+        {
+            get { return Creature.MoveSpeed; }
+        }
 
-        public Combattant(Creature creature, MapColor team, TileBase position) : base(creature.Name, false, team)
+        public Combattant() : base(" ", true, TerminalColors.Gray) { }
+
+        public Combattant(Creature creature, TerminalColor team, TileBase position) : base(creature.Name, false, team)
         {
             Creature = creature;
             Team = team;
@@ -85,16 +84,16 @@ namespace Caps.RPG.Rules.Creatures
 
         public void Move(TileBase newPosition)
         {
-            var oldPosition = position.Features.Where(f => f.Value is Combattant comb && comb == this).FirstOrDefault();
-            if (oldPosition.Value != null)
+            var feature = position.Features.Where(f => f.Value is Combattant comb && comb == this).FirstOrDefault();
+            if (feature.Value != null)
             {
-                position.Features.Remove(oldPosition.Key);
+                position.Features.Remove(feature.Key);
             }
             Position = newPosition;
-            newPosition.Features.Add(oldPosition.Key, this);
+            newPosition.Features.Add(feature.Key, this);
         }
 
-        public static Creature[] GetTeam(MapColor name, Combattant[] creatures)
+        public static Creature[] GetTeam(TerminalColor name, Combattant[] creatures)
         {
             return creatures.Where(c => c.Team == name).Select(c => c.Creature).ToArray();
         }
@@ -106,9 +105,9 @@ namespace Caps.RPG.Rules.Creatures
 
         public readonly static List<CombatAction> ActionList =
         [
-            new CombatAction("Attack", "Attack one target with a physical attack.", 1, Attack, true, false, 1),
-            new CombatAction("Pass", "Do nothing.", 99, Pass, false, false, 0),
-            new CombatAction("Move", "Move your speed.", 1, Move, false, true, -1),
+            new CombatAction("Attack", "Attack one target with a physical attack.", 1, Attack, new ActionSetup(true, 1, ActionSetup.SourceType.SingleCreature)),
+            new CombatAction("Pass", "Do nothing.", 99, Pass, new ActionSetup()),
+            new CombatAction("Move", "Move your speed.", 1, Move, new ActionSetup(true, typeof(Combattant).GetProperty("MoveSpeed"), ActionSetup.SourceType.SingleTile, MapShape.Tile, needsEmptyTile: true)),
         ];
         public static List<CombatAction> GetGenericList()
         {
@@ -116,11 +115,11 @@ namespace Caps.RPG.Rules.Creatures
         }
 
         // Generic Actions
-        public static ActionResult Attack(Combattant source, TileBase? target = null)
+        public static ActionResult Attack(Combattant source, TileBase[] targets)
         {
-            if (target != null)
+            if (targets.Length == 1)
             {
-                Combattant creature = (Combattant)target.Features.Values.Where(f => f is Combattant);
+                Combattant creature = targets[0].GetFeature<Combattant>();
                 int damage = 0;
                 int toHit = Die.D20.Roll();
                 bool hits = source.Creature.AttackBonus + toHit > creature.Creature.DefenseClass;
@@ -134,19 +133,19 @@ namespace Caps.RPG.Rules.Creatures
             return new ActionResult(source.Name + " attacked an invalid target");
         }
 
-        public static ActionResult Pass(Combattant source, TileBase? target = null)
+        public static ActionResult Pass(Combattant source, TileBase[] targets)
         {
             return new ActionResult();
         }
 
-        public static ActionResult Move(Combattant source, TileBase? target = null)
+        public static ActionResult Move(Combattant source, TileBase[] targets)
         {
-            if (target != null)
+            if (targets.Length == 1)
             {
-                source.Move(target);
+                source.Move(targets[0]);
+                return new ActionResult(source.Name + " moved to " + source.Position.ToString());
             }
-
-            return new ActionResult(source.Name + " moved to " + source.Position.ToString());
+            throw new Exception("Invalid target format");
         }
     }
 }

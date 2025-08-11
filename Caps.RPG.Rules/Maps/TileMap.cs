@@ -36,6 +36,13 @@ namespace Caps.RPG.Rules.Maps
             set { this[new Vector2D(x, y)] = value; }
         }
 
+        public TileBase RandomEmptyTile()
+        {
+            List<TileBase> tiles = [.. Tiles.Values.Where(t => t.IsEmpty())];
+            var randomIndex = random.Next(tiles.Count);
+            return tiles.ElementAt(randomIndex);
+        }
+
         public TileBase RandomTile(bool walkable = false)
         {
             List<TileBase> tiles = [.. Tiles.Values];
@@ -46,6 +53,7 @@ namespace Caps.RPG.Rules.Maps
             var randomIndex = random.Next(tiles.Count);
             return tiles.ElementAt(randomIndex);
         }
+
         public List<TileBase> NodesInRange(TileBase center, float range)
         {
             return [.. Tiles.Values.Where(t => t?.GetDistance(center) <= range)];
@@ -121,5 +129,34 @@ namespace Caps.RPG.Rules.Maps
         }
 
         protected abstract string GetPrintingOffset(int rowNumber);
+
+        #region Shape Methods
+
+        public TileBase[] GetTiles(TileBase source, double range)
+        {
+            return GetCircle(source, range);
+        }
+
+        public TileBase[] GetTiles(TileBase source, MapShape shape, double range)
+        {
+            return shape switch
+            {
+                MapShape.None => [source],
+                MapShape.Tile => [source],
+                MapShape.Circle => GetCircle(source, range),
+                MapShape.Cone => GetCone(source, range),
+                MapShape.FromSourceLine => GetFromSourceLine(source, range),
+                MapShape.FreestandingLine => GetFreestandingLine(source, range),
+                MapShape.Radius => GetCircle(source, range),
+                _ => throw new NotImplementedException($"Shape {shape} is not implemented.")
+            };
+        }
+        
+        public abstract TileBase[] GetCircle(TileBase source, double range);
+        public abstract TileBase[] GetFreestandingLine(TileBase source, double range);
+        public abstract TileBase[] GetCone(TileBase source, double range);
+        public abstract TileBase[] GetFromSourceLine(TileBase source, double range);
+
+        #endregion
     }
 }

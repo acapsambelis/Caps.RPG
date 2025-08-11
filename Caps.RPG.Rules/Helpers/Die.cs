@@ -1,4 +1,6 @@
-﻿namespace Caps.RPG.Rules.Helpers
+﻿using System.Drawing;
+
+namespace Caps.RPG.Rules.Helpers
 {
     public enum Die
     {
@@ -12,6 +14,8 @@
 
     public static class DieExtensions
     {
+        private static readonly Random random = new Random(0);
+
         public static int Size(this Die die)
         {
             return (int)die;
@@ -19,7 +23,7 @@
 
         public static int Roll(this Die die)
         {
-            return Helpers.Roll.RollDie(die.Size());
+            return random.Next((int)die) + 1;
         }
     }
 }
