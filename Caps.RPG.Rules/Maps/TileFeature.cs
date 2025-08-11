@@ -1,19 +1,21 @@
-﻿namespace Caps.RPG.Rules.Maps
+﻿using Caps.RPG.Rules.Helpers;
+
+namespace Caps.RPG.Rules.Maps
 {
     public class TileFeature
     {
         public string Name { get; set; }
         public bool Walkable { get; set; }
-        private MapColor color;
+        private TerminalColor color;
         private ConsoleColor c;
-        public TileFeature(string name, bool walkable, MapColor color)
+        public TileFeature(string name, bool walkable, TerminalColor color)
         {
             Name = name;
             Walkable = walkable;
             this.color = color;
             c = color.Color;
         }
-        public TileFeature(string name) : this(name, true, MapColors.Gray) { }
+        public TileFeature(string name) : this(name, true, TerminalColors.Gray) { }
         public ConsoleColor Color
         {
             //get { return color.Color; }

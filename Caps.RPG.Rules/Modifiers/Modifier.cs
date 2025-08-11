@@ -267,7 +267,7 @@ namespace Caps.RPG.Rules.Modifiers
             var clone = new Dictionary<TargetType, List<Modifier>>(CreatureModifiers.Count, CreatureModifiers.Comparer);
             foreach (var kvp in CreatureModifiers)
             {
-                clone[kvp.Key] = new List<Modifier>(kvp.Value);
+                clone[kvp.Key] = [.. kvp.Value];
             }
             return clone;
         }

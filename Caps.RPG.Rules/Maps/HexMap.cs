@@ -29,14 +29,43 @@ namespace Caps.RPG.Rules.Maps
             }
         }
 
-        public static HexMap GenerateRandom(int seed, int obstacleWeight)
+        protected override string GetPrintingOffset(int rowNumber)
+        {
+            return new string(' ', rowNumber % 2 == 0 ? 0 : 1);
+        }
+
+        #region Shapes
+
+        public override TileBase[] GetCircle(TileBase source, double range)
+        {
+            return NodesInRange(source, (float)range).ToArray();
+        }
+
+        public override TileBase[] GetFreestandingLine(TileBase source, double range)
+        {
+            throw new NotImplementedException("Freestanding lines are not implemented for HexMap.");
+        }
+
+        public override TileBase[] GetCone(TileBase source, double range)
+        {
+            throw new NotImplementedException("Freestanding lines are not implemented for HexMap.");
+        }
+
+        public override TileBase[] GetFromSourceLine(TileBase source, double range)
+        {
+            return [.. source.GetLineTo(this[source.Coords.Pos], this).Where(t => t.GetDistance(source) <= range)];
+        }
+
+        #endregion
+
+        public static HexMap GenerateRandomMap(int seed, int obstacleWeight)
         {
             var map = new HexMap();
             var random = new Random(seed);
             for (var r = 0; r < map._gridDepth; r++)
             {
                 var rOffset = r >> 1;
-                for (var q = -rOffset; q < map._gridWidth -rOffset; q++)
+                for (var q = -rOffset; q < map._gridWidth - rOffset; q++)
                 {
                     var tile = new HexTile(new HexCoords(q, r), random.Next(1, 20) > obstacleWeight);
                     map.Tiles.Add(tile.Coords.Pos, tile);
@@ -46,11 +75,6 @@ namespace Caps.RPG.Rules.Maps
             foreach (var tile in map.Tiles.Values) tile?.CacheNeighbors(map);
 
             return map;
-        }
-
-        protected override string GetPrintingOffset(int rowNumber)
-        {
-            return new string(' ', rowNumber % 2 == 0 ? 0 : 1);
         }
     }
 }

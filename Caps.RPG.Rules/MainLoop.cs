@@ -19,31 +19,28 @@ namespace Caps.RPG.Rules
         }
 
         public void BetterLoop(
-            Action<Combattant[]> ScoreboardFunction,
             Action<TileMap, Dictionary<TileBase, ConsoleColor?>?> DrawMap,
-            Action<Combattant> CreatureDisplayFunction,
-            Func<TileMap, TileBase, double, bool, TileBase> GetDestination,
+            Action<Combattant[], Combattant, int, int> TopDisplay,
+            Func<TileMap, TileBase, ActionSetup, TileBase[]> GetTargets,
             Func<List<CombatAction>, CombatAction> GetAction,
-            Func<CombatState, Combattant, double, Combattant> GetTarget
+            Action<ActionResult> DisplayActionResult
         )
         {
+            int MAX_ACTIONS = 3;
             int rounds = 0;
             while (State.HasNoVictor())
             {
                 rounds++;
-                var highlights = new Dictionary<TileBase, ConsoleColor?>();
                 foreach (Combattant currentCreature in State.CombatOrder)
                 {
-                    // display
                     if (currentCreature.Creature.Status != Creature.HealthStatus.Alive) continue;
-                    ScoreboardFunction(State.CombatOrder);
-                    CreatureDisplayFunction(currentCreature);
 
                     // action
-                    int actionsAvailable = 3;
-                    while (actionsAvailable > 0 && currentCreature.Creature.Status == Creature.HealthStatus.Alive)
+                    int actionsAvailable = MAX_ACTIONS;
+                    do
                     {
-                        highlights = new Dictionary<TileBase, ConsoleColor?>()
+                        TopDisplay(State.CombatOrder, currentCreature, actionsAvailable, MAX_ACTIONS);
+                        var highlights = new Dictionary<TileBase, ConsoleColor?>()
                         {
                             { currentCreature.Position, null }
                         };
@@ -51,14 +48,28 @@ namespace Caps.RPG.Rules
 
                         List<CombatAction> availableActions = currentCreature.Creature.GetCombatActions();
                         CombatAction chosen = GetAction(availableActions);
-                        TileBase? target = null;
-                        if (chosen.NeedsLocation)
+                        TileBase[] targets = [];
+                        if (chosen.Setup.NeedsTarget)
                         {
-                            target = GetDestination(State.Map, currentCreature.Position, chosen.Distance, chosen.NeedsTarget);
+                            TileBase[] validTargets = State.Map.GetTiles(
+                                currentCreature.Position,
+                                chosen.Setup.GetRange(currentCreature)
+                            );
+                            if (chosen.Setup.NeedsEmptyTile)
+                                validTargets = [.. validTargets.Where(t => t.IsEmpty())];
+
+                            highlights = [];
+                            foreach (TileBase tile in validTargets)
+                            {
+                                highlights.Add(tile, null);
+                            }
+                            DrawMap(State.Map, highlights);
+                            targets = GetTargets(State.Map, currentCreature.Position, chosen.Setup);
                         }
-                        chosen.Execution(currentCreature, target);
+                        ActionResult result = chosen.Execution(currentCreature, targets);
                         actionsAvailable -= chosen.Cost;
-                    }
+                        DisplayActionResult(result);
+                    } while (actionsAvailable > 0 && currentCreature.Creature.Status == Creature.HealthStatus.Alive);
                 }
             }
         }

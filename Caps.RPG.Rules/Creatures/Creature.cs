@@ -24,7 +24,6 @@ namespace Caps.RPG.Rules.Creatures
         private int maxHealth;
         private int health;
         private AttributeSet attributes;
-        private int sightRange;
 
         // Combat
         private HealthStatus status;
@@ -182,7 +181,7 @@ namespace Caps.RPG.Rules.Creatures
 
         #region Constructors
         public Creature() { }
-        public Creature(string name, AttributeSet attributes, int sightRange)
+        public Creature(string name, AttributeSet attributes)
         {
             this.status = HealthStatus.Alive;
             this.name = name;
@@ -193,7 +192,6 @@ namespace Caps.RPG.Rules.Creatures
 
             this.inv = new CreatureInventory();
             modifiers = Modifier.GetCreatureModifiers();
-            this.sightRange = sightRange;
         }
         #endregion
 

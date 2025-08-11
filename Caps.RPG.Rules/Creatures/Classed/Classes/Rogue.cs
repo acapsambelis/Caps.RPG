@@ -21,15 +21,15 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
 
         public readonly static Dictionary<int, CombatAction> actionDictionary = new Dictionary<int, CombatAction>()
         {
-            { 1, new CombatAction("Sneak Attack", "You deal damage to one target equal to 5 times your Rogue level.", 1, SneakAttack, true, false, 5) },
+            { 1, new CombatAction("Sneak Attack", "You deal damage to one target equal to 5 times your Rogue level.", 1, SneakAttack, new ActionSetup(true, 5, ActionSetup.SourceType.SingleCreature)) },
         };
 
-        public static ActionResult SneakAttack(Combattant source, TileBase? target = null)
+        public static ActionResult SneakAttack(Combattant source, TileBase[] targets)
         {
-            if (target == null)
+            if (targets.Length != 1)
                 return new ActionResult();
 
-            Combattant targetCreature = (Combattant)target.Features.Values.Where(f => f is Combattant);
+            Combattant targetCreature = targets[0].GetFeature<Combattant>();
             ClassedCharacter? sourceClassed = source.Creature as ClassedCharacter;
             if (sourceClassed != null)
             {

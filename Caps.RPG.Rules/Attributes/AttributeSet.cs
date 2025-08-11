@@ -103,7 +103,7 @@ namespace Caps.RPG.Rules.Attributes
 
         public int MoveSpeed()
         {
-            return 5 + this.GetStatValue(Stat.Agility);
+            return 5 + (this.GetStatValue(Stat.Agility) / 2);
         }
 
         public override bool Equals(object? obj)
