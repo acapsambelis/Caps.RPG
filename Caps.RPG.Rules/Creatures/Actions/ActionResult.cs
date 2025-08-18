@@ -1,4 +1,4 @@
-﻿using Caps.RPG.Rules.Helpers;
+﻿using Caps.Util;
 
 namespace Caps.RPG.Rules.Creatures.Actions
 {

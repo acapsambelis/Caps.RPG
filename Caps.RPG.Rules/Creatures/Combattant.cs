@@ -1,9 +1,9 @@
 using Caps.RPG.Rules.Modifiers;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Helpers;
-using SNS.Data.DataSerializer;
 using Caps.RPG.Rules.Maps;
-
+using Caps.Util;
+using SNS.Data.DataSerializer;
 
 namespace Caps.RPG.Rules.Creatures
 {
