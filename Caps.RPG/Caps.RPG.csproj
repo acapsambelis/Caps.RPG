@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Caps.RPG.Content\Caps.RPG.Content.csproj" />
     <ProjectReference Include="..\Caps.RPG.Rules\Caps.RPG.Rules.csproj" />
+    <ProjectReference Include="..\Caps.Util\Caps.Util.csproj" />
   </ItemGroup>
 
 </Project>

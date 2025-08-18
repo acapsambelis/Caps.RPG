@@ -6,6 +6,7 @@ using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Maps;
 using Caps.RPG.Rules.Helpers;
+using Caps.Util;
 
 namespace Caps.RPG
 {

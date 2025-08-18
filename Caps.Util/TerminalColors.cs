@@ -1,4 +1,4 @@
-﻿namespace Caps.RPG.Rules.Helpers
+﻿namespace Caps.Util
 {
     // used for terminal maps only
     public class TerminalColors
