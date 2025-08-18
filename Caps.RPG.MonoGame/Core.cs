@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Caps.RPG.MonoGame.Audio;
+using Caps.RPG.MonoGame.Input;
+using Caps.RPG.MonoGame.Scenes;
+using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Caps.RPG.MonoGame.Audio;
-using Caps.RPG.MonoGame.Input;
-using Caps.RPG.MonoGame.Scenes;
+using System;
 
 namespace Caps.RPG.MonoGame
 {
@@ -105,19 +106,29 @@ namespace Caps.RPG.MonoGame
         protected override void Initialize()
         {
             base.Initialize();
-
             // Set the core's graphics device to a reference of the base Game's
             // graphics device.
             GraphicsDevice = base.GraphicsDevice;
 
-            // Create the sprite batch instance.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-
-            // Create a new input manager
             Input = new InputManager();
-
-            // Create a new audio controller.
             Audio = new AudioController();
+
+            InitializeUI();
+            base.Initialize();
+        }
+
+        protected void InitializeUI()
+        {
+            UserInterface.Initialize(Content, BuiltinThemes.hd);
+            UserInterface.Active.UseRenderTarget = true;
+            UserInterface.Active.IncludeCursorInRenderTarget = false;
+        }
+
+
+        protected override void LoadContent()
+        {
+            base.LoadContent();
         }
 
         protected override void UnloadContent()
@@ -130,37 +141,28 @@ namespace Caps.RPG.MonoGame
 
         protected override void Update(GameTime gameTime)
         {
-            // Update the input manager
+            // make sure window is focused
+            if (!IsActive)
+                return;
+
+            UserInterface.Active.Update(gameTime);
             Input.Update(gameTime);
 
             if (ExitOnEscape && Input.Keyboard.IsKeyDown(Keys.Escape))
-            {
                 Exit();
-            }
 
-            // if there is a next scene waiting to be switch to, then transition
-            // to that scene
+            // if there is a next scene waiting to be switch to, then transition to that scene
             if (s_nextScene != null)
-            {
                 TransitionScene();
-            }
 
-            // If there is an active scene, update it.
-            if (s_activeScene != null)
-            {
-                s_activeScene.Update(gameTime);
-            }
+            s_activeScene?.Update(gameTime);  // If there is an active scene, update it.
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            // If there is an active scene, draw it.
-            if (s_activeScene != null)
-            {
-                s_activeScene.Draw(gameTime);
-            }
+            s_activeScene?.Draw(gameTime);  // If there is an active scene, draw it.
 
             base.Draw(gameTime);
         }
@@ -185,10 +187,7 @@ namespace Caps.RPG.MonoGame
         private static void TransitionScene()
         {
             // If there is an active scene, dispose of it
-            if (s_activeScene != null)
-            {
-                s_activeScene.Dispose();
-            }
+            s_activeScene?.Dispose();
 
             // Force the garbage collector to collect to ensure memory is cleared
             GC.Collect();
@@ -202,10 +201,7 @@ namespace Caps.RPG.MonoGame
             // If the active scene now is not null, initialize it.
             // Remember, just like with Game, the Initialize call also calls the
             // Scene.LoadContent
-            if (s_activeScene != null)
-            {
-                s_activeScene.Initialize();
-            }
+            s_activeScene?.Initialize();
         }
     }
 }

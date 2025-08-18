@@ -1,11 +1,10 @@
 ﻿using Caps.RPG.DungeonCrawler.UI;
 using Caps.RPG.MonoGame;
 using Caps.RPG.MonoGame.Scenes;
+using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
-using MonoGameGum;
-using MonoGameGum.Forms.Controls;
 
 namespace Caps.RPG.DungeonCrawler.Scenes
 {
@@ -22,7 +21,6 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         public override void Initialize()
         {
             base.Initialize();
-            GumService.Default.Root.Children.Clear();
         }
 
         public override void LoadContent()
@@ -40,7 +38,9 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
         public override void Draw(GameTime gameTime)
         {
+            UserInterface.Active.Draw(Core.SpriteBatch);
             Core.GraphicsDevice.Clear(new Color(196, 196, 196, 255));
+            UserInterface.Active.DrawMainRenderTarget(Core.SpriteBatch);
         }
     }
 }

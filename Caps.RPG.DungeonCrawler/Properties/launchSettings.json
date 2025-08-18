@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "GeonUI Example": {
+      "commandName": "Project",
+      "commandLineArgs": "2"
+    },
+    "DungeonCrawler Main": {
+      "commandName": "Project",
+      "commandLineArgs": "1"
+    }
+  }
+}

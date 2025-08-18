@@ -59,6 +59,7 @@ namespace Caps.RPG.DungeonCrawler
         protected override void LoadContent()
         {
             // TODO: use this.Content to load your game content here
+            base.LoadContent();
         }
     }
 }
