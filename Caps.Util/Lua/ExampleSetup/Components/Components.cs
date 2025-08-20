@@ -1,5 +1,15 @@
 ﻿namespace Caps.Util.Lua.ExampleSetup.Componenets
 {
+    public enum Ranks
+    {
+        None = 0,
+        Ensign = 1,
+        Lieutenant = 2,
+        Commander = 3,
+        Captain = 4,
+        Admiral = 5,
+    }
+
     public class Position
     {
         [Required]
@@ -11,18 +21,6 @@
 
         public override string ToString() =>
             $"Position(X={X},Y={Y})";
-    }
-    public class Velocity
-    {
-        public float DX, DY;
-        public override string ToString() =>
-            $"Velocity(DX={DX},DY={DY})";
-    }
-    public class Health
-    {
-        public int HP;
-        public override string ToString() =>
-            $"Health(HP={HP})";
     }
 
     public class SpaceshipInfo
@@ -49,8 +47,9 @@
     {
         public string Name;
         public string Dialogue;
+        public Ranks Rank;
         public override string ToString() =>
-            $"NPCInfo(\n  Name={Name},\n  Dialogue={Dialogue}\n)";
+            $"NPCInfo(\n  Name={Name},\n  Dialogue={Dialogue},\n  Rank={Rank}\n)";
     }
 
     public class LandmarkInfo

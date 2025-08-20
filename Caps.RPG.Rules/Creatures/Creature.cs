@@ -37,7 +37,7 @@ namespace Caps.RPG.Rules.Creatures
         private bool attackBonusChanged = true;
         private bool initiativeChanged = true;
         private bool moveSpeedChanged = true;
-        private Dictionary<TargetType, List<Modifier>> modifiers;
+        private Dictionary<TargetType, List<Modifier>> modifiers = [];
         private int defenseClass;
         private int attackBonus;
         private int initiativeBonus;
@@ -76,7 +76,7 @@ namespace Caps.RPG.Rules.Creatures
                 }
             }
         }
-        [DataProperty("SisionRange")]
+        [DataProperty("VisionRange")]
         public int SightRange
         {
             get { return 5; }

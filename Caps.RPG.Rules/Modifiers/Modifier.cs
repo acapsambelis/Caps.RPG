@@ -43,20 +43,51 @@ namespace Caps.RPG.Rules.Modifiers
         MovementSpeed = 13,
     }
 
+    public static class TargetTypeExtensions
+    {
+        public static bool IsStat(this TargetType type)
+        {
+            return (int)type >= 1 && (int)type <= 8;
+        }
+        public static Stat ToStat(this TargetType type)
+        {
+            return type switch
+            {
+                TargetType.Strength => Stat.Strength,
+                TargetType.Agility => Stat.Agility,
+                TargetType.Constitution => Stat.Constitution,
+                TargetType.Intellect => Stat.Intellect,
+                TargetType.Arcana => Stat.Arcana,
+                TargetType.Wisdom => Stat.Wisdom,
+                TargetType.Presence => Stat.Presence,
+                TargetType.Charisma => Stat.Charisma,
+                _ => Stat.None
+            };
+        }
+
+        public static TargetType ToTargetType(this Stat stat)
+        {
+            return stat switch
+            {
+                Stat.Strength => TargetType.Strength,
+                Stat.Agility => TargetType.Agility,
+                Stat.Constitution => TargetType.Constitution,
+                Stat.Intellect => TargetType.Intellect,
+                Stat.Arcana => TargetType.Arcana,
+                Stat.Wisdom => TargetType.Wisdom,
+                Stat.Presence => TargetType.Presence,
+                Stat.Charisma => TargetType.Charisma,
+                _ => TargetType.None
+            };
+        }
+    }
+
     public enum ActionType
     {
         None = 0,
         Base = 1,
         Set = 2,
         Bonus = 3,
-    }
-
-    public enum BonusType
-    {
-        None = 0,
-        Flat = 1,
-        Die = 2,
-        Stat = 3,
     }
 
     public static class SourceTypeExtensions
@@ -93,16 +124,21 @@ namespace Caps.RPG.Rules.Modifiers
     public class Modifier : IGenericDataObject<Modifier>
     {
         #region privateMembers
+        private SourceType source = SourceType.Base;
         private TargetType target;
-        private ActionType actionType;
-        private BonusType[] typesUsed;
-        private int bonus;
-        private Dictionary<Die, int> dice;
-        private Stat stat;
-        private SourceType source;
+        private ActionType actionType = ActionType.Base;
+        private int? bonus = null;
+        private Dictionary<Die, int>? dice = null;
+        private Stat? stat = null;
         #endregion
 
         #region PublicMembers
+        [DataProperty("Source")]
+        public SourceType Source
+        {
+            get { return source; }
+            set { source = value; }
+        }
         [DataProperty("Target")]
         public TargetType Target
         {
@@ -115,29 +151,24 @@ namespace Caps.RPG.Rules.Modifiers
             get { return actionType; }
             set { actionType = value; }
         }
-        [DataProperty("Bonus")]
-        public int Bonus
-        {
-            get { return bonus; }
-            set { bonus = value; }
-        }
+        //[DataProperty("Bonus")]
+        //public int? Bonus
+        //{
+        //    get { return bonus; }
+        //    set { bonus = value; }
+        //}
+        public int Bonus { get; set; }
         [DataProperty("Dice")]
-        public Dictionary<Die, int> Dice
+        public Dictionary<Die, int>? Dice
         {
             get { return dice; }
             set { dice = value; }
         }
         [DataProperty("Stat")]
-        public Stat Stat
+        public Stat? Stat
         {
             get { return stat; }
             set { stat = value; }
-        }
-        [DataProperty("Source")]
-        public SourceType Source
-        {
-            get { return source; }
-            set { source = value; }
         }
 
         private bool _wasLoaded = false;
@@ -151,7 +182,6 @@ namespace Caps.RPG.Rules.Modifiers
             SourceType source,
             TargetType target,
             ActionType actionType,
-            BonusType[] typesUsed,
             Dictionary<Die, int>? dice = null,
             int? bonus = null,
             Stat? stat = null
@@ -161,11 +191,12 @@ namespace Caps.RPG.Rules.Modifiers
             this.target = target;
             this.actionType = actionType;
 
-            this.typesUsed = typesUsed;
-            this.dice = dice ?? [];
-            this.bonus = bonus != null ? (int)bonus : 0;
-            this.stat = stat ?? new Stat();
+            this.dice = dice;
+            this.bonus = bonus;
+            this.stat = stat;
         }
+
+        public Modifier(Stat statTarget, int bonus) : this(SourceType.Base, statTarget.ToTargetType(), ActionType.Base, bonus: bonus) { }
         #endregion
 
         public static int SumAll(List<Modifier> modifiers, AttributeSet attributes)
@@ -202,19 +233,19 @@ namespace Caps.RPG.Rules.Modifiers
             int floor = 0; int bonus = 0; int set = 0;
             foreach (Modifier modifier in modifiers)
             {
-                if (!modifier.typesUsed.Contains(BonusType.Flat)) continue;
+                if (modifier.Bonus == null) continue;
 
                 if (modifier.Type == ActionType.Base)
                 {
-                    floor = Math.Max(floor, modifier.Bonus);
+                    floor = Math.Max(floor, (int)modifier.Bonus);
                 }
                 if (modifier.Type == ActionType.Bonus)
                 {
-                    bonus += modifier.Bonus;
+                    bonus += (int)modifier.Bonus;
                 }
                 if (modifier.Type == ActionType.Set)
                 {
-                    set = Math.Max(set, modifier.Bonus);
+                    set = Math.Max(set, (int)modifier.Bonus);
                 }
             }
             return Math.Max(floor + bonus, set);
@@ -224,7 +255,7 @@ namespace Caps.RPG.Rules.Modifiers
             Dictionary<Die, int> mods = [];
             foreach (Modifier modifier in modifiers)
             {
-                if (!modifier.typesUsed.Contains(BonusType.Die)) continue;
+                if (modifier.Dice == null) continue;
 
                 if (modifier.Type == ActionType.Bonus)
                 {
@@ -242,19 +273,19 @@ namespace Caps.RPG.Rules.Modifiers
             int floor = 0; int bonus = 0; int set = 0;
             foreach (Modifier modifier in modifiers)
             {
-                if (!modifier.typesUsed.Contains(BonusType.Stat)) continue;
+                if (modifier.Stat == null) continue;
 
                 if (modifier.Type == ActionType.Base)
                 {
-                    floor = Math.Max(floor, attributes.GetStatValue(modifier.Stat));
+                    floor = Math.Max(floor, attributes.SumModifiers((Stat)modifier.Stat));
                 }
                 if (modifier.Type == ActionType.Bonus)
                 {
-                    bonus += attributes.GetStatValue(modifier.Stat);
+                    bonus += attributes.SumModifiers((Stat)modifier.Stat);
                 }
                 if (modifier.Type == ActionType.Set)
                 {
-                    set = Math.Max(set, modifier.Bonus);
+                    set = Math.Max(set, attributes.SumModifiers((Stat)modifier.Stat));
                 }
             }
             return Math.Max(floor + bonus, set);
@@ -274,9 +305,9 @@ namespace Caps.RPG.Rules.Modifiers
 
         private static readonly Dictionary<TargetType, List<Modifier>> CreatureModifiers = new()
         {
-            { TargetType.DefenseClass, new List<Modifier>() { new(SourceType.Base, TargetType.DefenseClass, ActionType.Base,  [BonusType.Flat], bonus:10) } },
-            { TargetType.AttackDamage, new List<Modifier>() { new(SourceType.Base, TargetType.AttackDamage, ActionType.Bonus, [BonusType.Die], dice: new Dictionary<Die, int> {{ Die.D4, 1 }}) } },
-            { TargetType.AttackBonus,  new List<Modifier>() { new(SourceType.Base, TargetType.AttackBonus,  ActionType.Base,  [BonusType.Flat, BonusType.Stat], bonus:1, stat: Stat.Strength )} }
+            { TargetType.DefenseClass, new List<Modifier>() { new(SourceType.Base, TargetType.DefenseClass, ActionType.Base,  bonus:10) } },
+            { TargetType.AttackDamage, new List<Modifier>() { new(SourceType.Base, TargetType.AttackDamage, ActionType.Bonus, dice: new Dictionary<Die, int> {{ Die.D4, 1 }}) } },
+            { TargetType.AttackBonus,  new List<Modifier>() { new(SourceType.Base, TargetType.AttackBonus,  ActionType.Base,  bonus:1, stat: Attributes.Stat.Strength )} }
         };
 
         #endregion
@@ -289,7 +320,9 @@ namespace Caps.RPG.Rules.Modifiers
                    Target == modifier.Target &&
                    Type == modifier.Type &&
                    Bonus == modifier.Bonus &&
-                   Dice.Count == modifier.Dice.Count && !Dice.Except(modifier.Dice).Any() &&
+                   ((Dice == null && modifier.Dice == null) ||
+                    (Dice != null && modifier.Dice != null &&
+                     Dice.Count == modifier.Dice.Count && !Dice.Except(modifier.Dice).Any())) &&
                    Stat == modifier.Stat &&
                    Source == modifier.Source;
         }

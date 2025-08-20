@@ -16,6 +16,7 @@ namespace Caps.Util.Lua
 
         public LuaEntityLoader(string baseFolder)
         {
+            Console.WriteLine($"[LuaEntityLoader] Initializing loader for folder: {baseFolder}");
             _script = new Script();
 
             _script.Globals["CreateEntity"] = (Func<DynValue, DynValue>)(data =>
@@ -40,7 +41,28 @@ namespace Caps.Util.Lua
             });
 
             UserData.RegisterType<LuaEntityWrapper>();
+            RegisterAllEnums();
+
             LoadDataFromFolder(baseFolder);
+        }
+
+        private void RegisterAllEnums()
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assembly in assemblies)
+            {
+                foreach (var type in assembly.GetTypes())
+                {
+                    if (type.IsEnum && type.IsPublic)
+                    {
+                        // Register with MoonSharp
+                        UserData.RegisterType(type);
+
+                        // Expose to Lua by name (e.g., Test)
+                        _script.Globals[type.Name] = type;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -48,15 +70,19 @@ namespace Caps.Util.Lua
         /// </summary>
         public void LoadDataFromFolder(string baseFolder)
         {
+            Console.WriteLine($"[LuaEntityLoader] Loading data from folder: {baseFolder}");
             if (!Directory.Exists(baseFolder))
                 throw new DirectoryNotFoundException($"Lua entity folder not found: {baseFolder}");
 
             var luaFiles = GetLuaFilesInOrder(baseFolder);
-            luaFiles.Reverse(); // Reverse to load in the order specified by _load_order.lua
+            Console.WriteLine($"[LuaEntityLoader] Lua files to load: {string.Join(", ", luaFiles)}");
 
             var allScripts = new StringBuilder();
             foreach (var script in luaFiles)
+            {
+                Console.WriteLine($"[LuaEntityLoader] Reading Lua file: {script}");
                 allScripts.AppendLine(File.ReadAllText(script));
+            }
             LoadScript(allScripts.ToString());
         }
 
@@ -72,10 +98,10 @@ namespace Caps.Util.Lua
                     .Select(l => l.Trim())
                     .Where(l => !string.IsNullOrEmpty(l) && !l.StartsWith("--")))
                 {
-                    if (line.EndsWith('/'))
+                    if (line.EndsWith('/') || line.EndsWith('\\'))
                     {
                         // Recurse into subfolder
-                        string subfolder = Path.Combine(folder, line.TrimEnd('/'));
+                        string subfolder = Path.Combine(folder, line.TrimEnd(['/', '\\']));
                         if (Directory.Exists(subfolder))
                         {
                             result.AddRange(GetLuaFilesInOrder(subfolder));
@@ -86,6 +112,8 @@ namespace Caps.Util.Lua
                         string filePath = Path.Combine(folder, line);
                         if (File.Exists(filePath))
                             result.Add(filePath);
+                        else
+                            throw new FileNotFoundException(filePath + " not found by LuaEntityLoader.");
                     }
                 }
             }
@@ -103,14 +131,17 @@ namespace Caps.Util.Lua
         {
             try
             {
+                Console.WriteLine("[LuaEntityLoader] Executing Lua script.");
                 _script.DoString(luaScript);
             }
             catch (SyntaxErrorException ex)
             {
+                Console.WriteLine($"[LuaEntityLoader] Lua syntax error: {ex.DecoratedMessage}");
                 throw new Exception($"Lua syntax error: {ex.DecoratedMessage}", ex);
             }
             catch (ScriptRuntimeException ex)
             {
+                Console.WriteLine($"[LuaEntityLoader] Lua runtime error: {ex.DecoratedMessage}");
                 throw new Exception($"Lua runtime error: {ex.DecoratedMessage}", ex);
             }
         }
@@ -118,7 +149,6 @@ namespace Caps.Util.Lua
         public List<Entity> LoadEntitiesFromCategory(string categoryName)
         {
             var result = new List<Entity>();
-            var loadedSymbols = new HashSet<string>(_symbolLookup.Keys);
 
             void LoadCategoryRecursive(string catName)
             {
@@ -208,7 +238,20 @@ namespace Caps.Util.Lua
             return result;
         }
 
-        public void ResolveEntityReferences()
+        public List<T> LoadComponentsFromCategory<T>(string categoryName)
+        {
+            var entities = LoadEntitiesFromCategory(categoryName);
+            var components = new List<T>();
+            foreach (var entity in entities)
+            {
+                var component = entity.GetComponent<T>();
+                if (component != null)
+                    components.Add(component);
+            }
+            return components;
+        }
+
+        private void ResolveEntityReferences()
         {
             foreach (var pending in _pendingReferences)
             {
@@ -275,7 +318,5 @@ namespace Caps.Util.Lua
 
             return null;
         }
-
-        public Script Script => _script;
     }
 }

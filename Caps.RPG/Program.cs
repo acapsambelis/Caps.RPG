@@ -1,12 +1,13 @@
 ﻿using Caps.RPG.Rules;
 using Caps.RPG.Rules.Attributes;
-using Caps.RPG.Rules.Creatures.Classed.Classes;
-using Caps.RPG.Rules.Creatures.Classed;
 using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Creatures.Actions;
+using Caps.RPG.Rules.Creatures.Classed;
+using Caps.RPG.Rules.Creatures.Classed.Classes;
 using Caps.RPG.Rules.Maps;
-using Caps.RPG.Rules.Helpers;
 using Caps.Util;
+using Caps.Util.Lua;
+using Caps.RPG.Content.Items;
 
 namespace Caps.RPG
 {
@@ -17,6 +18,16 @@ namespace Caps.RPG
             TileMap hexMap = HexMap.GenerateRandomMap(0, 3);
             List<Combattant> combattants = [];
 
+            //var itemLoader = new LuaEntityLoader("LuaItems");
+            //var swords = itemLoader.LoadComponentsFromCategory<Sword>("Swords");
+            //string name = swords.First().Name;
+            //int? bonus = swords.First().Modifiers[0].Bonus;
+            //Sword VeryLargeSword = swords.FirstOrDefault() ?? throw new Exception("Invalid lua loaded.");
+
+            var characterLoader = new LuaEntityLoader("Characters");
+            var dexF = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("BlueTeam").FirstOrDefault() ?? throw new Exception("Invalid lua loaded.");
+            int test = dexF.Attributes.SumModifiers(Stat.Strength);
+            int attackBonus = dexF.AttackBonus;
             // blue team
 
             ClassedCharacter blueDexFighter = new(
@@ -24,15 +35,17 @@ namespace Caps.RPG
                 new AttributeSet(0, 4, 3, 0, 0, 1, 2, 0),
                 new Dictionary<Type, int> { { typeof(Fighter), 2 } }
             );
-            blueDexFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
+            //blueDexFighter.Equip(VeryLargeSword);
             combattants.Add(new Combattant(blueDexFighter, TerminalColors.Blue, hexMap.RandomEmptyTile()));
+
+            int blueAttackBonus = blueDexFighter.AttackBonus;
 
             ClassedCharacter blueStrFighter = new(
                 "Str F",
                 new AttributeSet(4, 0, 3, 0, 0, 0, 1, 2),
                 new Dictionary<Type, int> { { typeof(Fighter), 1 } }
             );
-            blueStrFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
+            //blueStrFighter.Equip(VeryLargeSword);
             combattants.Add(new Combattant(blueStrFighter, TerminalColors.Blue, hexMap.RandomEmptyTile()));
 
             combattants.Add(new Combattant(
@@ -52,7 +65,7 @@ namespace Caps.RPG
                 new AttributeSet(0, 4, 3, 0, 0, 1, 2, 0),
                 new Dictionary<Type, int> { { typeof(Fighter), 2 } }
             );
-            redDexFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
+            //redDexFighter.Equip(VeryLargeSword);
             combattants.Add(new Combattant(redDexFighter, TerminalColors.Red, hexMap.RandomEmptyTile()));
 
             ClassedCharacter redStrFighter = new(
@@ -60,7 +73,7 @@ namespace Caps.RPG
                 new AttributeSet(4, 0, 3, 0, 0, 0, 1, 2),
                 new Dictionary<Type, int> { { typeof(Fighter), 1 } }
             );
-            redStrFighter.Equip(Content.Items.Hands.VeryLargeSword.Item);
+            //redStrFighter.Equip(VeryLargeSword);
             combattants.Add(new Combattant(redStrFighter, TerminalColors.Red, hexMap.RandomEmptyTile()));
 
             combattants.Add(new Combattant(
@@ -137,14 +150,14 @@ namespace Caps.RPG
             Console.WriteLine($"========= ({currentCreature.Team}) {currentCreature.Creature.Name} | HP: {currentCreature.Creature.Health} / {currentCreature.Creature.MaxHealth} =========");
             Console.WriteLine("STR\tAGI\tCON\tINT\tARC\tWIS\tPRE\tCHA");
             Console.WriteLine(
-                currentCreature.Creature.Attributes.GetStatValue(Stat.Strength) + "\t" +
-                currentCreature.Creature.Attributes.GetStatValue(Stat.Agility) + "\t" +
-                currentCreature.Creature.Attributes.GetStatValue(Stat.Constitution) + "\t" +
-                currentCreature.Creature.Attributes.GetStatValue(Stat.Intellect) + "\t" +
-                currentCreature.Creature.Attributes.GetStatValue(Stat.Arcana) + "\t" +
-                currentCreature.Creature.Attributes.GetStatValue(Stat.Wisdom) + "\t" +
-                currentCreature.Creature.Attributes.GetStatValue(Stat.Presence) + "\t" +
-                currentCreature.Creature.Attributes.GetStatValue(Stat.Charisma)
+                currentCreature.Creature.Attributes[Stat.Strength] + "\t" +
+                currentCreature.Creature.Attributes[Stat.Agility] + "\t" +
+                currentCreature.Creature.Attributes[Stat.Constitution] + "\t" +
+                currentCreature.Creature.Attributes[Stat.Intellect] + "\t" +
+                currentCreature.Creature.Attributes[Stat.Arcana] + "\t" +
+                currentCreature.Creature.Attributes[Stat.Wisdom]     + "\t" +
+                currentCreature.Creature.Attributes[Stat.Presence] + "\t" +
+                currentCreature.Creature.Attributes[Stat.Charisma]
             );
             string actions = new string('O', actionsLeft) + new string('0', maxActions - actionsLeft);
             Console.WriteLine($"AC: {currentCreature.Creature.DefenseClass} | ATTACK: {currentCreature.Creature.AttackBonus} | MOVEMENT: {currentCreature.MoveSpeed} | ACTIONS: {actions}");

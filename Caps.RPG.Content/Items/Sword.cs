@@ -9,6 +9,8 @@ namespace Caps.RPG.Content.Items
 {
     public class Sword : Item, Weapon
     {
+        public Sword() { }
+
         public Sword(string name, string description, ItemType type) : base(name, description, type)
         {
         }
