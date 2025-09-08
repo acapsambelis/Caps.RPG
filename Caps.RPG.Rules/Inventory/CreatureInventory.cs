@@ -1,4 +1,4 @@
-﻿using Caps.RPG.Rules.Creatures.Actions;
+﻿using Caps.RPG.Rules.Modifiers;
 using SNS.Data.DataSerializer;
 
 namespace Caps.RPG.Rules.Inventory
@@ -7,22 +7,27 @@ namespace Caps.RPG.Rules.Inventory
     public class CreatureInventory : Inventory, IGenericDataObject<CreatureInventory>
     {
         [SubDataObject("EquippedItems")]
-        public Equipment EquipedItems { get; set; }
+        public Equipment EquippedItems { get; set; }
         
         public CreatureInventory() : base (15)
         {
-            EquipedItems = new Equipment();
+            EquippedItems = new Equipment();
         }
         public CreatureInventory(int size = 15) : base(size)
         {
-            EquipedItems = new Equipment();
+            EquippedItems = new Equipment();
         }
 
         internal void Equip(Item i)
         {
-            var possibleNull = EquipedItems.GetSlotForItem(i);
+            var possibleNull = EquippedItems.GetSlotForItem(i);
             InventorySlot slot = possibleNull ?? new InventorySlot(ItemType.None);
             slot.SetItem(i);
+        }
+
+        public Dictionary<TargetType, List<Modifier>> GetModifiers()
+        {
+            return EquippedItems.GetAllModifiers();
         }
 
         public override bool Equals(object? obj)
@@ -33,13 +38,13 @@ namespace Caps.RPG.Rules.Inventory
             bool isEqual = true;
             isEqual &= base.Equals(obj);
             isEqual &= ID == other.ID;
-            isEqual &= EquipedItems == other.EquipedItems;
+            isEqual &= EquippedItems == other.EquippedItems;
             return isEqual;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(base.GetHashCode(), ID, Slots, EquipedItems);
+            return HashCode.Combine(base.GetHashCode(), ID, Slots, EquippedItems);
         }
 
         public static bool operator ==(CreatureInventory? left, CreatureInventory? right)

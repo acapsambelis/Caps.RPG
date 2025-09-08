@@ -41,6 +41,7 @@ namespace Caps.RPG.Rules.Modifiers
         AttackBonus = 11,
         Initiative = 12,
         MovementSpeed = 13,
+        MaxHealth = 14,
     }
 
     public static class TargetTypeExtensions

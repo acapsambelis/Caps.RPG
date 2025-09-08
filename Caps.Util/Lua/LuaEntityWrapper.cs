@@ -1,5 +1,6 @@
 ﻿using MoonSharp.Interpreter;
 using System.Collections;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Caps.Util.Lua
@@ -14,16 +15,16 @@ namespace Caps.Util.Lua
         {
             _entity = entity;
             _tableLookup = tableLookup;
-            Console.WriteLine($"[LuaEntityWrapper] Created for Entity Id={entity.Id}");
+            Debug.WriteLine($"[LuaEntityWrapper] Created for Entity Id={entity.Id}");
         }
 
         public void AddComponent(string componentName, Table data, List<(object target, object fieldOrIndex, Table table, Type type)> pendingReferences = null)
         {
-            Console.WriteLine($"[LuaEntityWrapper] Adding component '{componentName}' to Entity Id={_entity.Id}");
+            Debug.WriteLine($"[LuaEntityWrapper] Adding component '{componentName}' to Entity Id={_entity.Id}");
             Type componentType = LuaEntityLoader.ResolveComponentType(componentName);
             if (componentType == null)
             {
-                Console.WriteLine($"[LuaEntityWrapper] Component type '{componentName}' not found.");
+                Debug.WriteLine($"[LuaEntityWrapper] Component type '{componentName}' not found.");
                 throw new Exception($"Component type '{componentName}' not found in any loaded assembly.");
             }
 
@@ -47,7 +48,7 @@ namespace Caps.Util.Lua
                             convertedValue = value.ToObject(field.FieldType);
 
                         field.SetValue(instance, convertedValue);
-                        Console.WriteLine($"[LuaEntityWrapper] Set field '{fieldName}' on '{componentName}' to '{convertedValue}'");
+                        Debug.WriteLine($"[LuaEntityWrapper] Set field '{fieldName}' on '{componentName}' to '{convertedValue}'");
                     }
                     continue;
                 }
@@ -65,17 +66,19 @@ namespace Caps.Util.Lua
                             convertedValue = value.ToObject(prop.PropertyType);
 
                         prop.SetValue(instance, convertedValue);
-                        Console.WriteLine($"[LuaEntityWrapper] Set property '{fieldName}' on '{componentName}' to '{convertedValue}'");
+                        Debug.WriteLine($"[LuaEntityWrapper] Set property '{fieldName}' on '{componentName}' to '{convertedValue}'");
                     }
                     continue;
                 }
 
+                throw new ArgumentException($"Could not find object with name {fieldName}");
             }
 
             ValidateRequiredFields(data, componentType);
+            ValidateAllFields(data, componentType);
 
             _entity.AddComponent(instance);
-            Console.WriteLine($"[LuaEntityWrapper] Component '{componentName}' added to Entity Id={_entity.Id}");
+            Debug.WriteLine($"[LuaEntityWrapper] Component '{componentName}' added to Entity Id={_entity.Id}");
         }
 
         private void ValidateRequiredFields(Table table, Type targetType)
@@ -106,6 +109,26 @@ namespace Caps.Util.Lua
             }
         }
 
+        private void ValidateAllFields(Table table, Type targetType)
+        {
+            var fields = targetType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var properties = targetType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (var key in table.Keys)
+            {
+                string keyName = key.String;
+                bool foundInFields = fields.Any(f => f.Name == keyName);
+                bool foundInProperties = properties.Any(p => p.Name == keyName);
+
+                if (!foundInFields && !foundInProperties)
+                {
+                    throw new Exception(
+                        $"Lua table contains key '{keyName}' which does not match any public field or property of type '{targetType.Name}'."
+                    );
+                }
+            }
+        }
+
         private object ConvertLuaTableToObject(
             Table table,
             Type targetType,
@@ -113,6 +136,10 @@ namespace Caps.Util.Lua
             object parentInstance = null,
             FieldInfo parentField = null)
         {
+            Debug.WriteLine($"[LuaEntityWrapper] Began converting an object of type {targetType.Name}.");
+            if (targetType.Name.Equals("CreatureInventory"))
+                Debug.WriteLine($"[LuaEntityWrapper] Breakpoint.");
+
             if (_tableLookup != null && _tableLookup.TryGetValue(table, out var entity))
             {
                 var method = typeof(Entity).GetMethod("GetComponent")?.MakeGenericMethod(targetType);
@@ -229,7 +256,7 @@ namespace Caps.Util.Lua
             if (targetType.IsClass && targetType != typeof(string))
             {
                 ValidateRequiredFields(table, targetType);
-
+                ValidateAllFields(table, targetType);
                 var obj = Activator.CreateInstance(targetType);
 
                 // Set public fields

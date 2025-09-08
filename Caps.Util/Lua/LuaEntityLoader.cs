@@ -1,5 +1,6 @@
 ﻿using MoonSharp.Interpreter;
 using System.Collections;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -16,7 +17,7 @@ namespace Caps.Util.Lua
 
         public LuaEntityLoader(string baseFolder)
         {
-            Console.WriteLine($"[LuaEntityLoader] Initializing loader for folder: {baseFolder}");
+            Debug.WriteLine($"[LuaEntityLoader] Initializing loader for folder: {baseFolder}");
             _script = new Script();
 
             _script.Globals["CreateEntity"] = (Func<DynValue, DynValue>)(data =>
@@ -70,17 +71,17 @@ namespace Caps.Util.Lua
         /// </summary>
         public void LoadDataFromFolder(string baseFolder)
         {
-            Console.WriteLine($"[LuaEntityLoader] Loading data from folder: {baseFolder}");
+            Debug.WriteLine($"[LuaEntityLoader] Loading data from folder: {baseFolder}");
             if (!Directory.Exists(baseFolder))
                 throw new DirectoryNotFoundException($"Lua entity folder not found: {baseFolder}");
 
             var luaFiles = GetLuaFilesInOrder(baseFolder);
-            Console.WriteLine($"[LuaEntityLoader] Lua files to load: {string.Join(", ", luaFiles)}");
+            Debug.WriteLine($"[LuaEntityLoader] Lua files to load: {string.Join(", ", luaFiles)}");
 
             var allScripts = new StringBuilder();
             foreach (var script in luaFiles)
             {
-                Console.WriteLine($"[LuaEntityLoader] Reading Lua file: {script}");
+                Debug.WriteLine($"[LuaEntityLoader] Reading Lua file: {script}");
                 allScripts.AppendLine(File.ReadAllText(script));
             }
             LoadScript(allScripts.ToString());
@@ -131,17 +132,17 @@ namespace Caps.Util.Lua
         {
             try
             {
-                Console.WriteLine("[LuaEntityLoader] Executing Lua script.");
+                Debug.WriteLine("[LuaEntityLoader] Executing Lua script.");
                 _script.DoString(luaScript);
             }
             catch (SyntaxErrorException ex)
             {
-                Console.WriteLine($"[LuaEntityLoader] Lua syntax error: {ex.DecoratedMessage}");
+                Debug.WriteLine($"[LuaEntityLoader] Lua syntax error: {ex.DecoratedMessage}");
                 throw new Exception($"Lua syntax error: {ex.DecoratedMessage}", ex);
             }
             catch (ScriptRuntimeException ex)
             {
-                Console.WriteLine($"[LuaEntityLoader] Lua runtime error: {ex.DecoratedMessage}");
+                Debug.WriteLine($"[LuaEntityLoader] Lua runtime error: {ex.DecoratedMessage}");
                 throw new Exception($"Lua runtime error: {ex.DecoratedMessage}", ex);
             }
         }
@@ -159,7 +160,8 @@ namespace Caps.Util.Lua
                 foreach (var pair in globalTable.Table.Pairs)
                 {
                     string symbol = pair.Key.String;
-                    if (_symbolLookup.ContainsKey(symbol))
+                    string qualifiedSymbol = $"{catName}.{symbol}";
+                    if (_symbolLookup.ContainsKey(qualifiedSymbol))
                         continue; // Already loaded
 
                     var entry = pair.Value.Table;
@@ -176,7 +178,7 @@ namespace Caps.Util.Lua
                     }
 
                     _entities.Add(entity);
-                    _symbolLookup[symbol] = entity;
+                    _symbolLookup[qualifiedSymbol] = entity;
                     _tableLookup[entry] = entity;
 
                     foreach (var comp in entity.GetAllComponents())
@@ -187,7 +189,8 @@ namespace Caps.Util.Lua
                             var name = (string)nameField.GetValue(comp);
                             if (!string.IsNullOrWhiteSpace(name))
                             {
-                                _nameLookup[name] = entity;
+                                string qualifiedName = $"{catName}.{name}";
+                                _nameLookup[qualifiedName] = entity;
                             }
                         }
                     }

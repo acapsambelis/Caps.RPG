@@ -3,11 +3,10 @@ using Caps.RPG.Rules.Attributes;
 using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Creatures.Classed;
-using Caps.RPG.Rules.Creatures.Classed.Classes;
 using Caps.RPG.Rules.Maps;
+using Caps.RPG.Rules.Modifiers;
 using Caps.Util;
 using Caps.Util.Lua;
-using Caps.RPG.Content.Items;
 
 namespace Caps.RPG
 {
@@ -18,73 +17,17 @@ namespace Caps.RPG
             TileMap hexMap = HexMap.GenerateRandomMap(0, 3);
             List<Combattant> combattants = [];
 
-            //var itemLoader = new LuaEntityLoader("LuaItems");
-            //var swords = itemLoader.LoadComponentsFromCategory<Sword>("Swords");
-            //string name = swords.First().Name;
-            //int? bonus = swords.First().Modifiers[0].Bonus;
-            //Sword VeryLargeSword = swords.FirstOrDefault() ?? throw new Exception("Invalid lua loaded.");
-
             var characterLoader = new LuaEntityLoader("Characters");
-            var dexF = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("BlueTeam").FirstOrDefault() ?? throw new Exception("Invalid lua loaded.");
-            int test = dexF.Attributes.SumModifiers(Stat.Strength);
-            int attackBonus = dexF.AttackBonus;
-            // blue team
+            List<ClassedCharacter> blueTeam = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("BlueTeam");
+            List<ClassedCharacter> redTeam = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("RedTeam");
 
-            ClassedCharacter blueDexFighter = new(
-                "Dex F",
-                new AttributeSet(0, 4, 3, 0, 0, 1, 2, 0),
-                new Dictionary<Type, int> { { typeof(Fighter), 2 } }
-            );
-            //blueDexFighter.Equip(VeryLargeSword);
-            combattants.Add(new Combattant(blueDexFighter, TerminalColors.Blue, hexMap.RandomEmptyTile()));
+            combattants.AddRange(blueTeam.Select(c => new Combattant(c, TerminalColors.Blue, hexMap.RandomTile(true))));
+            combattants.AddRange(redTeam.Select(c => new Combattant(c, TerminalColors.Red, hexMap.RandomTile(true))));
 
-            int blueAttackBonus = blueDexFighter.AttackBonus;
-
-            ClassedCharacter blueStrFighter = new(
-                "Str F",
-                new AttributeSet(4, 0, 3, 0, 0, 0, 1, 2),
-                new Dictionary<Type, int> { { typeof(Fighter), 1 } }
-            );
-            //blueStrFighter.Equip(VeryLargeSword);
-            combattants.Add(new Combattant(blueStrFighter, TerminalColors.Blue, hexMap.RandomEmptyTile()));
-
-            combattants.Add(new Combattant(
-                new ClassedCharacter(
-                    "Cleric",
-                    new AttributeSet(0, 0, 2, 0, 3, 4, 1, 0),
-                    new Dictionary<Type, int> { { typeof(Cleric), 1 } }
-                ),
-                TerminalColors.Blue,
-                hexMap.RandomEmptyTile()
-            ));
-
-            //// red team
-
-            ClassedCharacter redDexFighter = new(
-                "Dex F",
-                new AttributeSet(0, 4, 3, 0, 0, 1, 2, 0),
-                new Dictionary<Type, int> { { typeof(Fighter), 2 } }
-            );
-            //redDexFighter.Equip(VeryLargeSword);
-            combattants.Add(new Combattant(redDexFighter, TerminalColors.Red, hexMap.RandomEmptyTile()));
-
-            ClassedCharacter redStrFighter = new(
-                "Str F",
-                new AttributeSet(4, 0, 3, 0, 0, 0, 1, 2),
-                new Dictionary<Type, int> { { typeof(Fighter), 1 } }
-            );
-            //redStrFighter.Equip(VeryLargeSword);
-            combattants.Add(new Combattant(redStrFighter, TerminalColors.Red, hexMap.RandomEmptyTile()));
-
-            combattants.Add(new Combattant(
-                new ClassedCharacter(
-                    "Cleric",
-                    new AttributeSet(0, 0, 2, 0, 3, 4, 1, 0),
-                    new Dictionary<Type, int> { { typeof(Cleric), 1 } }
-                ),
-                TerminalColors.Red,
-                hexMap.RandomEmptyTile()
-            ));
+            foreach (Combattant combattant in combattants)
+            {
+                combattant.HealAll();
+            }
 
             MainLoop mainLoop = new(hexMap, combattants);
             mainLoop.BetterLoop(DrawMap, TopDisplay, GetTargets, GetAction, DisplayActionResult);
@@ -150,14 +93,14 @@ namespace Caps.RPG
             Console.WriteLine($"========= ({currentCreature.Team}) {currentCreature.Creature.Name} | HP: {currentCreature.Creature.Health} / {currentCreature.Creature.MaxHealth} =========");
             Console.WriteLine("STR\tAGI\tCON\tINT\tARC\tWIS\tPRE\tCHA");
             Console.WriteLine(
-                currentCreature.Creature.Attributes[Stat.Strength] + "\t" +
-                currentCreature.Creature.Attributes[Stat.Agility] + "\t" +
-                currentCreature.Creature.Attributes[Stat.Constitution] + "\t" +
-                currentCreature.Creature.Attributes[Stat.Intellect] + "\t" +
-                currentCreature.Creature.Attributes[Stat.Arcana] + "\t" +
-                currentCreature.Creature.Attributes[Stat.Wisdom]     + "\t" +
-                currentCreature.Creature.Attributes[Stat.Presence] + "\t" +
-                currentCreature.Creature.Attributes[Stat.Charisma]
+                Modifier.SumAll(currentCreature.Creature.Attributes[Stat.Strength]) + "\t" +
+                Modifier.SumAll(currentCreature.Creature.Attributes[Stat.Agility]) + "\t" +
+                Modifier.SumAll(currentCreature.Creature.Attributes[Stat.Constitution]) + "\t" +
+                Modifier.SumAll(currentCreature.Creature.Attributes[Stat.Intellect]) + "\t" +
+                Modifier.SumAll(currentCreature.Creature.Attributes[Stat.Arcana]) + "\t" +
+                Modifier.SumAll(currentCreature.Creature.Attributes[Stat.Wisdom])     + "\t" +
+                Modifier.SumAll(currentCreature.Creature.Attributes[Stat.Presence]) + "\t" +
+                Modifier.SumAll(currentCreature.Creature.Attributes[Stat.Charisma])
             );
             string actions = new string('O', actionsLeft) + new string('0', maxActions - actionsLeft);
             Console.WriteLine($"AC: {currentCreature.Creature.DefenseClass} | ATTACK: {currentCreature.Creature.AttackBonus} | MOVEMENT: {currentCreature.MoveSpeed} | ACTIONS: {actions}");
