@@ -1,5 +1,6 @@
 ﻿using MoonSharp.Interpreter;
 using System.Collections;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Caps.Util.Lua
@@ -7,21 +8,25 @@ namespace Caps.Util.Lua
     public class LuaEntityWrapper
     {
         private readonly Entity _entity;
-        private readonly Dictionary<MoonSharp.Interpreter.Table, Entity> _tableLookup;
+        private readonly Dictionary<Table, Entity> _tableLookup;
         public Entity Entity => _entity;
 
-        public LuaEntityWrapper(Entity entity, Dictionary<MoonSharp.Interpreter.Table, Entity> tableLookup)
+        public LuaEntityWrapper(Entity entity, Dictionary<Table, Entity> tableLookup)
         {
             _entity = entity;
             _tableLookup = tableLookup;
+            Debug.WriteLine($"[LuaEntityWrapper] Created for Entity Id={entity.Id}");
         }
 
         public void AddComponent(string componentName, Table data, List<(object target, object fieldOrIndex, Table table, Type type)> pendingReferences = null)
         {
-            // Use new type resolver that searches all loaded assemblies
+            Debug.WriteLine($"[LuaEntityWrapper] Adding component '{componentName}' to Entity Id={_entity.Id}");
             Type componentType = LuaEntityLoader.ResolveComponentType(componentName);
             if (componentType == null)
+            {
+                Debug.WriteLine($"[LuaEntityWrapper] Component type '{componentName}' not found.");
                 throw new Exception($"Component type '{componentName}' not found in any loaded assembly.");
+            }
 
             var instance = Activator.CreateInstance(componentType);
 
@@ -30,30 +35,50 @@ namespace Caps.Util.Lua
                 string fieldName = pair.Key.String;
                 DynValue value = pair.Value;
 
-                FieldInfo field = componentType.GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
-                if (field == null)
-                    continue;
+                var field = componentType.GetField(fieldName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
 
-                try
+                if (field != null)
                 {
-                    // For each field in the component:
                     if (value.Type != DataType.Nil)
                     {
+                        object convertedValue;
                         if (value.Type == DataType.Table && (field.FieldType.IsClass || field.FieldType.IsGenericType))
-                            field.SetValue(instance, ConvertLuaTableToObject(value.Table, field.FieldType, pendingReferences, instance, field));
+                            convertedValue = ConvertLuaTableToObject(value.Table, field.FieldType, pendingReferences, instance, field);
                         else
-                            field.SetValue(instance, value.ToObject(field.FieldType));
+                            convertedValue = value.ToObject(field.FieldType);
+
+                        field.SetValue(instance, convertedValue);
+                        Debug.WriteLine($"[LuaEntityWrapper] Set field '{fieldName}' on '{componentName}' to '{convertedValue}'");
                     }
+                    continue;
                 }
-                catch (Exception ex)
+
+                var prop = componentType.GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+
+                if (prop != null && prop.CanWrite)
                 {
-                    throw new Exception($"Error setting field '{fieldName}' on component '{componentName}': {ex.Message}", ex);
+                    if (value.Type != DataType.Nil)
+                    {
+                        object convertedValue;
+                        if (value.Type == DataType.Table && (prop.PropertyType.IsClass || prop.PropertyType.IsGenericType))
+                            convertedValue = ConvertLuaTableToObject(value.Table, prop.PropertyType, pendingReferences, instance, null);
+                        else
+                            convertedValue = value.ToObject(prop.PropertyType);
+
+                        prop.SetValue(instance, convertedValue);
+                        Debug.WriteLine($"[LuaEntityWrapper] Set property '{fieldName}' on '{componentName}' to '{convertedValue}'");
+                    }
+                    continue;
                 }
+
+                throw new ArgumentException($"Could not find object with name {fieldName}");
             }
 
             ValidateRequiredFields(data, componentType);
+            ValidateAllFields(data, componentType);
 
             _entity.AddComponent(instance);
+            Debug.WriteLine($"[LuaEntityWrapper] Component '{componentName}' added to Entity Id={_entity.Id}");
         }
 
         private void ValidateRequiredFields(Table table, Type targetType)
@@ -84,6 +109,26 @@ namespace Caps.Util.Lua
             }
         }
 
+        private void ValidateAllFields(Table table, Type targetType)
+        {
+            var fields = targetType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var properties = targetType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (var key in table.Keys)
+            {
+                string keyName = key.String;
+                bool foundInFields = fields.Any(f => f.Name == keyName);
+                bool foundInProperties = properties.Any(p => p.Name == keyName);
+
+                if (!foundInFields && !foundInProperties)
+                {
+                    throw new Exception(
+                        $"Lua table contains key '{keyName}' which does not match any public field or property of type '{targetType.Name}'."
+                    );
+                }
+            }
+        }
+
         private object ConvertLuaTableToObject(
             Table table,
             Type targetType,
@@ -91,11 +136,12 @@ namespace Caps.Util.Lua
             object parentInstance = null,
             FieldInfo parentField = null)
         {
-            // Try to get the component of the correct type
-            // Replace this block inside ConvertLuaTableToObject:
+            Debug.WriteLine($"[LuaEntityWrapper] Began converting an object of type {targetType.Name}.");
+            if (targetType.Name.Equals("CreatureInventory"))
+                Debug.WriteLine($"[LuaEntityWrapper] Breakpoint.");
+
             if (_tableLookup != null && _tableLookup.TryGetValue(table, out var entity))
             {
-                // Try to get the component of the correct type
                 var method = typeof(Entity).GetMethod("GetComponent")?.MakeGenericMethod(targetType);
                 if (method != null)
                 {
@@ -119,12 +165,11 @@ namespace Caps.Util.Lua
                     int idx = 0;
                     foreach (var pair in table.Values)
                     {
+                        object valueToAdd = null;
                         if (pair.Type == DataType.Table && elementType.IsClass && elementType != typeof(string))
                         {
-                            // Try to resolve as a reference first
                             if (_tableLookup != null && _tableLookup.ContainsKey(pair.Table))
                             {
-                                // Reference: defer resolution
                                 list.Add(null);
                                 if (pendingReferences != null && parentInstance != null && parentField != null)
                                 {
@@ -133,14 +178,14 @@ namespace Caps.Util.Lua
                             }
                             else
                             {
-                                // Value: instantiate directly from the table
-                                var valueObj = ConvertLuaTableToObject(pair.Table, elementType, pendingReferences);
-                                list.Add(valueObj);
+                                valueToAdd = ConvertLuaTableToObject(pair.Table, elementType, pendingReferences);
+                                list.Add(valueToAdd);
                             }
                         }
                         else
                         {
-                            list.Add(pair.ToObject(elementType));
+                            valueToAdd = pair.ToObject(elementType);
+                            list.Add(valueToAdd);
                         }
                         idx++;
                     }
@@ -155,9 +200,16 @@ namespace Caps.Util.Lua
                     var dict = (IDictionary)Activator.CreateInstance(targetType);
                     foreach (var pair in table.Pairs)
                     {
-                        object key = pair.Key.ToObject(keyType);
+                        object key;
+                        if (keyType == typeof(Type) && pair.Key.Type == DataType.String)
+                            key = ResolveTypeFromString(pair.Key.String);
+                        else
+                            key = pair.Key.ToObject(keyType);
+
                         object value;
-                        if (pair.Value.Type == DataType.Table && !IsSimpleType(valueType))
+                        if (valueType == typeof(Type) && pair.Value.Type == DataType.String)
+                            value = ResolveTypeFromString(pair.Value.String);
+                        else if (pair.Value.Type == DataType.Table && !IsSimpleType(valueType))
                             value = ConvertLuaTableToObject(pair.Value.Table, valueType);
                         else
                             value = pair.Value.ToObject(valueType);
@@ -166,38 +218,90 @@ namespace Caps.Util.Lua
                     return dict;
                 }
             }
+            else if (targetType.IsArray)
+            {
+                var elementType = targetType.GetElementType();
+                var array = Array.CreateInstance(elementType, table.Values.Count());
+                int idx = 0;
+                foreach (var pair in table.Values)
+                {
+                    object value = null;
+                    if (pair.Type == DataType.Table && elementType.IsClass && elementType != typeof(string))
+                    {
+                        if (_tableLookup != null && _tableLookup.ContainsKey(pair.Table))
+                        {
+                            array.SetValue(null, idx);
+                            if (pendingReferences != null && parentInstance != null && parentField != null)
+                            {
+                                pendingReferences.Add((array, idx, pair.Table, elementType));
+                            }
+                        }
+                        else
+                        {
+                            value = ConvertLuaTableToObject(pair.Table, elementType, pendingReferences);
+                            array.SetValue(value, idx);
+                        }
+                    }
+                    else
+                    {
+                        value = pair.ToObject(elementType);
+                        array.SetValue(value, idx);
+                    }
+                    idx++;
+                }
+                return array;
+            }
 
             // Handle simple types and custom classes
             if (targetType.IsClass && targetType != typeof(string))
             {
-                // Validate all required fields are present
                 ValidateRequiredFields(table, targetType);
-
+                ValidateAllFields(table, targetType);
                 var obj = Activator.CreateInstance(targetType);
+
+                // Set public fields
                 foreach (var field in targetType.GetFields())
                 {
                     if (table.Get(field.Name) is DynValue val && val.Type != DataType.Nil)
                     {
+                        object fieldValue;
                         if (val.Type == DataType.Table && (field.FieldType.IsClass || field.FieldType.IsGenericType))
-                            field.SetValue(obj, ConvertLuaTableToObject(val.Table, field.FieldType));
+                            fieldValue = ConvertLuaTableToObject(val.Table, field.FieldType);
                         else
-                            field.SetValue(obj, val.ToObject(field.FieldType));
+                            fieldValue = val.ToObject(field.FieldType);
+
+                        field.SetValue(obj, fieldValue);
                     }
                 }
+
+                // Set public properties
+                foreach (var prop in targetType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy))
+                {
+                    if (!prop.CanWrite) continue;
+                    if (table.Get(prop.Name) is DynValue val && val.Type != DataType.Nil)
+                    {
+                        object propValue;
+                        if (val.Type == DataType.Table && (prop.PropertyType.IsClass || prop.PropertyType.IsGenericType))
+                            propValue = ConvertLuaTableToObject(val.Table, prop.PropertyType);
+                        else
+                            propValue = val.ToObject(prop.PropertyType);
+
+                        prop.SetValue(obj, propValue);
+                    }
+                }
+
                 return obj;
             }
 
             // Handle primitives and enums
             if (IsSimpleType(targetType) || targetType.IsEnum)
             {
-                // Try to get the first value in the table (for single-value tables)
                 var first = table.Values.FirstOrDefault();
                 if (first != null)
                     return first.ToObject(targetType);
                 throw new InvalidOperationException($"Cannot convert Lua table to simple type {targetType.Name}.");
             }
 
-            // If we reach here, we don't know how to convert
             throw new InvalidOperationException($"Cannot convert Lua table to type {targetType.Name}.");
         }
 
@@ -208,6 +312,14 @@ namespace Caps.Util.Lua
                 type.IsEnum ||
                 type == typeof(string) ||
                 type == typeof(decimal);
+        }
+
+        private static Type ResolveTypeFromString(string typeName)
+        {
+            Type? type = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes())
+                .FirstOrDefault(t => t.Name == typeName || t.FullName == typeName)
+                ?? throw new Exception($"Type '{typeName}' not found in any loaded assemblies.");
+            return type;
         }
     }
 }

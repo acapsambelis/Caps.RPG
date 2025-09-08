@@ -43,10 +43,10 @@ namespace Caps.RPG.Rules.Maps
             return tiles.ElementAt(randomIndex);
         }
 
-        public TileBase RandomTile(bool walkable = false)
+        public TileBase RandomTile(bool requireWalkable = false)
         {
             List<TileBase> tiles = [.. Tiles.Values];
-            if (walkable)
+            if (requireWalkable)
             {
                 tiles = [.. Tiles.Values.Where(t => t?.Walkable == true)];
             }

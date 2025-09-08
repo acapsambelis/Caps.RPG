@@ -7,22 +7,28 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Items\Crowns\" />
-    <Folder Include="Items\Faces\" />
-    <Folder Include="Items\Jewelry\" />
-    <Folder Include="Items\Necks\" />
-    <Folder Include="Items\Chests\" />
-    <Folder Include="Items\Backs\" />
-    <Folder Include="Items\Arms\" />
-    <Folder Include="Items\Gloves\" />
-    <Folder Include="Items\Belts\" />
-    <Folder Include="Items\Boots\" />
-    <Folder Include="Items\Pants\" />
-    <Folder Include="Items\Shoulders\" />
+    <ProjectReference Include="..\Caps.RPG.Rules\Caps.RPG.Rules.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Caps.RPG.Rules\Caps.RPG.Rules.csproj" />
+    <None Update="Characters\blue_team.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Characters\red_team.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Characters\_load_order.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Items\crowns.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Items\swords.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Items\_load_order.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

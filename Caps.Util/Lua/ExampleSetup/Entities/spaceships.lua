@@ -2,13 +2,15 @@ NPCs = {
     MerchantBob = {
         NPCInfo = {
             Name = "Merchant Bob",
-            Dialogue = "Welcome to my starport!"
+            Dialogue = "Welcome to my starport!",
+            Rank = Ranks.None
         }
     },
     GuardAlice = {
         NPCInfo = {
             Name = "Guard Alice",
-            Dialogue = "You're not on the list."
+            Dialogue = "You're not on the list.",
+            Rank = Ranks.Captain
         }
     }
 }

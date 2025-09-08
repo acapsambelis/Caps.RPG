@@ -6,7 +6,7 @@ namespace Caps.RPG.Rules.Maps
     {
         internal HexCoords.Cube CubeCoords;
 
-        public HexTile(HexCoords coords, bool walkable) : base(coords, walkable)
+        public HexTile(HexCoords coords) : base(coords)
         {
             CubeCoords = coords.ToCube();
         }

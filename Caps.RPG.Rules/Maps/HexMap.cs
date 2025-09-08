@@ -67,7 +67,9 @@ namespace Caps.RPG.Rules.Maps
                 var rOffset = r >> 1;
                 for (var q = -rOffset; q < map._gridWidth - rOffset; q++)
                 {
-                    var tile = new HexTile(new HexCoords(q, r), random.Next(1, 20) > obstacleWeight);
+                    var tile = new HexTile(new HexCoords(q, r));
+                    if (random.Next(1, 20) <= obstacleWeight)
+                        tile.Features.Add(0, new TileFeature("#Obstacle", false, Util.TerminalColors.Gray));
                     map.Tiles.Add(tile.Coords.Pos, tile);
                 }
             }

@@ -15,7 +15,7 @@ namespace Caps.RPG.Rules.Inventory
         public Item? Item
         {
             get { return item; }
-            set { item = value; }
+            set { if (value != null) SetItem(value); }
         }
 
         public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
@@ -29,12 +29,13 @@ namespace Caps.RPG.Rules.Inventory
 
         public bool SetItem(Item item)
         {
-            if (ItemType == ItemType.Any || ItemType == ItemType.None || item.Type == ItemType)
+            if (ItemType == ItemType.None) ItemType = item.Type;
+            if (ItemType == ItemType.Any || item.Type == ItemType)
             {
                 this.item = item;
                 return true;
             }
-            return false;
+            throw new InvalidCastException("Invalid equip.");
         }
 
         public override bool Equals(object? obj)

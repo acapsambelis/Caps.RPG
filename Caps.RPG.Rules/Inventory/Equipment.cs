@@ -1,58 +1,148 @@
-﻿using SNS.Data.DataSerializer;
+﻿using Caps.RPG.Rules.Modifiers;
+using SNS.Data.DataSerializer;
 
 namespace Caps.RPG.Rules.Inventory
 {
     [DataClass("Equipment")]
     public class Equipment : IGenericDataObject<Equipment>
     {
+        private bool equipmentChanged = true;
+        public bool EquipmentChanged {
+            get { return equipmentChanged; }
+            set { equipmentChanged = value; }
+        }
+
+        private InventorySlot crown;
         [SubDataObject("Crown")]
-        public InventorySlot Crown { get; set; }
+        public InventorySlot Crown
+        {
+            get => crown;
+            set { crown = value; equipmentChanged = true; }
+        }
+
+        private InventorySlot face;
         [SubDataObject("Face")]
-        public InventorySlot Face { get; set; }
+        public InventorySlot Face
+        {
+            get => face;
+            set { face = value; equipmentChanged = true; }
+        }
+
+        private InventorySlot headJewelry;
         [SubDataObject("HeadJewelry")]
-        public InventorySlot HeadJewelry { get; set; }
+        public InventorySlot HeadJewelry
+        {
+            get => headJewelry;
+            set { headJewelry = value; equipmentChanged = true; }
+        }
+
+        private InventorySlot neck;
         [SubDataObject("Neck")]
-        public InventorySlot Neck { get; set; }
+        public InventorySlot Neck
+        {
+            get => neck;
+            set { neck = value; equipmentChanged = true; }
+        }
+
+        private InventorySlot chest;
         [SubDataObject("Chest")]
-        public InventorySlot Chest { get; set; }
+        public InventorySlot Chest
+        {
+            get => chest;
+            set { chest = value; equipmentChanged = true; }
+        }
+
+        private InventorySlot shoulders;
         [SubDataObject("Shoulders")]
-        public InventorySlot Shoulders { get; set; }
+        public InventorySlot Shoulders
+        {
+            get => shoulders;
+            set { shoulders = value; equipmentChanged = true; }
+        }
+
+        private InventorySlot back;
         [SubDataObject("Back")]
-        public InventorySlot Back { get; set; }
+        public InventorySlot Back
+        {
+            get => back;
+            set { back = value; equipmentChanged = true; }
+        }
+
+        private InventorySlot arms;
         [SubDataObject("Arms")]
-        public InventorySlot Arms { get; set; }
+        public InventorySlot Arms
+        {
+            get => arms;
+            set { arms = value; equipmentChanged = true; }
+        }
+
+        private InventorySlot gloves;
         [SubDataObject("Gloves")]
-        public InventorySlot Gloves { get; set; }
+        public InventorySlot Gloves
+        {
+            get => gloves;
+            set { gloves = value; equipmentChanged = true; }
+        }
+
+        private InventorySlot handJewelry;
         [SubDataObject("HandJewelry")]
-        public InventorySlot HandJewelry { get; set; }
+        public InventorySlot HandJewelry
+        {
+            get => handJewelry;
+            set { handJewelry = value; equipmentChanged = true; }
+        }
+
+        private InventorySlot belt;
         [SubDataObject("Belt")]
-        public InventorySlot Belt { get; set; }
+        public InventorySlot Belt
+        {
+            get => belt;
+            set { belt = value; equipmentChanged = true; }
+        }
+
+        private InventorySlot pants;
         [SubDataObject("Pants")]
-        public InventorySlot Pants { get; set; }
+        public InventorySlot Pants
+        {
+            get => pants;
+            set { pants = value; equipmentChanged = true; }
+        }
+
+        private InventorySlot boots;
         [SubDataObject("Boots")]
-        public InventorySlot Boots { get; set; }
+        public InventorySlot Boots
+        {
+            get => boots;
+            set { boots = value; equipmentChanged = true; }
+        }
+
+        private InventorySlot hands;
         [SubDataObject("Hands")]
-        public InventorySlot Hands { get; set; }
+        public InventorySlot Hands
+        {
+            get => hands;
+            set { hands = value; equipmentChanged = true; }
+        }
 
         private bool _wasLoaded = false;
         public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
 
         public Equipment()
         {
-            Crown = new InventorySlot(ItemType.Crown);
-            Face = new InventorySlot(ItemType.Face);
-            HeadJewelry = new InventorySlot(ItemType.HeadJewelry);
-            Neck = new InventorySlot(ItemType.Neck);
-            Chest = new InventorySlot(ItemType.Chest);
-            Shoulders = new InventorySlot(ItemType.Shoulders);
-            Back = new InventorySlot(ItemType.Back);
-            Arms = new InventorySlot(ItemType.Arms);
-            Gloves = new InventorySlot(ItemType.Gloves);
-            HandJewelry = new InventorySlot(ItemType.HandJewelry);
-            Belt = new InventorySlot(ItemType.Belt);
-            Pants = new InventorySlot(ItemType.Pants);
-            Boots = new InventorySlot(ItemType.Boots);
-            Hands = new InventorySlot(ItemType.Hands);
+            crown = new InventorySlot(ItemType.Crown);
+            face = new InventorySlot(ItemType.Face);
+            headJewelry = new InventorySlot(ItemType.HeadJewelry);
+            neck = new InventorySlot(ItemType.Neck);
+            chest = new InventorySlot(ItemType.Chest);
+            shoulders = new InventorySlot(ItemType.Shoulders);
+            back = new InventorySlot(ItemType.Back);
+            arms = new InventorySlot(ItemType.Arms);
+            gloves = new InventorySlot(ItemType.Gloves);
+            handJewelry = new InventorySlot(ItemType.HandJewelry);
+            belt = new InventorySlot(ItemType.Belt);
+            pants = new InventorySlot(ItemType.Pants);
+            boots = new InventorySlot(ItemType.Boots);
+            hands = new InventorySlot(ItemType.Hands);
         }
 
         public InventorySlot GetSlotForItem(Item item)
@@ -75,6 +165,32 @@ namespace Caps.RPG.Rules.Inventory
                 ItemType.Hands => Hands,
                 _ => throw new ArgumentException("Invalid item type")
             };
+        }
+
+        public Dictionary<TargetType, List<Modifier>> GetAllModifiers()
+        {
+            Dictionary<TargetType, List<Modifier>> allModifiers = [];
+            InventorySlot[] slots = [
+                Crown, Face, HeadJewelry, Neck, Chest, Shoulders,
+                Back, Arms, Gloves, HandJewelry, Belt, Pants, Boots, Hands
+            ];
+            foreach (var slot in slots)
+            {
+                if (slot.Item != null)
+                {
+                    foreach (var modifier in slot.Item.Modifiers)
+                    {
+                        if (!allModifiers.TryGetValue(modifier.Target, out List<Modifier>? value))
+                        {
+                            value = [];
+                            allModifiers[modifier.Target] = value;
+                        }
+
+                        value.Add(modifier);
+                    }
+                }
+            }
+            return allModifiers;
         }
 
         public override bool Equals(object? obj)
