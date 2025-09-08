@@ -19,10 +19,7 @@ namespace Caps.RPG.MonoGame
         /// </summary>
         public static Core Instance => s_instance;
 
-        // The scene that is currently active.
         private static Scene s_activeScene;
-
-        // The next scene to switch to, if there is one.
         private static Scene s_nextScene;
 
         /// <summary>
@@ -64,43 +61,23 @@ namespace Caps.RPG.MonoGame
         /// Creates a new Core instance.
         /// </summary>
         /// <param name="title">The title to display in the title bar of the game window.</param>
-        /// <param name="width">The initial width, in pixels, of the game window.</param>
-        /// <param name="height">The initial height, in pixels, of the game window.</param>
-        /// <param name="fullScreen">Indicates if the game should start in fullscreen mode.</param>
-        public Core(string title, int width, int height, bool fullScreen)
+        public Core(string title)
         {
-            // Ensure that multiple cores are not created.
-            if (s_instance != null)
-            {
-                throw new InvalidOperationException($"Only a single Core instance can be created");
-            }
-
-            // Store reference to engine for global member access.
+            if (s_instance != null) throw new InvalidOperationException($"Only a single Core instance can be created");
             s_instance = this;
 
             // Create a new graphics device manager.
             Graphics = new GraphicsDeviceManager(this);
 
-            // Set the graphics defaults
-            Graphics.PreferredBackBufferWidth = width;
-            Graphics.PreferredBackBufferHeight = height;
-            Graphics.IsFullScreen = fullScreen;
-
-            // Apply the graphic presentation changes
             Graphics.ApplyChanges();
-
-            // Set the window title
             Window.Title = title;
 
-            // Set the core's content manager to a reference of hte base Game's
-            // content manager.
+            // Set the core's content manager to a reference of hte base Game's content manager.
             Content = base.Content;
-
-            // Set the root directory for content
             Content.RootDirectory = "Content";
 
-            // Mouse is visible by default
-            IsMouseVisible = true;
+            // Make window borderless assuming fullscreen is used
+            Window.IsBorderless = true;
         }
 
         protected override void Initialize()
@@ -114,8 +91,20 @@ namespace Caps.RPG.MonoGame
             Input = new InputManager();
             Audio = new AudioController();
 
+            MakeFullScreen();
             InitializeUI();
             base.Initialize();
+        }
+
+        private static void MakeFullScreen()
+        {
+            // make the window fullscreen (but still with border and top control bar)
+            int _ScreenWidth = Graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Width;
+            int _ScreenHeight = Graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Height;
+            Graphics.PreferredBackBufferWidth = _ScreenWidth;
+            Graphics.PreferredBackBufferHeight = _ScreenHeight;
+            Graphics.IsFullScreen = false;
+            Graphics.ApplyChanges();
         }
 
         protected void InitializeUI()
@@ -167,13 +156,6 @@ namespace Caps.RPG.MonoGame
             base.Draw(gameTime);
         }
 
-
-        public static void ChangeResolution(int width, int height)
-        {
-            Graphics.PreferredBackBufferWidth = width;
-            Graphics.PreferredBackBufferHeight = height;
-        }
-
         public static void ChangeScene(Scene next)
         {
             // Only set the next scene value if it is not the same
@@ -186,6 +168,7 @@ namespace Caps.RPG.MonoGame
 
         private static void TransitionScene()
         {
+            UserInterface.Active.Clear();
             // If there is an active scene, dispose of it
             s_activeScene?.Dispose();
 

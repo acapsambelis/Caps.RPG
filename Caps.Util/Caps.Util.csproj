@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SNS.Data.DataSerializer\SNS.Data.DataSerializer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="MoonSharp.Interpreter">
       <HintPath>Dependencies\MoonSharp.Interpreter.dll</HintPath>
     </Reference>

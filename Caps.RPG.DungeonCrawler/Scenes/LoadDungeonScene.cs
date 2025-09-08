@@ -1,19 +1,22 @@
-﻿using Caps.RPG.DungeonCrawler.UI;
-using Caps.RPG.MonoGame;
+﻿using Caps.RPG.MonoGame;
 using Caps.RPG.MonoGame.Graphics;
 using GeonBit.UI;
+using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Caps.RPG.DungeonCrawler.Scenes
 {
-    public class LoadDungeonScene : BaseScene
+    public class LoadDungeonScene(CommonConfig config) : BaseScene(config)
     {
         private string[] dungeonFiles = [];
 
         public override void Initialize()
         {
-            // LoadContent is called during base.Initialize().
+            base.Initialize();
+            Core.ExitOnEscape = true;
+            int windowWidth = Core.GraphicsDevice.Viewport.Width;
+            int windowHeight = Core.GraphicsDevice.Viewport.Height;
             base.Initialize();
 
             // load filenames
@@ -29,22 +32,20 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
                 //_dungeonListBox.Items.Add(fileName);
             }
-        }
 
-        public override void LoadContent()
-        {
+            Panel panel = new(new Vector2(windowWidth / 3, windowHeight / 2), PanelSkin.Default, anchor: Anchor.Center)
+            {
+                Draggable = false
+            };
+            UserInterface.Active.AddEntity(panel);
 
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            // GeonBit.UIL update UI manager
-            UserInterface.Active.Update(gameTime);
-        }
-
-        public override void Draw(GameTime gameTime)
-        {
-
+            // add title and text
+            RichParagraph title = new("Dungeon\nCrawler2", Anchor.TopCenter)
+            {
+                Scale = 4f,
+                Offset = new Vector2(0, 20)
+            };
+            panel.AddChild(title);
         }
     }
 }

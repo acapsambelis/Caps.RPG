@@ -1,153 +1,139 @@
-﻿using Caps.RPG.DungeonCrawler.UI;
-using Caps.RPG.MonoGame;
-using Caps.RPG.MonoGame.Graphics;
+﻿using Caps.RPG.MonoGame;
+using Caps.RPG.Rules.Saves;
 using GeonBit.UI;
 using GeonBit.UI.Entities;
+using GeonBit.UI.Utils.Forms;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
+using System.IO;
 
 namespace Caps.RPG.DungeonCrawler.Scenes
 {
-    public class TitleScene : BaseScene
+    public class TitleScene(CommonConfig config) : BaseScene(config)
     {
-        private const string FIRST_LINE_TEXT = "Dungeon";
-        private const string SECOND_LINE_TEXT = "Crawler";
-        private const string BYLINE_TEXT = "a game by Alex Capsambelis";
-
-        // buttons to rotate examples
-        Button nextExampleButton;
-        Button previousExampleButton;
-
-        // The font used to render the title text.
-        private SpriteFont _titleFont;
-
-        // The options button used to open the options menu.
-        private RustButton _optionsButton;
-
-        // The back button used to exit the options menu back to the title menu.
-        private BlueButton _optionsBackButton;
-
-        // Reference to the texture atlas that we can pass to UI elements when they
-        // are created.
-        private TextureAtlas _atlas;
-
         public override void Initialize()
         {
-            // LoadContent is called during base.Initialize().
             base.Initialize();
 
-            // While on the title screen, we can enable exit on escape so the player
-            // can close the game by pressing the escape key.
+            // While on the title screen, we can enable exit on escape
             Core.ExitOnEscape = true;
-
-            // Set the position and origin for the Dungeon text.
-            //Vector2 size = _titleFont.MeasureString(FIRST_LINE_TEXT);
-            //_dungeonTextPos = new Vector2(640, 200);
-            //_dungeonTextOrigin = size * 0.5f;
-
-            // Set the position and origin for the Slime text.
-            //size = _titleFont.MeasureString(SECOND_LINE_TEXT);
-            //_slimeTextPos = new Vector2(640, 307);
-            //_slimeTextOrigin = size * 0.5f;
-
-            // Set the position and origin for the by line text.
-            //size = Font.MeasureString(BYLINE_TEXT);
-            //_bylineTextPos = new Vector2(640, 414);
-            //_bylineTextOrigin = size * 0.5f;
 
             InitializeUI();
         }
 
         private void InitializeUI()
         {
-            // create top panel
-            int topPanelHeight = 65;
-            Panel topPanel = new Panel(new Vector2(0, topPanelHeight + 2), PanelSkin.Simple, Anchor.TopCenter);
-            topPanel.Padding = Vector2.Zero;
-            UserInterface.Active.AddEntity(topPanel);
-
-            // add previous example button
-            previousExampleButton = new Button("<- Back", ButtonSkin.Default, Anchor.Auto, new Vector2(300, topPanelHeight));
-            previousExampleButton.OnClick = (btn) => { PreviousExample(); };
-            topPanel.AddChild(previousExampleButton);
-
-            // add next example button
-            nextExampleButton = new Button("Next ->", ButtonSkin.Default, Anchor.TopRight, new Vector2(300, topPanelHeight));
-            nextExampleButton.OnClick = (btn) => { NextExample(); };
-            nextExampleButton.Identifier = "next_btn";
-            topPanel.AddChild(nextExampleButton);
-
-            // add show-get button
-            Button showGitButton = new Button("Git Repo", ButtonSkin.Fancy, Anchor.TopCenter, new Vector2(280, topPanelHeight));
-            showGitButton.OnClick = (btn) =>
+            int windowWidth = Core.GraphicsDevice.Viewport.Width;
+            int windowHeight = Core.GraphicsDevice.Viewport.Height;
+            // create panel and add to list of panels and manager
+            Panel panel = new(new Vector2(windowWidth / 3, windowHeight / 1.5f), PanelSkin.None, anchor: Anchor.Center)
             {
-                var url = "https://github.com/RonenNess/GeonBit.UI";
-                try
-                {
-                    System.Diagnostics.Process.Start(url);
-                }
-                catch
-                {
-                    try
-                    {
-                        System.Diagnostics.Process.Start("IExplore", url);
-                    }
-                    catch
-                    {
-                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
-                    }
-                }
+                Draggable = false
             };
-            topPanel.AddChild(showGitButton);
+            UserInterface.Active.AddEntity(panel);
 
-            // add exit button
-            Button exitBtn = new Button("Exit", anchor: Anchor.BottomRight, size: new Vector2(200, -1));
-            exitBtn.OnClick = (entity) => { Exit(); };
-            UserInterface.Active.AddEntity(exitBtn);
+            // add title and text
+            RichParagraph title = new("Dungeon\nCrawler", Anchor.TopCenter)
+            {
+                Scale = 6f,
+                Offset = new Vector2(0, 20)
+            };
+            panel.AddChild(title);
+            RichParagraph welcomeText = new(@"a game by Alex Capsambelis", Anchor.Center, scale:1.5f);
+            panel.AddChild(welcomeText);
+
+            Panel buttonPanel = new(new Vector2(panel.Size.X, panel.Size.Y / 2f), PanelSkin.None, Anchor.BottomCenter);
+            { // brackets are for organization only and do not affect code execution
+                // game buttons
+                Panel gameButtonPanel = new(new Vector2(buttonPanel.Size.X, buttonPanel.Size.Y * 2 / 3), PanelSkin.None, Anchor.TopCenter);
+                Button continueGame = new("Continue", ButtonSkin.Fancy, Anchor.TopCenter, size: new Vector2(panel.Size.X * 2 / 3, 80));
+                continueGame.OnClick += (btn) => Continue();
+                gameButtonPanel.AddChild(continueGame);
+                if (config.LastSaveFile.Equals(""))
+                {
+                    continueGame.Visible = false;
+                }
+
+                Button newGame = new("New Game", ButtonSkin.Default, Anchor.Center, size: new Vector2(panel.Size.X * 2 / 3, 80));
+                newGame.OnClick += (btn) => NewGame();
+                gameButtonPanel.AddChild(newGame);
+
+                Button loadButton = new("Load Game", ButtonSkin.Default, Anchor.BottomCenter, size: new Vector2(panel.Size.X * 2 / 3, 80));
+                loadButton.OnClick += (btn) => LoadGame();
+                gameButtonPanel.AddChild(loadButton);
+
+                buttonPanel.AddChild(gameButtonPanel);
+
+                // additional buttons
+                Panel additionalButtonPanel = new(new Vector2(buttonPanel.Size.X, buttonPanel.Size.Y / 3), PanelSkin.None, Anchor.BottomCenter);
+
+                Button optionsButton = new("Options", ButtonSkin.Default, Anchor.BottomLeft, size: new Vector2(panel.Size.X / 3, 60));
+                optionsButton.OnClick += (btn) => Options();
+                additionalButtonPanel.AddChild(optionsButton);
+
+                Button creditsButton = new("Credits", ButtonSkin.Default, Anchor.BottomRight, size: new Vector2(panel.Size.X / 3, 60));
+                creditsButton.OnClick += (btn) => Credits();
+                additionalButtonPanel.AddChild(creditsButton);
+
+                buttonPanel.AddChild(additionalButtonPanel);
+            }
+            panel.AddChild(buttonPanel);
+
+            UserInterface.Active.AddEntity(new Paragraph("V" + Program.VERSION, Anchor.BottomLeft, scale:1.5f, offset:new Vector2(10, 10)));
+            Button exitButton = new("Exit", ButtonSkin.Default, Anchor.BottomRight, size: new Vector2(windowWidth / 20, 60), offset:new Vector2(10, 10));
+            exitButton.OnClick += btn => { Core.Instance.Exit(); };
+            UserInterface.Active.AddEntity(exitButton);
         }
 
-        public void NextExample()
+        public void Continue()
+        {
+            if (!config.LastSaveFile.Equals(""))
+            {
+                GeonBit.UI.Utils.MessageBox.ShowMsgBox("Continuing Game", $"In this example we won't actually load anything, but in a real project we would load the last save file located at '{config.LastSaveFile}'.");
+            }
+            else
+            {
+                GeonBit.UI.Utils.MessageBox.ShowMsgBox("No Save File", "No last save file found! Please use 'Load Game' to load a previous save.");
+            }
+        }
+
+        public void NewGame()
+        {
+            var newForm = new Form([
+                new FormFieldData(FormFieldType.TextInput, "txtSaveFileName", "Save File Name:"),
+            ], null);
+            GeonBit.UI.Utils.MessageBox.ShowMsgBox("Create New Save", "", "Start", extraEntities: [newForm.FormPanel], onDone: () =>
+            {
+                string filename = newForm.GetValue("txtSaveFileName").ToString();
+                if (string.IsNullOrWhiteSpace(filename))
+                {
+                    GeonBit.UI.Utils.MessageBox.ShowMsgBox("Invalid Name", "Please enter a valid save file name.");
+                    return;
+                }
+                filename = Path.Combine(config.SavesDirectory, filename + ".rpg");
+                SaveState newSave = new();
+                newSave.Save(filename);
+                config.LastSaveFile = filename;
+                GeonBit.UI.Utils.MessageBox.ShowMsgBox("Save name", string.Format("Save created: " + config.LastSaveFile));
+            });
+
+        }
+
+        public void LoadGame()
+        {
+            GeonBit.UI.Utils.MessageBox.OpenLoadFileDialog(config.SavesDirectory, res =>
+            {
+                GeonBit.UI.Utils.MessageBox.ShowMsgBox("File Selected!", $"Selected file: '{res.FullPath}'.\n\nIn this example we just show a message box, in a real project we would use this path to load the file.");
+                config.LastSaveFile = res.FullPath;
+                return true;
+            }, message: "It won't actually load anything so don't worry about picking any file.");
+        }
+
+        public void Options()
         {
         }
 
-        public void PreviousExample()
+        public void Credits()
         {
-        }
-
-        public void Exit()
-        {
-        }
-
-        public override void LoadContent()
-        {
-            base.LoadContent();
-
-            // Load the font for the title text
-            _titleFont = Content.Load<SpriteFont>("fonts/alagard_large");
-
-            // Load the texture atlas from the xml configuration file.
-            _atlas = TextureAtlas.FromFile(Core.Content, "images/atlas-definition.xml");
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            // update UI
-            UserInterface.Active.Update(gameTime);
-            
-            // call base update
-            base.Update(gameTime);
-        }
-
-        public override void Draw(GameTime gameTime)
-        {
-            base.Draw(gameTime);
-        }
-
-        private void HandleStartClicked(object sender, EventArgs e)
-        {
-            // Change to the game scene to start the game.
-            Core.ChangeScene(new LoadDungeonScene());
         }
     }
 }

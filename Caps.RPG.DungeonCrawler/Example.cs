@@ -113,7 +113,7 @@ namespace Caps.RPG.DungeonCrawler
         protected void InitExamplesAndUI()
         {
             // will init examples only if true
-            bool initExamples = false;
+            bool initExamples = true;
 
             // create top panel
             int topPanelHeight = 65;

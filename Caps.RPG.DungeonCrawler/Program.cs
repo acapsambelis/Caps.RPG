@@ -1,26 +1,36 @@
-﻿using System;
+﻿using Caps.Util.IO;
+using SNS.Data.DataSerializer.XmlExtensions;
+using System.IO;
 
 namespace Caps.RPG.DungeonCrawler
 {
     internal static class Program
     {
-        private static void Main(string[] args)
+        public static readonly string VERSION = "1.0.0";
+        public static readonly string GAME_NAME = "DungeonCrawler";
+
+        private static void Main()
         {
-            int version = args.Length > 0 && int.TryParse(args[0], out int v) ? v : 0;
-            if (version == 1)
+            // load config
+            var gameDataPath = ProgramFilesWrapper.GetGameDataPath(GAME_NAME);
+            if (!Directory.Exists(gameDataPath))
             {
-                using var game = new DungeonCrawlerClient();
-                game.Run();
+                ProgramFilesWrapper.BuildGameDataStructure(gameDataPath);
+                File.Copy(Path.Combine(Directory.GetCurrentDirectory(), "game.config"), Path.Combine(gameDataPath, "game.config"));
             }
-            else if (version == 2)
-            {
-                using var game = new GeonBitUI_Examples2();
-                game.Run();
-            }
-            else
-            {
-                return;
-            }
+            var commonConfigPath = Path.Combine(gameDataPath, "game.config");
+            CommonConfig config = CommonConfig.LoadConfig(gameDataPath);
+            config.GameName = GAME_NAME;
+
+
+            using var game = new DungeonCrawlerClient(config);
+            //using var game = new GeonBitUI_Examples();
+            game.Run();
+
+
+            // Write config back to the file it was loaded from
+            using var writer = new StreamWriter(commonConfigPath, false);
+            writer.Write(config.ToXml());
         }
     }
 }
