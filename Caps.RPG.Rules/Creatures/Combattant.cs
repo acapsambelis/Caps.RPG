@@ -1,9 +1,9 @@
 using Caps.RPG.Rules.Modifiers;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Helpers;
-using SNS.Data.DataSerializer;
 using Caps.RPG.Rules.Maps;
-
+using Caps.Util;
+using SNS.Data.DataSerializer;
 
 namespace Caps.RPG.Rules.Creatures
 {
@@ -13,9 +13,6 @@ namespace Caps.RPG.Rules.Creatures
         private Creature _creature;
         private TerminalColor _team;
         private TileBase position;
-        public readonly char ShortName;
-        public TileMap fieldOfView;
-        public TileMap fullMap;
         private bool _wasLoaded = false;
 
         [SubDataObject("Creature")]
@@ -26,15 +23,12 @@ namespace Caps.RPG.Rules.Creatures
         public TileBase Position
         {
             get { return position; }
-            set
-            {
-                position = value;
-            }
+            set { position = value; }
         }
 
         public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
 
-        public string Name
+        public new string Name
         {
             get { return Creature.Name; }
         }
@@ -54,32 +48,15 @@ namespace Caps.RPG.Rules.Creatures
 
         public Combattant(Creature creature, TerminalColor team, TileBase position) : base(creature.Name, false, team)
         {
-            Creature = creature;
-            Team = team;
-            Position = position;
+            _creature = creature;
+            _team = team;
+            this.position = position;
             position.Features.Add(0, this);
-
-            ShortName = creature.Name[0];
         }
 
         public List<CombatAction> GetCombatActions()
         {
             return Creature.GetCombatActions();
-        }
-
-        public override string ToString()
-        {
-            return Team + " - " + Creature.ToString();
-        }
-
-        public override bool Equals(object? obj)
-        {
-            if (obj == null) return false;
-            if (obj is Combattant other)
-            {
-                return this.ToString().Equals(other.ToString());
-            }
-            return false;
         }
 
         public void Move(TileBase newPosition)
@@ -98,10 +75,12 @@ namespace Caps.RPG.Rules.Creatures
             return creatures.Where(c => c.Team == name).Select(c => c.Creature).ToArray();
         }
 
-        public override int GetHashCode()
+        public void HealAll()
         {
-            return base.GetHashCode();
+            Health = Creature.MaxHealth;
         }
+
+        #region Actions
 
         public readonly static List<CombatAction> ActionList =
         [
@@ -147,5 +126,31 @@ namespace Caps.RPG.Rules.Creatures
             }
             throw new Exception("Invalid target format");
         }
+
+        #endregion
+
+        #region GenericMethods
+
+        public override string ToString()
+        {
+            return Team + " - " + Creature.ToString();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null) return false;
+            if (obj is Combattant other)
+            {
+                return this.ToString().Equals(other.ToString());
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        #endregion
     }
 }

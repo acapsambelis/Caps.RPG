@@ -1,4 +1,4 @@
-﻿using Caps.RPG.Rules.Helpers;
+﻿using Caps.Util;
 
 namespace Caps.RPG.Rules.Maps
 {
@@ -18,7 +18,6 @@ namespace Caps.RPG.Rules.Maps
         public TileFeature(string name) : this(name, true, TerminalColors.Gray) { }
         public ConsoleColor Color
         {
-            //get { return color.Color; }
             get { return c; }
             set { c = value; }
         }

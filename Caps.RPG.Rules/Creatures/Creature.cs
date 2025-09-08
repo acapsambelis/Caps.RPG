@@ -21,6 +21,7 @@ namespace Caps.RPG.Rules.Creatures
 
         // Basics
         private string name;
+        private bool maxHealthChanged = true;
         private int maxHealth;
         private int health;
         private AttributeSet attributes;
@@ -37,7 +38,7 @@ namespace Caps.RPG.Rules.Creatures
         private bool attackBonusChanged = true;
         private bool initiativeChanged = true;
         private bool moveSpeedChanged = true;
-        private Dictionary<TargetType, List<Modifier>> modifiers;
+        private Dictionary<TargetType, List<Modifier>> modifiers = [];
         private int defenseClass;
         private int attackBonus;
         private int initiativeBonus;
@@ -56,8 +57,7 @@ namespace Caps.RPG.Rules.Creatures
         }
         public int MaxHealth
         {
-            get { return maxHealth; }
-            set { maxHealth = value; }
+            get => GetModifierValue(TargetType.MaxHealth, ref maxHealthChanged, ref maxHealth) + attributes.GetMaxHealth();
         }
         public int Health
         {
@@ -70,13 +70,13 @@ namespace Caps.RPG.Rules.Creatures
                     health = 0;
                     status = HealthStatus.Unconsious;
                 }
-                if (health > maxHealth)
+                if (health > MaxHealth)
                 {
-                    health = maxHealth;
+                    health = MaxHealth;
                 }
             }
         }
-        [DataProperty("SisionRange")]
+        [DataProperty("VisionRange")]
         public int SightRange
         {
             get { return 5; }
@@ -95,65 +95,39 @@ namespace Caps.RPG.Rules.Creatures
             get { return status; }
             set { status = value; }
         }
+
         public int DefenseClass
         {
-            get
-            {
-                if (defenseClassChanged)
-                {
-                    if (!modifiers.TryGetValue(TargetType.DefenseClass, out List<Modifier>? value))
-                        this.defenseClass = 0;
-                    else
-                        this.defenseClass = Modifier.SumAll(value, this.Attributes);
-                    this.defenseClassChanged = false;
-                }
-                return this.defenseClass;
-            }
+            get => GetModifierValue(TargetType.DefenseClass, ref defenseClassChanged, ref defenseClass);
         }
+
         public int AttackBonus
         {
-            get
-            {
-                if (attackBonusChanged)
-                {
-                    if (!modifiers.TryGetValue(TargetType.AttackBonus, out List<Modifier>? value))
-                        this.attackBonus = 0;
-                    else
-                        this.attackBonus = Modifier.SumAll(value, this.Attributes);
-                    this.attackBonusChanged = false;
-                }
-                return this.attackBonus;
-            }
+            get => GetModifierValue(TargetType.AttackBonus, ref attackBonusChanged, ref attackBonus) ;
         }
+
         public int InitiativeModifier
         {
-            get
-            {
-                if (initiativeChanged)
-                {
-                    if (!modifiers.TryGetValue(TargetType.Initiative, out List<Modifier>? value))
-                        this.initiativeBonus = 0;
-                    else
-                        this.initiativeBonus = Modifier.SumAll(value, this.Attributes);
-                    this.initiativeChanged = false;
-                }
-                return this.initiativeBonus + Attributes.InitiativeModifier();
-            }
+            get => GetModifierValue(TargetType.Initiative, ref initiativeChanged, ref initiativeBonus) + Attributes.InitiativeModifier();
         }
+
         public int MoveSpeed
         {
-            get
+            get => GetModifierValue(TargetType.MovementSpeed, ref moveSpeedChanged, ref moveSpeed) + Attributes.MoveSpeed();
+        }
+        
+        private int GetModifierValue(TargetType targetType, ref bool changedFlag, ref int cachedValue)
+        {
+            if (changedFlag)
             {
-                if (moveSpeedChanged)
-                {
-                    if (!modifiers.TryGetValue(TargetType.MovementSpeed, out List<Modifier>? value))
-                        this.moveSpeed = 0;
-                    else
-                        this.moveSpeed = Modifier.SumAll(value, this.Attributes);
-                    this.moveSpeedChanged = false;
-                }
-                return this.moveSpeed + Attributes.MoveSpeed();
+                UpdateAllModifiers();
+                if (!modifiers.TryGetValue(targetType, out List<Modifier>? value))
+                    cachedValue = 0;
+                else
+                    cachedValue = Modifier.SumAll(value, this.Attributes);
+                changedFlag = false;
             }
+            return cachedValue;
         }
 
         [SubDataObject("Inventory")]
@@ -180,7 +154,15 @@ namespace Caps.RPG.Rules.Creatures
         #endregion
 
         #region Constructors
-        public Creature() { }
+        public Creature()
+        {
+            name = "";
+            attributes = new AttributeSet();
+            combatActions = Combattant.GetGenericList();
+            inv = new CreatureInventory();
+            modifiers = Modifier.GetCreatureModifiers();
+            status = HealthStatus.Alive;
+        }
         public Creature(string name, AttributeSet attributes)
         {
             this.status = HealthStatus.Alive;
@@ -256,6 +238,23 @@ namespace Caps.RPG.Rules.Creatures
             }
 
             modifiers[modifier.Target].Add(modifier);
+        }
+
+        private void UpdateAllModifiers()
+        {
+            if (Inventory.EquippedItems.EquipmentChanged)
+            {
+                var inventoryModifiers = Inventory.GetModifiers();
+                foreach (var kvp in inventoryModifiers)
+                {
+                    foreach (var mod in kvp.Value)
+                    {
+                        AddModifier(mod, mod.Source);
+                    }
+                }
+                Inventory.EquippedItems.EquipmentChanged = false;
+            }
+            
         }
 
         #region GenericMethods

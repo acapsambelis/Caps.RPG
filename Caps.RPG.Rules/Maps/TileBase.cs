@@ -1,4 +1,4 @@
-﻿using Caps.RPG.Rules.Helpers;
+﻿using Caps.Util;
 
 namespace Caps.RPG.Rules.Maps
 {
@@ -10,8 +10,7 @@ namespace Caps.RPG.Rules.Maps
         public float F => G + H;
 
         public List<TileBase?> Neighbors { get; protected set; }
-        public bool Walkable { get; protected set; }
-
+        public bool Walkable { get { return !Features.Values.Any(feature => !feature.Walkable); } }
         public ICoords Coords;
         public SortedList<int, TileFeature> Features { get; protected set; } = [];
         public ConsoleColor Color
@@ -23,15 +22,14 @@ namespace Caps.RPG.Rules.Maps
             get { return Features.Count > 0 ? Features.First().Value.HighlightColor : ConsoleColor.Green; }
         }
 
-        public TileBase(ICoords coords, bool walkable = true)
+        public TileBase(ICoords coords)
         {
             Coords = coords;
-            Walkable = walkable;
             Neighbors = [];
             Connection = null;
             G = 0;
             H = 0;
-            if (!walkable)
+            if (!Walkable)
             {
                 Features.Add(0, new TileFeature("#Obstacle", false, TerminalColors.Gray));
             }

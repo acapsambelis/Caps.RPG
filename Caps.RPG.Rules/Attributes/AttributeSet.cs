@@ -1,29 +1,30 @@
-﻿using Caps.RPG.Rules.Modifiers;
-using Caps.RPG.Rules.Inventory;
+﻿using Caps.RPG.Rules.Inventory;
+using Caps.RPG.Rules.Modifiers;
 using SNS.Data.DataSerializer;
 
 namespace Caps.RPG.Rules.Attributes
 {
     public enum Stat
     {
-        Strength = 0,
-        Agility = 1,
-        Constitution = 2,
-        Intellect = 3,
-        Arcana = 4,
-        Wisdom = 5,
-        Presence = 6,
-        Charisma = 7
+        None = 0,
+        Strength = 1,
+        Agility = 2,
+        Constitution = 3,
+        Intellect = 4,
+        Arcana = 5,
+        Wisdom = 6,
+        Presence = 7,
+        Charisma = 8
     }
 
     [DataClass("AttributeSet")]
     public class AttributeSet : IGenericDataObject<AttributeSet>
     {
-        private Dictionary<TargetType, List<Modifier>> modifiers;
+        private List<Modifier> modifiers = [];
         private bool _wasLoaded = false;
 
-        [DataProperty("ModifiersAttr")]
-        public Dictionary<TargetType, List<Modifier>> Modifiers
+        //[DataProperty("ModifiersAttr")]
+        public List<Modifier> Modifiers
         {
             get { return modifiers; }
             set { modifiers = value; }
@@ -33,53 +34,46 @@ namespace Caps.RPG.Rules.Attributes
 
         public AttributeSet()
         {
-            modifiers = [];
-
-            modifiers.Add(TargetType.Strength,     [new Modifier(SourceType.Base, TargetType.Strength,     ActionType.Base, [BonusType.Flat], bonus: 0)]);
-            modifiers.Add(TargetType.Agility,      [new Modifier(SourceType.Base, TargetType.Agility,      ActionType.Base, [BonusType.Flat], bonus: 0)]);
-            modifiers.Add(TargetType.Constitution, [new Modifier(SourceType.Base, TargetType.Constitution, ActionType.Base, [BonusType.Flat], bonus: 0)]);
-            modifiers.Add(TargetType.Intellect,    [new Modifier(SourceType.Base, TargetType.Intellect,    ActionType.Base, [BonusType.Flat], bonus: 0)]);
-            modifiers.Add(TargetType.Arcana,       [new Modifier(SourceType.Base, TargetType.Arcana,       ActionType.Base, [BonusType.Flat], bonus: 0)]);
-            modifiers.Add(TargetType.Wisdom,       [new Modifier(SourceType.Base, TargetType.Wisdom,       ActionType.Base, [BonusType.Flat], bonus: 0)]);
-            modifiers.Add(TargetType.Presence,     [new Modifier(SourceType.Base, TargetType.Wisdom,       ActionType.Base, [BonusType.Flat], bonus: 0)]);
-            modifiers.Add(TargetType.Charisma,     [new Modifier(SourceType.Base, TargetType.Charisma,     ActionType.Base, [BonusType.Flat], bonus: 0)]);
+            //this[Stat.Strength]     = -1;
+            //this[Stat.Agility]      = -1;
+            //this[Stat.Constitution] = -1;
+            //this[Stat.Intellect]    = -1;
+            //this[Stat.Arcana]       = -1;
+            //this[Stat.Wisdom]       = -1;
+            //this[Stat.Presence]     = -1;
+            //this[Stat.Charisma]     = -1;
         }
         public AttributeSet(int str, int agi, int con, int itl, int arc, int wis, int pre, int cha)
         {
-            modifiers = [];
-
-            modifiers.Add(TargetType.Strength,     [new Modifier(SourceType.Base, TargetType.Strength,     ActionType.Base, [BonusType.Flat], bonus: str)]);
-            modifiers.Add(TargetType.Agility,      [new Modifier(SourceType.Base, TargetType.Agility,      ActionType.Base, [BonusType.Flat], bonus: agi)]);
-            modifiers.Add(TargetType.Constitution, [new Modifier(SourceType.Base, TargetType.Constitution, ActionType.Base, [BonusType.Flat], bonus: con)]);
-            modifiers.Add(TargetType.Intellect,    [new Modifier(SourceType.Base, TargetType.Intellect,    ActionType.Base, [BonusType.Flat], bonus: itl)]);
-            modifiers.Add(TargetType.Arcana,       [new Modifier(SourceType.Base, TargetType.Arcana,       ActionType.Base, [BonusType.Flat], bonus: arc)]);
-            modifiers.Add(TargetType.Wisdom,       [new Modifier(SourceType.Base, TargetType.Wisdom,       ActionType.Base, [BonusType.Flat], bonus: wis)]);
-            modifiers.Add(TargetType.Presence,     [new Modifier(SourceType.Base, TargetType.Wisdom,       ActionType.Base, [BonusType.Flat], bonus: pre)]);
-            modifiers.Add(TargetType.Charisma,     [new Modifier(SourceType.Base, TargetType.Charisma,     ActionType.Base, [BonusType.Flat], bonus: cha)]);
+            this[Stat.Strength]     = [new(Stat.Strength, str)];
+            this[Stat.Agility]      = [new(Stat.Agility, agi)];
+            this[Stat.Constitution] = [new(Stat.Constitution, con)];
+            this[Stat.Intellect]    = [new(Stat.Intellect, itl)];
+            this[Stat.Arcana]       = [new(Stat.Arcana, arc)];
+            this[Stat.Wisdom]       = [new(Stat.Wisdom, wis)];
+            this[Stat.Presence]     = [new(Stat.Presence, pre)];
+            this[Stat.Charisma]     = [new(Stat.Charisma, cha)];
         }
 
-        public int GetStatValue(Stat stat)
+        public List<Modifier> this[Stat stat]
         {
-            return stat switch
-            {
-                Stat.Strength     => Modifier.SumAll(modifiers[TargetType.Strength]),
-                Stat.Agility      => Modifier.SumAll(modifiers[TargetType.Agility]),
-                Stat.Constitution => Modifier.SumAll(modifiers[TargetType.Constitution]),
-                Stat.Intellect    => Modifier.SumAll(modifiers[TargetType.Intellect]),
-                Stat.Arcana       => Modifier.SumAll(modifiers[TargetType.Arcana]),
-                Stat.Wisdom       => Modifier.SumAll(modifiers[TargetType.Wisdom]),
-                Stat.Presence     => Modifier.SumAll(modifiers[TargetType.Presence]),
-                Stat.Charisma     => Modifier.SumAll(modifiers[TargetType.Charisma]),
-                _ => throw new ArgumentException("Invalid Stat type")
-            };
+            get {
+                return [.. modifiers.Where(m => m.Target.ToStat() == stat)];
+            }
+            set { modifiers.AddRange(value); }
+        }
+
+        public int SumModifiers(Stat stat)
+        {
+            return Modifier.SumAll(this[stat]);
         }
 
         public void AddModifier(Modifier modifier, object? source)
         {
-            List<Modifier> targetList = modifiers[modifier.Target];
+            List<Modifier> targetList = this[modifier.Target.ToStat()];
             if (source is Item s)
             {
-                foreach (var mod in targetList)
+                foreach (var mod in targetList.ToList())
                 {
                     if (mod.Source.IsItem() && mod.Source.ItemType() == s.Type)
                     {
@@ -88,55 +82,40 @@ namespace Caps.RPG.Rules.Attributes
                     }
                 }
             }
-            modifiers[modifier.Target].Add(modifier);
+            this[modifier.Target.ToStat()].Add(modifier);
         }
 
         public int GetMaxHealth()
         {
-            return this.GetStatValue(Stat.Constitution) * 10;
+            return SumModifiers(Stat.Constitution) * 10;
         }
 
         public int InitiativeModifier()
         {
-            return this.GetStatValue(Stat.Agility);
+            return SumModifiers(Stat.Agility);
         }
 
         public int MoveSpeed()
         {
-            return 5 + (this.GetStatValue(Stat.Agility) / 2);
+            return 5 + (SumModifiers(Stat.Agility) / 2);
         }
 
         public override bool Equals(object? obj)
         {
             if (obj is AttributeSet set)
             {
-                bool ret = true;
+                // Compare counts first
+                if (Modifiers.Count != set.Modifiers.Count)
+                    return false;
 
-                // Check if the counts of the dictionaries are the same
-                ret &= Modifiers.Count == set.Modifiers.Count;
-
-                // Check if all keys and their corresponding values are equal
-                foreach (var key in Modifiers.Keys)
+                // Compare each modifier in order
+                for (int i = 0; i < Modifiers.Count; i++)
                 {
-                    if (!set.Modifiers.ContainsKey(key))
-                    {
-                        ret = false;
-                        break;
-                    }
-
-                    // Compare the lists of modifiers for each key
-                    var thisModifiers = Modifiers[key];
-                    var otherModifiers = set.Modifiers[key];
-
-                    if (thisModifiers.Count != otherModifiers.Count ||
-                        !thisModifiers.SequenceEqual(otherModifiers))
-                    {
-                        ret = false;
-                        break;
-                    }
+                    if (!Modifiers[i].Equals(set.Modifiers[i]))
+                        return false;
                 }
 
-                return ret;
+                return true;
             }
             return false;
         }

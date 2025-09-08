@@ -9,6 +9,8 @@ namespace Caps.RPG.Rules.Creatures.Classed
     public class ClassedCharacter : Creature, CreatureType
     {
         public ClassLevelMakeup ClassLevelMakeup { get; internal set; }
+
+        public ClassedCharacter() { }
         public ClassedCharacter(string name, AttributeSet attributes) : base(name, attributes)
         {
             ClassLevelMakeup = new ClassLevelMakeup();
