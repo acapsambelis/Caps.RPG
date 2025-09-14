@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas>
+  <Texture>images/tiles</Texture>
+  <Regions>
+    <Region name="grassland" x="0" y="0" width="32" height="28" />
+    <Region name="rock" x="0" y="29" width="32" height="28" />
+  </Regions>
+</TextureAtlas>

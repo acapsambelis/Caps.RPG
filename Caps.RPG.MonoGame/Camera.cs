@@ -1,0 +1,125 @@
+﻿using Caps.RPG.MonoGame.Input;
+using Microsoft.Xna.Framework;
+
+namespace Caps.RPG.MonoGame
+{
+    public enum CameraSceneMode
+    {
+        None,
+        FullScreen,
+        Panning,
+        Following
+    }
+
+    public enum CameraMoveMode
+    {
+        None,
+        FullScreen,
+        Static,
+        Point,
+        Drag,
+        Follow
+    }
+
+    /// <summary>
+    /// The Camera class is basically just a location (the center of the screen)
+    /// which is used to generate a translation matrix for use in the SpriteBatch.Begin method
+    /// which in turn offsets everything that is drawn to the screen.
+    /// The offset is a quarter of the screen size (which is the top-left corner of the screen)
+    /// </summary>
+    public class Camera
+    {
+        private Vector2 viewSize;
+        private readonly MouseInfo _mouseInfo;
+        private CameraMoveMode _mode = CameraMoveMode.Follow;
+        private Vector2 _pointDestination;
+        private Vector2 _dragStartPosition;
+        private Vector2 _followPosition;
+
+        public Vector2 CameraCenter { get; set; }
+        public CameraMoveMode Mode
+        {
+            get => _mode;
+            set
+            {
+                _mode = value;
+                var mouseWorldPos = GetWorldPosition(_mouseInfo.Position.ToVector2());
+                switch (_mode)
+                {
+                    case CameraMoveMode.Drag:
+                        _dragStartPosition = mouseWorldPos;
+                        break;
+                    case CameraMoveMode.Point:
+                        _pointDestination = mouseWorldPos;
+                        break;
+                }
+            }
+        }
+        public Vector2 FollowPosition
+        {
+            get => _followPosition;
+            set => _followPosition = value;
+        }
+        public Vector2 GetTopLeft() => CameraCenter - viewSize;
+
+        public Camera(GraphicsDeviceManager graphicsDeviceManager, Vector2 fullScreenSize, Vector2 viewSize, MouseInfo mouseInfo)
+        {
+            _mouseInfo = mouseInfo;
+            this.viewSize = viewSize;
+        }
+
+        public void MoveCamera(GameTime gameTime)
+        {
+            if (_mouseInfo.IsButtonDown(MouseButton.Left))
+            {
+                if (_mouseInfo.XDelta != 0 || _mouseInfo.YDelta != 0)
+                {
+                    var newMouseWorldPosition = GetWorldPosition(_mouseInfo.Position.ToVector2());
+                    var difference = _dragStartPosition - newMouseWorldPosition;
+                    var targetPosition = CameraCenter + difference;
+                    MoveToward(targetPosition, (float)gameTime.ElapsedGameTime.TotalMilliseconds, 0.5f); // Move instantly to target (movePercentage=1)
+                    _dragStartPosition = newMouseWorldPosition;
+                }
+            }
+            if (Mode == CameraMoveMode.Point)
+                MoveToward(_pointDestination, (float)gameTime.ElapsedGameTime.TotalMilliseconds, 0.1f);
+            if (Mode == CameraMoveMode.Follow)
+                MoveToward(_followPosition, (float)gameTime.ElapsedGameTime.TotalMilliseconds);
+        }
+
+        public Vector2 GetWorldPosition(Vector2 screenPosition)
+        {
+            return GetTopLeft() + screenPosition;
+        }
+
+        public void MoveToward(Vector2 target, float deltaTimeInMs, float movePercentage = .02f)
+        {
+            //figure out which direction to move the camera
+            Vector2 differenceInPosition = target - CameraCenter;
+
+            //figure out how far to move in each update
+            differenceInPosition *= movePercentage;
+
+            //get a fraction how much time has passed since last update
+            //so the camera moves at a constant speed
+            var fractionOfPassedTime = deltaTimeInMs / 10;
+            //note: dividing by 10 is an arbitrary constant,
+            //which works well in this case to make the camera slower than the player
+
+            //move the camera towards the target
+            CameraCenter += differenceInPosition * fractionOfPassedTime;
+
+            //if the camera is very close to the target, just center it on the target
+            //in order to avoid "jiggling" if the camera continuously overshoots the target
+            if ((target - CameraCenter).Length() < movePercentage)
+            {
+                CameraCenter = target;
+            }
+        }
+
+        public Matrix GetTranslation()
+        {
+            return Matrix.CreateTranslation(-GetTopLeft().X, -GetTopLeft().Y, 0);
+        }
+    }
+}

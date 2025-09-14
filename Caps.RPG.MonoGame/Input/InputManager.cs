@@ -51,5 +51,9 @@ namespace Caps.RPG.MonoGame.Input
             }
         }
 
+        public Vector2 GetMouseWorldPosition(Matrix cameraTransform)
+        {
+            return Vector2.Transform(Mouse.Position.ToVector2(), Matrix.Invert(cameraTransform));
+        }
     }
 }

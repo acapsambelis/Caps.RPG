@@ -4,12 +4,14 @@ using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace Caps.RPG.DungeonCrawler.Scenes
 {
-    public abstract class BaseScene(CommonConfig config) : Scene()
+    public abstract class BaseScene(CommonConfig config, CameraSceneMode cameraMode) : Scene()
     {
         protected CommonConfig config = config;
+        protected CameraSceneMode cameraMode = cameraMode;
 
         private static SpriteFont _font;
         private static SoundEffect _uiSoundEffect;
@@ -38,6 +40,31 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             UserInterface.Active.Draw(Core.SpriteBatch);
             Core.GraphicsDevice.Clear(new Color(196, 196, 196, 255));
             UserInterface.Active.DrawMainRenderTarget(Core.SpriteBatch);
+        }
+
+        public void Draw(GameTime gameTime, Action drawAction)
+        {
+            UserInterface.Active.Draw(Core.SpriteBatch);
+            Core.GraphicsDevice.Clear(new Color(196, 196, 196, 255));
+            drawAction();
+            UserInterface.Active.DrawMainRenderTarget(Core.SpriteBatch);
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            if (cameraMode != CameraSceneMode.FullScreen)
+            {
+                if (Core.Input.Mouse.WasButtonJustPressed(Caps.RPG.MonoGame.Input.MouseButton.Left))
+                    Core.Camera.Mode = CameraMoveMode.Drag;
+                if (Core.Input.Mouse.WasButtonJustReleased(Caps.RPG.MonoGame.Input.MouseButton.Left))
+                    Core.Camera.Mode = CameraMoveMode.Static;
+                if (Core.Input.Mouse.WasButtonJustPressed(Caps.RPG.MonoGame.Input.MouseButton.Middle))
+                    Core.Camera.Mode = CameraMoveMode.Point;
+                if (Core.Input.Mouse.WasButtonJustPressed(Caps.RPG.MonoGame.Input.MouseButton.Right))
+                    Core.Camera.Mode = CameraMoveMode.Follow;
+
+                Core.Camera.MoveCamera(gameTime);
+            }
         }
     }
 }

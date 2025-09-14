@@ -83,9 +83,17 @@ namespace Caps.RPG.MonoGame.Graphics
         /// Creates a new sprite using the specified source texture region.
         /// </summary>
         /// <param name="region">The texture region to use as the source texture region for this sprite.</param>
-        public Sprite(TextureRegion region)
+        public Sprite(TextureRegion region, bool isCentered = true)
         {
             Region = region;
+            if (isCentered) CenterOrigin();
+        }
+
+        public Sprite(TextureRegion region, Vector2 scale, bool isCentered = true)
+        {
+            Region = region;
+            Scale = scale;
+            if (isCentered) CenterOrigin();
         }
 
         /// <summary>

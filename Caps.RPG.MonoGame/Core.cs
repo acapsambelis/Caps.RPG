@@ -21,6 +21,7 @@ namespace Caps.RPG.MonoGame
 
         private static Scene s_activeScene;
         private static Scene s_nextScene;
+        private static Vector2 windowSize;
 
         /// <summary>
         /// Gets the graphics device manager to control the presentation of graphics.
@@ -58,6 +59,11 @@ namespace Caps.RPG.MonoGame
         public static AudioController Audio { get; private set; }
 
         /// <summary>
+        /// Gets a reference to the camera used to offset the view of the game world.
+        /// </summary>
+        public static Camera Camera { get; private set; }
+
+        /// <summary>
         /// Creates a new Core instance.
         /// </summary>
         /// <param name="title">The title to display in the title bar of the game window.</param>
@@ -86,17 +92,18 @@ namespace Caps.RPG.MonoGame
             // Set the core's graphics device to a reference of the base Game's
             // graphics device.
             GraphicsDevice = base.GraphicsDevice;
+            windowSize = MakeFullScreen();
 
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             Input = new InputManager();
             Audio = new AudioController();
+            Camera = new Camera(Graphics, windowSize, windowSize / 2, Input.Mouse);
 
-            MakeFullScreen();
             InitializeUI();
             base.Initialize();
         }
 
-        private static void MakeFullScreen()
+        private static Vector2 MakeFullScreen()
         {
             // make the window fullscreen (but still with border and top control bar)
             int _ScreenWidth = Graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Width;
@@ -105,6 +112,8 @@ namespace Caps.RPG.MonoGame
             Graphics.PreferredBackBufferHeight = _ScreenHeight;
             Graphics.IsFullScreen = false;
             Graphics.ApplyChanges();
+
+            return new Vector2(_ScreenWidth, _ScreenHeight);
         }
 
         protected void InitializeUI()
@@ -164,6 +173,11 @@ namespace Caps.RPG.MonoGame
             {
                 s_nextScene = next;
             }
+        }
+
+        public static Vector2 GetCursorPosition()
+        {
+            return Input.GetMouseWorldPosition(Camera.GetTranslation());
         }
 
         private static void TransitionScene()

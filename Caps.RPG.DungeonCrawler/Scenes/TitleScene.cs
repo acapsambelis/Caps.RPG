@@ -8,7 +8,7 @@ using System.IO;
 
 namespace Caps.RPG.DungeonCrawler.Scenes
 {
-    public class TitleScene(CommonConfig config) : BaseScene(config)
+    public class TitleScene(CommonConfig config) : BaseScene(config, CameraSceneMode.FullScreen)
     {
         public override void Initialize()
         {
@@ -86,14 +86,15 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
         public void Continue()
         {
-            if (!config.LastSaveFile.Equals(""))
-            {
-                GeonBit.UI.Utils.MessageBox.ShowMsgBox("Continuing Game", $"In this example we won't actually load anything, but in a real project we would load the last save file located at '{config.LastSaveFile}'.");
-            }
-            else
-            {
-                GeonBit.UI.Utils.MessageBox.ShowMsgBox("No Save File", "No last save file found! Please use 'Load Game' to load a previous save.");
-            }
+            Core.ChangeScene(new GameScene(config));
+            //if (!config.LastSaveFile.Equals(""))
+            //{
+            //    GeonBit.UI.Utils.MessageBox.ShowMsgBox("Continuing Game", $"In this example we won't actually load anything, but in a real project we would load the last save file located at '{config.LastSaveFile}'.");
+            //}
+            //else
+            //{
+            //    GeonBit.UI.Utils.MessageBox.ShowMsgBox("No Save File", "No last save file found! Please use 'Load Game' to load a previous save.");
+            //}
         }
 
         public void NewGame()
@@ -134,6 +135,11 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
         public void Credits()
         {
+        }
+
+        public override void Draw(GameTime gameTime)
+        {
+            base.Draw(gameTime);
         }
     }
 }
