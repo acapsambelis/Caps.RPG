@@ -1,5 +1,6 @@
 ﻿using Caps.RPG.MonoGame.Input;
 using Microsoft.Xna.Framework;
+using System;
 
 namespace Caps.RPG.MonoGame
 {
@@ -35,7 +36,7 @@ namespace Caps.RPG.MonoGame
         private Vector2 _pointDestination;
         private Vector2 _dragStartPosition;
         private Vector2 _followPosition;
-
+        private float _zoom = 1f;
         public Vector2 CameraCenter { get; set; }
         public CameraMoveMode Mode
         {
@@ -54,6 +55,11 @@ namespace Caps.RPG.MonoGame
                         break;
                 }
             }
+        }
+        public float Zoom
+        {
+            get => _zoom;
+            set => _zoom = Math.Clamp(value, 0.1f, 5f); // Prevent extreme zooms
         }
         public Vector2 FollowPosition
         {
@@ -85,6 +91,16 @@ namespace Caps.RPG.MonoGame
                 MoveToward(_pointDestination, (float)gameTime.ElapsedGameTime.TotalMilliseconds, 0.1f);
             if (Mode == CameraMoveMode.Follow)
                 MoveToward(_followPosition, (float)gameTime.ElapsedGameTime.TotalMilliseconds);
+        }
+
+        public void ZoomCamera(GameTime gameTime)
+        {
+            var delta = _mouseInfo.ScrollWheelDelta;
+            if (delta != 0)
+            {
+                // Adjust zoom speed as needed
+                Zoom += delta * 0.001f;
+            }
         }
 
         public Vector2 GetWorldPosition(Vector2 screenPosition)
@@ -119,7 +135,18 @@ namespace Caps.RPG.MonoGame
 
         public Matrix GetTranslation()
         {
-            return Matrix.CreateTranslation(-GetTopLeft().X, -GetTopLeft().Y, 0);
+            // Calculate the translation to move the camera center to the origin
+            var translationToOrigin = Matrix.CreateTranslation(-CameraCenter.X, -CameraCenter.Y, 0);
+
+            // Apply scaling (zoom) around the origin (camera center)
+            var scale = Matrix.CreateScale(Zoom, Zoom, 1f);
+
+            // Translate back to the screen center after scaling
+            var screenCenter = viewSize;
+            var translationBack = Matrix.CreateTranslation(screenCenter.X, screenCenter.Y, 0);
+
+            // Combine the matrices: move to origin -> scale -> move back
+            return translationToOrigin * scale * translationBack;
         }
     }
 }

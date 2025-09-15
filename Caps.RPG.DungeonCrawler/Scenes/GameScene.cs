@@ -17,7 +17,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
     {
         private readonly TileMap hexMap = HexMap.GenerateRandomMap(0, 3);
         private readonly List<Combattant> combattants = [];
-        Dictionary<string, Sprite> characterSprites = [];
+        private readonly Dictionary<string, Sprite> characterSprites = [];
         private Map _map;
 
         public override void Initialize()

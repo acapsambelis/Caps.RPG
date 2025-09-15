@@ -64,6 +64,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                     Core.Camera.Mode = CameraMoveMode.Follow;
 
                 Core.Camera.MoveCamera(gameTime);
+                Core.Camera.ZoomCamera(gameTime);
             }
         }
     }

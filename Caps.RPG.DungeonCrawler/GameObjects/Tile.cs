@@ -50,8 +50,7 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
             BaseSprite.Draw(Core.SpriteBatch, Position);
             foreach (int index in TileFeatureSprites.Keys)
             {
-                if (TileFeatureSprites[index] != null)
-                    TileFeatureSprites[index].Draw(Core.SpriteBatch, Position);
+                TileFeatureSprites[index]?.Draw(Core.SpriteBatch, Position);
             }
         }
     }
