@@ -1,5 +1,8 @@
-﻿using Caps.RPG.DungeonCrawler.Scenes;
+﻿using Caps.RPG.DungeonCrawler.GameObjects;
+using Caps.RPG.DungeonCrawler.Scenes;
 using Caps.RPG.MonoGame;
+using Caps.RPG.MonoGame.Graphics;
+using Microsoft.Xna.Framework;
 
 namespace Caps.RPG.DungeonCrawler
 {
@@ -22,6 +25,12 @@ namespace Caps.RPG.DungeonCrawler
         {
             // TODO: use this.Content to load your game content here
             base.LoadContent();
+
+            TextureAtlas tileAtlas = TextureAtlas.FromFile(Core.Content, "images/tiles-definition.xml");
+            TextureRegion grassland = tileAtlas.GetRegion("grassland");
+            Map.Grassland = new Sprite(grassland, new Vector2(3));
+            TextureRegion rock = tileAtlas.GetRegion("rock");
+            CommonTileFeatures.Rock = new Sprite(rock, new Vector2(3));
         }
     }
 }

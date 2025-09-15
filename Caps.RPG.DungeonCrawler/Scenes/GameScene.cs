@@ -22,7 +22,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
         public override void Initialize()
         {
-            _point = CreateTexture(Core.GraphicsDevice, 8, 8, Color.White);
+            //_point = CreateTexture(Core.GraphicsDevice, 8, 8, Color.White);
 
             var characterLoader = new LuaEntityLoader("Characters");
             List<ClassedCharacter> blueTeam = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("BlueTeam");
@@ -41,11 +41,6 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         public override void LoadContent()
         {
             base.LoadContent();
-            TextureAtlas tileAtlas = TextureAtlas.FromFile(Core.Content, "images/tiles-definition.xml");
-            TextureRegion grassland = tileAtlas.GetRegion("grassland");
-            Map.Grassland = new Sprite(grassland, new Vector2(3));
-            TextureRegion rock = tileAtlas.GetRegion("rock");
-            CommonTileFeatures.Rock = new Sprite(rock, new Vector2(3));
 
             TextureAtlas characterAtlas = TextureAtlas.FromFile(Core.Content, "images/characters-definition.xml");
             foreach (Combattant combattant in combattants)
@@ -73,7 +68,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 _map.Draw();
 
                 //draw the world and camera coordinates
-                DrawWorldAndCameraCoordinates();
+                //DrawWorldAndCameraCoordinates();
                 Core.SpriteBatch.End();
             });
         }
