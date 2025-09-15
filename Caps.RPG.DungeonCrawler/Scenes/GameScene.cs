@@ -22,8 +22,6 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
         public override void Initialize()
         {
-            //_point = CreateTexture(Core.GraphicsDevice, 8, 8, Color.White);
-
             var characterLoader = new LuaEntityLoader("Characters");
             List<ClassedCharacter> blueTeam = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("BlueTeam");
             List<ClassedCharacter> redTeam = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("RedTeam");
@@ -62,45 +60,12 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         {
             base.Draw(gameTime, () =>
             {
-                Matrix transform = Core.Camera.GetTranslation();
-                Core.SpriteBatch.Begin(SpriteSortMode.Immediate, transformMatrix: transform);
+                Core.SpriteBatch.Begin(SpriteSortMode.Immediate, transformMatrix: Core.Camera.GetTranslation());
 
                 _map.Draw();
 
-                //draw the world and camera coordinates
-                //DrawWorldAndCameraCoordinates();
                 Core.SpriteBatch.End();
             });
-        }
-
-        private Texture2D _point;
-
-        private void DrawWorldAndCameraCoordinates()
-        {
-            Core.SpriteBatch.Draw(_point, Vector2.Zero - Vector2.One * 4, Color.White);
-            Core.SpriteBatch.DrawString(Font, "World center: (0,0)", new Vector2(15, -12), Color.White);
-            Core.SpriteBatch.Draw(_point, Core.Camera.CameraCenter - Vector2.One * 4, Color.Red);
-            Core.SpriteBatch.DrawString(Font, $"Camera center: ({Core.Camera.CameraCenter.X:0.},{Core.Camera.CameraCenter.Y:0.})", Core.Camera.CameraCenter + Vector2.One * 20, Color.Red);
-        }
-
-        //Helpermethod for creating a texture of a specified size and color
-        private static Texture2D CreateTexture(GraphicsDevice device, int width, int height, Color color)
-        {
-            //initialize a texture
-            Texture2D texture = new Texture2D(device, width, height);
-
-            //the array holds the color for each pixel in the texture
-            Color[] data = new Color[width * height];
-            for (int pixel = 0; pixel < data.Count(); pixel++)
-            {
-                //the function applies the color according to the specified pixel
-                data[pixel] = color;
-            }
-
-            //set the color
-            texture.SetData(data);
-
-            return texture;
         }
     }
 }
