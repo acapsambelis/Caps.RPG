@@ -1,32 +1,46 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using Caps.RPG.MonoGame;
 using Caps.RPG.MonoGame.Graphics;
+using Caps.RPG.Rules.Creatures;
+using Caps.RPG.Rules.Maps;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace Caps.RPG.DungeonCrawler.GameObjects
 {
     public class Map
     {
-        public Tile[,] Tiles { get; private set; }
+        private readonly TileMap mapData;
+        private readonly Tile[,] tiles;
+        private readonly Dictionary<string, Sprite> characterSprites;
 
         public static Sprite Grassland { get; set; }
-        public static Sprite Rock { get; set; }
 
-        public Map(int width, int height)
+        public Map(TileMap mapData, Dictionary<string, Sprite> characterSprites)
         {
-            Tiles = new Tile[width, height];
+            this.mapData = mapData;
+            tiles = new Tile[mapData.GridWidth, mapData.GridDepth];
+            this.characterSprites = characterSprites;
 
             // Calculate offset so that the center of the map is at (0, 0)
-            int centerX = width / 2;
-            int centerY = height / 2;
+            int centerX = mapData.GridWidth / 2;
+            int centerY = mapData.GridDepth / 2;
 
-            for (int x = 0; x < Tiles.GetLength(0); x++)
+            for (int x = 0; x < mapData.GridWidth; x++)
             {
-                for (int y = 0; y < Tiles.GetLength(1); y++)
+                for (int y = 0; y < mapData.GridDepth; y++)
                 {
-                    // Offset tile positions by subtracting center coordinates
-                    Tiles[x, y] = new Tile(Grassland, x - centerX, y - centerY);
+                    if (mapData[x, y].Features.Any(f => f.Value is Combattant && characterSprites.ContainsKey(f.Value.Name + " " + (f.Value as Combattant).Team)))
+                    {
+                        var feature = mapData[x, y].Features.First(f => characterSprites.ContainsKey(f.Value.Name + " " + (f.Value as Combattant).Team));
+                        tiles[x, y] = new Tile(Grassland, mapData[x, y], x - centerX, y - centerY, characterSprites[feature.Value.Name + " " + (feature.Value as Combattant).Team]);
+                    }
+                    else
+                    {
+                        tiles[x, y] = new Tile(Grassland, mapData[x, y], x - centerX, y - centerY);
+                    }
                 }
             }
         }
@@ -36,7 +50,7 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
             var tile = GetTileAtMousePosition();
             if (tile != null)
                 tile.Color = Color.Gray;
-            foreach (Tile t in Tiles)
+            foreach (Tile t in tiles)
             {
                 if (t != tile)
                 {
@@ -50,31 +64,31 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
             var MousePosition = Core.GetCursorPosition();
             float minD = float.MaxValue;
             Tile selected = null;
-            for (int x = 0; x < Tiles.GetLength(0); x++)
+            for (int x = 0; x < tiles.GetLength(0); x++)
             {
-                for (int y = 0; y < Tiles.GetLength(1); y++)
+                for (int y = 0; y < tiles.GetLength(1); y++)
                 {
-                    var d = Vector2.Distance(MousePosition, Tiles[x, y].Position);
+                    var d = Vector2.Distance(MousePosition, tiles[x, y].Position);
                     if (d < minD)
                     {
                         minD = d;
-                        selected = Tiles[x, y];
+                        selected = tiles[x, y];
                     }
                 }
             }
 
-            if (minD < Math.Max(selected.Sprite.Origin.Y, selected.Sprite.Origin.X)) return selected;
+            if (minD < Math.Max(selected.BaseSprite.Origin.Y, selected.BaseSprite.Origin.X)) return selected;
 
             return null;
         }
 
         public void Draw()
         {
-            for (int x = 0; x < Tiles.GetLength(0); x++)
+            for (int x = 0; x < tiles.GetLength(0); x++)
             {
-                for (int y = 0; y < Tiles.GetLength(1); y++)
+                for (int y = 0; y < tiles.GetLength(1); y++)
                 {
-                    Tiles[x, y].Draw();
+                    tiles[x, y].Draw();
                 }
             }
         }

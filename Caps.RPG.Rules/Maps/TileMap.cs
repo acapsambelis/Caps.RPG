@@ -10,6 +10,9 @@ namespace Caps.RPG.Rules.Maps
         protected int _gridDepth;
         protected int _gridWidth;
 
+        public int GridWidth => _gridWidth;
+        public int GridDepth => _gridDepth;
+
         public TileMap(int gridWidth, int gridDepth)
         {
             _gridWidth = gridWidth;

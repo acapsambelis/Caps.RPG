@@ -17,12 +17,11 @@ namespace Caps.RPG.DungeonCrawler.Scenes
     {
         private readonly TileMap hexMap = HexMap.GenerateRandomMap(0, 3);
         private readonly List<Combattant> combattants = [];
-
+        Dictionary<string, Sprite> characterSprites = [];
         private Map _map;
 
         public override void Initialize()
         {
-            base.Initialize();
             _point = CreateTexture(Core.GraphicsDevice, 8, 8, Color.White);
 
             var characterLoader = new LuaEntityLoader("Characters");
@@ -36,7 +35,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             {
                 combattant.HealAll();
             }
-            _map = new Map(20, 10);
+            base.Initialize();
         }
 
         public override void LoadContent()
@@ -46,7 +45,16 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             TextureRegion grassland = tileAtlas.GetRegion("grassland");
             Map.Grassland = new Sprite(grassland, new Vector2(3));
             TextureRegion rock = tileAtlas.GetRegion("rock");
-            Map.Rock = new Sprite(rock);
+            CommonTileFeatures.Rock = new Sprite(rock, new Vector2(3));
+
+            TextureAtlas characterAtlas = TextureAtlas.FromFile(Core.Content, "images/characters-definition.xml");
+            foreach (Combattant combattant in combattants)
+            {
+                TextureRegion region = characterAtlas.GetRegion(combattant.Name + " " + combattant.Team.ToString());
+                characterSprites[combattant.Name + " " + combattant.Team.ToString()] = new Sprite(region, new Vector2(3));
+            }
+
+            _map = new Map(hexMap, characterSprites);
         }
 
         public override void Update(GameTime gameTime)

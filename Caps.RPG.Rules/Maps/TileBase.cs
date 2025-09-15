@@ -29,10 +29,6 @@ namespace Caps.RPG.Rules.Maps
             Connection = null;
             G = 0;
             H = 0;
-            if (!Walkable)
-            {
-                Features.Add(0, new TileFeature("#Obstacle", false, TerminalColors.Gray));
-            }
         }
 
         public virtual char TextRepresentation()

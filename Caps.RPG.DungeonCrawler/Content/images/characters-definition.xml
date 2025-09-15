@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas>
+  <Texture>images/characters</Texture>
+  <Regions>
+    <Region name="Dex F DarkBlue" x="0" y="0" width="16" height="16" />
+    <Region name="Str F DarkBlue" x="0" y="16" width="16" height="16" />
+    <Region name="Cleric DarkBlue" x="0" y="32" width="16" height="16" />
+    <Region name="Dex F DarkRed" x="0" y="48" width="16" height="16" />
+    <Region name="Str F DarkRed" x="0" y="64" width="16" height="16" />
+    <Region name="Cleric DarkRed" x="0" y="80" width="16" height="16" />
+  </Regions>
+</TextureAtlas>
