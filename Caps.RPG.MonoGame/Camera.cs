@@ -1,6 +1,7 @@
 ﻿using Caps.RPG.MonoGame.Input;
 using Microsoft.Xna.Framework;
 using System;
+using System.Drawing;
 
 namespace Caps.RPG.MonoGame
 {
@@ -68,13 +69,13 @@ namespace Caps.RPG.MonoGame
         }
         public Vector2 GetTopLeft() => CameraCenter - viewSize;
 
-        public Camera(GraphicsDeviceManager graphicsDeviceManager, Vector2 fullScreenSize, Vector2 viewSize, MouseInfo mouseInfo)
+        public Camera(Vector2 viewSize, MouseInfo mouseInfo)
         {
             _mouseInfo = mouseInfo;
             this.viewSize = viewSize;
         }
 
-        public void MoveCamera(GameTime gameTime)
+        public void MoveCamera(GameTime gameTime, RectangleF? worldSize = null)
         {
             if (_mouseInfo.IsButtonDown(MouseButton.Left))
             {
@@ -83,7 +84,7 @@ namespace Caps.RPG.MonoGame
                     var newMouseWorldPosition = GetWorldPosition(_mouseInfo.Position.ToVector2());
                     var difference = _dragStartPosition - newMouseWorldPosition;
                     var targetPosition = CameraCenter + difference;
-                    MoveToward(targetPosition, (float)gameTime.ElapsedGameTime.TotalMilliseconds, 0.5f); // Move instantly to target (movePercentage=1)
+                    MoveToward(targetPosition, (float)gameTime.ElapsedGameTime.TotalMilliseconds, 0.5f);
                     _dragStartPosition = newMouseWorldPosition;
                 }
             }
@@ -91,9 +92,20 @@ namespace Caps.RPG.MonoGame
                 MoveToward(_pointDestination, (float)gameTime.ElapsedGameTime.TotalMilliseconds, 0.1f);
             if (Mode == CameraMoveMode.Follow)
                 MoveToward(_followPosition, (float)gameTime.ElapsedGameTime.TotalMilliseconds);
+
+            if (worldSize.HasValue)
+                ClampToWorld(worldSize.Value);
         }
 
-        public void ZoomCamera(GameTime gameTime)
+        private void ClampToWorld(RectangleF worldSize)
+        {
+            CameraCenter = new Vector2(
+                Math.Clamp(CameraCenter.X, worldSize.Left, worldSize.Right),
+                Math.Clamp(CameraCenter.Y, worldSize.Top, worldSize.Bottom)
+            );
+        }
+
+        public void ZoomCamera()
         {
             var delta = _mouseInfo.ScrollWheelDelta;
             if (delta != 0)

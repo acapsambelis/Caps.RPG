@@ -97,7 +97,7 @@ namespace Caps.RPG.MonoGame
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             Input = new InputManager();
             Audio = new AudioController();
-            Camera = new Camera(Graphics, windowSize, windowSize / 2, Input.Mouse);
+            Camera = new Camera(windowSize / 2, Input.Mouse);
 
             InitializeUI();
             base.Initialize();

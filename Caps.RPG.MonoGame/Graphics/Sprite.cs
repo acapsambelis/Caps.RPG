@@ -114,5 +114,26 @@ namespace Caps.RPG.MonoGame.Graphics
             Region.Draw(spriteBatch, position, Color, Rotation, Origin, Scale, Effects, LayerDepth);
         }
 
+        public Texture2D GetTexture()
+        {
+            // Returns a new Texture2D containing only the region represented by this sprite.
+            // If the region covers the whole texture, return the original texture.
+            if (Region.SourceRectangle.X == 0 && Region.SourceRectangle.Y == 0 &&
+                Region.SourceRectangle.Width == Region.Texture.Width &&
+                Region.SourceRectangle.Height == Region.Texture.Height)
+            {
+                return Region.Texture;
+            }
+
+            // Extract the region as a new Texture2D
+            var graphicsDevice = Region.Texture.GraphicsDevice;
+            var sourceRect = Region.SourceRectangle;
+            Color[] data = new Color[sourceRect.Width * sourceRect.Height];
+            Region.Texture.GetData(0, sourceRect, data, 0, data.Length);
+
+            Texture2D regionTexture = new Texture2D(graphicsDevice, sourceRect.Width, sourceRect.Height);
+            regionTexture.SetData(data);
+            return regionTexture;
+        }
     }
 }

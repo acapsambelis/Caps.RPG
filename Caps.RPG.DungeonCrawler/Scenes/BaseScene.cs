@@ -12,6 +12,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
     {
         protected CommonConfig config = config;
         protected CameraSceneMode cameraMode = cameraMode;
+        protected System.Drawing.RectangleF? worldSize = null;
 
         private static SpriteFont _font;
         private static SoundEffect _uiSoundEffect;
@@ -42,11 +43,11 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             UserInterface.Active.DrawMainRenderTarget(Core.SpriteBatch);
         }
 
-        public void Draw(GameTime gameTime, Action drawAction)
+        public void Draw(GameTime gameTime, Func<System.Drawing.RectangleF> drawFunction)
         {
             UserInterface.Active.Draw(Core.SpriteBatch);
             Core.GraphicsDevice.Clear(new Color(196, 196, 196, 255));
-            drawAction();
+            worldSize = drawFunction();
             UserInterface.Active.DrawMainRenderTarget(Core.SpriteBatch);
         }
 
@@ -63,8 +64,11 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 if (Core.Input.Mouse.WasButtonJustPressed(Caps.RPG.MonoGame.Input.MouseButton.Right))
                     Core.Camera.Mode = CameraMoveMode.Follow;
 
-                Core.Camera.MoveCamera(gameTime);
-                Core.Camera.ZoomCamera(gameTime);
+                if (cameraMode != CameraSceneMode.FullScreen)
+                    Core.Camera.MoveCamera(gameTime, worldSize);
+                else
+                    Core.Camera.MoveCamera(gameTime);
+                Core.Camera.ZoomCamera();
             }
         }
     }
