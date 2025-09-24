@@ -30,7 +30,7 @@ namespace Caps.RPG
             }
 
             MainLoop mainLoop = new(hexMap, combattants);
-            mainLoop.Loop(DrawMap, TopDisplay, GetTargets, GetAction, DisplayActionResult);
+            mainLoop.SynchronousLoop(DrawMap, TopDisplay, GetTargets, GetAction, DisplayActionResult);
         }
 
         private static int GetTextInput()

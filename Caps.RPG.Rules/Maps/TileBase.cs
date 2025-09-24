@@ -5,9 +5,9 @@ namespace Caps.RPG.Rules.Maps
     public abstract class TileBase
     {
         internal TileBase? Connection { get; private set; }
-        public float G { get; private set; }
-        public float H { get; private set; }
-        public float F => G + H;
+        internal float G { get; private set; }
+        internal float H { get; private set; }
+        internal float F => G + H;
 
         public List<TileBase?> Neighbors { get; protected set; }
         public bool Walkable { get { return !Features.Values.Any(feature => !feature.Walkable); } }
@@ -21,6 +21,7 @@ namespace Caps.RPG.Rules.Maps
         {
             get { return Features.Count > 0 ? Features.First().Value.HighlightColor : ConsoleColor.Green; }
         }
+        public bool Highlighted { get; set; } = false;
 
         public TileBase(ICoords coords)
         {

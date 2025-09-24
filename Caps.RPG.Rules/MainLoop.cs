@@ -1,6 +1,8 @@
 ﻿using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Maps;
+using System;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Caps.RPG.Rules
 {
@@ -20,7 +22,7 @@ namespace Caps.RPG.Rules
             CurrentCombattant = State.CombatOrder[0];
         }
 
-        public void Loop(
+        public void SynchronousLoop(
             Action<TileMap, Dictionary<TileBase, ConsoleColor?>?>? DrawMap,
             Action<Combattant[], Combattant, int, int>? TopDisplay,
             Func<TileMap, TileBase, ActionSetup, TileBase[]> GetTargets,
@@ -79,6 +81,83 @@ namespace Caps.RPG.Rules
                         actionsAvailable -= chosen.Cost;
                         // display result
                         DisplayActionResult(result);
+
+                        // loop while action points remain
+                    } while (actionsAvailable > 0 && currentCreature.Creature.Status == Creature.HealthStatus.Alive);
+                }
+            }
+        }
+
+
+        private readonly ManualResetEvent actionSetEvent = new(false);
+        private CombatAction? chosenAction;
+        private readonly ManualResetEvent targetsSetEvent = new(false);
+        private TileBase[]? chosenTargets;
+        private ActionResult? actionResult;
+
+        public CombatAction ChosenAction
+        {
+            internal get
+            {
+                // Wait until chosenAction is set (not null)
+                actionSetEvent.WaitOne();
+                actionSetEvent.Reset();
+                return chosenAction!;
+            }
+            set
+            {
+                chosenAction = value;
+                actionSetEvent.Set();
+            }
+        }
+
+        public TileBase[] ChosenTargets
+        {
+            internal get
+            {
+                targetsSetEvent.WaitOne();
+                targetsSetEvent.Reset();
+                return chosenTargets!;
+            }
+            set
+            {
+                chosenTargets = value;
+                targetsSetEvent.Set();
+            }
+        }
+
+        public ActionResult? ActionResult
+        {
+            get { return actionResult; }
+            internal set { actionResult = value; }
+        }
+
+        public void ResetChoices()
+        {
+            chosenAction = null;
+            chosenTargets = null;
+            actionResult = null;
+            actionSetEvent.Reset();
+            targetsSetEvent.Reset();
+        }
+
+        public void StartAsyncLoop()
+        {
+            int MAX_ACTIONS = 3;
+            while (State.HasNoVictor())
+            {
+                foreach (Combattant currentCreature in State.CombatOrder)
+                {
+                    if (currentCreature.Creature.Status != Creature.HealthStatus.Alive) continue;
+
+                    int actionsAvailable = MAX_ACTIONS;
+                    do
+                    {
+                        CombatAction chosen = ChosenAction;
+                        TileBase[] targets = chosen.Setup.NeedsTarget ? ChosenTargets : [];
+                        ActionResult result = chosen.Execution(currentCreature, targets);
+                        actionsAvailable -= chosen.Cost;
+                        ActionResult = result;
 
                         // loop while action points remain
                     } while (actionsAvailable > 0 && currentCreature.Creature.Status == Creature.HealthStatus.Alive);

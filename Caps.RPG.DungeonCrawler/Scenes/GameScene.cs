@@ -12,10 +12,10 @@ using Caps.Util.Lua;
 using GeonBit.UI;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Caps.RPG.DungeonCrawler.Scenes
 {
@@ -49,7 +49,11 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             base.Initialize();
             InitializeUI();
 
-            //Task.Run(() => gameLoop.Loop(null, null, GetTargets, GetAction, DisplayActionResult));
+            worldSize = _map.GetBoundingBox();
+            Core.Camera.ZoomToWorldSize(worldSize.Value);
+            Core.Camera.FollowPosition = _map.GetTilePosition(combattants[0].Position);
+            Core.Camera.Mode = CameraMoveMode.Follow;
+            Task.Run(() => gameLoop.StartAsyncLoop());
         }
 
         public void InitializeUI()
@@ -77,13 +81,13 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             }
             UserInterface.Active.AddEntity(topPanel);
 
-            Panel characterControlPanels = new(new Vector2(500, 120 * combattants.Count + 10), PanelSkin.Fancy, Anchor.BottomLeft)
+            Panel characterControlPanels = new(new Vector2(500, 120 * combattants.Count + 10), PanelSkin.Default, Anchor.BottomLeft)
             {
                 Padding = new Vector2(5)
             };
             foreach (Combattant combattant in combattants)
             {
-                CharacterControlsPanel characterControlPanel = new(combattant);
+                CharacterControlsPanel characterControlPanel = new(combattant, hexMap);
                 uiUpdatingEntities.Add(characterControlPanel);
                 characterControlPanels.AddChild(characterControlPanel.Panel);
                 characterControlPanel.Panel.Visible = combattant == gameLoop.CurrentCombattant;
@@ -102,6 +106,12 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 characterSprites[combattant.Name + " " + combattant.Team.ToString()] = new Sprite(region, new Vector2(3));
             }
 
+            TextureAtlas actionIconAtlas = TextureAtlas.FromFile(Core.Content, "images/action-icons-definition.xml");
+            foreach (var kvp in actionIconAtlas.GetAllRegions())
+            {
+                CharacterControlsPanel.ActionIcons[kvp.Key.ToLower()] = new Sprite(kvp.Value, new Vector2(1.0f));
+            }
+
             _map = new Map(hexMap, characterSprites);
         }
 
@@ -116,21 +126,6 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                     tracker.Update();
                 }
             }
-        }
-
-        private TileBase[] GetTargets(TileMap map, TileBase tileBase, ActionSetup setup)
-        {
-            throw new NotImplementedException();
-        }
-
-        private CombatAction GetAction(List<CombatAction> list)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void DisplayActionResult(ActionResult result)
-        {
-            throw new NotImplementedException();
         }
 
         public override void Draw(GameTime gameTime)

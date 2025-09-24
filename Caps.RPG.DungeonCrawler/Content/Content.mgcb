@@ -4542,6 +4542,21 @@
 #begin GeonBit.UI/Themes/lowres/ThemeData.xml
 /copy:GeonBit.UI/Themes/lowres/ThemeData.xml;GeonBit.UI/Themes/ThemeData
 
+#begin images/action-icons-definition.xml
+/copy:images/action-icons-definition.xml
+
+#begin images/action-icons.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/action-icons.png
+
 #begin images/characters-definition.xml
 /copy:images/characters-definition.xml
 

@@ -1,4 +1,5 @@
 ﻿using Caps.RPG.MonoGame.Input;
+using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using System;
 using System.Drawing;
@@ -77,7 +78,9 @@ namespace Caps.RPG.MonoGame
 
         public void MoveCamera(GameTime gameTime, RectangleF? worldSize = null)
         {
-            if (_mouseInfo.IsButtonDown(MouseButton.Left))
+            if (UserInterface.Active.ActiveEntity is not GeonBit.UI.Entities.RootPanel)
+                return;
+            if (_mouseInfo.IsButtonDown(Input.MouseButton.Left))
             {
                 if (_mouseInfo.XDelta != 0 || _mouseInfo.YDelta != 0)
                 {
@@ -114,6 +117,33 @@ namespace Caps.RPG.MonoGame
                 Zoom += delta * 0.001f;
             }
         }
+
+        public void ZoomToWorldSize(RectangleF worldSize)
+        {
+            // Calculate the scale needed so that the world fits 75% of the screen
+            float worldWidth = worldSize.Width;
+            float worldHeight = worldSize.Height;
+
+            float screenWidth = viewSize.X * 2f;
+            float screenHeight = viewSize.Y * 2f;
+
+            // 95% of the screen
+            float targetScreenWidth = screenWidth * 0.95f;
+            float targetScreenHeight = screenHeight * 0.95f;
+
+            float zoomX = targetScreenWidth / worldWidth;
+            float zoomY = targetScreenHeight / worldHeight;
+
+            // Use the smaller zoom to ensure the whole world fits
+            Zoom = Math.Min(zoomX, zoomY);
+
+            // Optionally, center the camera on the world
+            CameraCenter = new Vector2(
+                worldSize.Left + worldWidth / 2f,
+                worldSize.Top + worldHeight / 2f
+            );
+        }
+
 
         public Vector2 GetWorldPosition(Vector2 screenPosition)
         {

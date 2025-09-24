@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Caps.RPG.MonoGame;
 using Caps.RPG.MonoGame.Graphics;
 using Caps.RPG.Rules.Maps;
+using Caps.RPG.DungeonCrawler.Scenes;
 
 namespace Caps.RPG.DungeonCrawler.GameObjects
 {
@@ -52,6 +53,17 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
             {
                 TileFeatureSprites[index]?.Draw(Core.SpriteBatch, Position);
             }
+            if (TileBase.Highlighted)
+            {
+                CommonTileFeatures.Highlight.Draw(Core.SpriteBatch, Position);
+            }
+            // Draw coordinates as debug text
+            //var font = BaseScene.Font;
+            //if (font != null)
+            //{
+            //    string coordsText = $"{TileBase.Coords.Pos.IntX:0},{TileBase.Coords.Pos.IntY:0}";
+            //    Core.SpriteBatch.DrawString(font, coordsText, Position, Color.Black);
+            //}
         }
     }
 }

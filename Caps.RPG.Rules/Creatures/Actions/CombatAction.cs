@@ -164,7 +164,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
         private double distanceFromSource;
         private bool needsEmptyTile;
 
-        [DataProperty("NeedsSource")]
+        [DataProperty("NeedsTarget")]
         public bool NeedsTarget
         {
             get { return needsSource; }

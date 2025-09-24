@@ -66,6 +66,15 @@ namespace Caps.RPG.MonoGame.Graphics
         }
 
         /// <summary>
+        /// Get all the regions in this texture atlas.
+        /// </summary>
+        /// <returns>The dictionary of TextureRegions</returns>
+        public Dictionary<string, TextureRegion> GetAllRegions()
+        {
+            return _regions;
+        }
+
+        /// <summary>
         /// Removes the region from this texture atlas with the specified name.
         /// </summary>
         /// <param name="name">The name of the region to remove.</param>

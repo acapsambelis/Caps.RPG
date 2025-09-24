@@ -13,21 +13,17 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
 {
     public class Map
     {
+        public static Sprite Grassland { get; set; }
+
         private readonly TileMap mapData;
         private readonly Tile[,] tiles;
         private readonly Dictionary<string, Sprite> characterSprites;
-
-        public static Sprite Grassland { get; set; }
 
         public Map(TileMap mapData, Dictionary<string, Sprite> characterSprites)
         {
             this.mapData = mapData;
             tiles = new Tile[mapData.GridWidth, mapData.GridDepth];
             this.characterSprites = characterSprites;
-
-            // Calculate offset so that the center of the map is at (0, 0)
-            int centerX = mapData.GridWidth / 2;
-            int centerY = mapData.GridDepth / 2;
 
             for (int x = 0; x < mapData.GridWidth; x++)
             {
@@ -36,11 +32,11 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
                     if (mapData[x, y].Features.Any(f => f.Value is Combattant && characterSprites.ContainsKey(f.Value.Name + " " + (f.Value as Combattant).Team)))
                     {
                         var feature = mapData[x, y].Features.First(f => characterSprites.ContainsKey(f.Value.Name + " " + (f.Value as Combattant).Team));
-                        tiles[x, y] = new Tile(Grassland, mapData[x, y], x - centerX, y - centerY, characterSprites[feature.Value.Name + " " + (feature.Value as Combattant).Team]);
+                        tiles[x, y] = new Tile(Grassland, mapData[x, y], x, y, characterSprites[feature.Value.Name + " " + (feature.Value as Combattant).Team]);
                     }
                     else
                     {
-                        tiles[x, y] = new Tile(Grassland, mapData[x, y], x - centerX, y - centerY);
+                        tiles[x, y] = new Tile(Grassland, mapData[x, y], x, y);
                     }
                 }
             }
@@ -132,5 +128,19 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
             return new System.Drawing.RectangleF(minX, minY, maxX - minX, maxY - minY);
         }
 
+        public Vector2 GetTilePosition(TileBase tile)
+        {
+            for (int x = 0; x < tiles.GetLength(0); x++)
+            {
+                for (int y = 0; y < tiles.GetLength(1); y++)
+                {
+                    if (tiles[x, y].TileBase == tile)
+                    {
+                        return tiles[x, y].Position;
+                    }
+                }
+            }
+            throw new ArgumentException("Tile not found in map.");
+        }
     }
 }

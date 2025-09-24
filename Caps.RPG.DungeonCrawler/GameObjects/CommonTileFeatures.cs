@@ -9,6 +9,7 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
 {
     public class CommonTileFeatures
     {
+        public static Sprite Highlight { get; set; }
         public static Sprite Rock { get; set; }
 
 

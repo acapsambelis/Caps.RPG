@@ -26,11 +26,13 @@ namespace Caps.RPG.DungeonCrawler
             // TODO: use this.Content to load your game content here
             base.LoadContent();
 
-            TextureAtlas tileAtlas = TextureAtlas.FromFile(Core.Content, "images/tiles-definition.xml");
+            TextureAtlas tileAtlas = TextureAtlas.FromFile(Content, "images/tiles-definition.xml");
             TextureRegion grassland = tileAtlas.GetRegion("grassland");
             Map.Grassland = new Sprite(grassland, new Vector2(3));
             TextureRegion rock = tileAtlas.GetRegion("rock");
             CommonTileFeatures.Rock = new Sprite(rock, new Vector2(3));
+            TextureRegion highlight = tileAtlas.GetRegion("highlight");
+            CommonTileFeatures.Highlight = new Sprite(highlight, new Vector2(3));
         }
     }
 }
