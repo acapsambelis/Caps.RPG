@@ -4,7 +4,6 @@ using Caps.RPG.MonoGame;
 using Caps.RPG.MonoGame.Graphics;
 using Caps.RPG.Rules;
 using Caps.RPG.Rules.Creatures;
-using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Creatures.Classed;
 using Caps.RPG.Rules.Maps;
 using Caps.Util;
@@ -12,7 +11,6 @@ using Caps.Util.Lua;
 using GeonBit.UI;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,6 +25,10 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         private Map _map;
         private MainLoop gameLoop;
         private readonly List<IUIEntity> uiUpdatingEntities = [];
+        private Panel characterControlPanels;
+        private CharacterControlsPanel currentCharacterPanel;
+        private int actionsAvailable;
+
         public override void Initialize()
         {
             var characterLoader = new LuaEntityLoader("Characters");
@@ -72,26 +74,28 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 Padding = Vector2.Zero
             };
             topPanel.AddChild(initiative);
-
-            foreach (Combattant combattant in gameLoop.State.CombatOrder)
-            {
-                Combattant currentCombattant = combattant;
-                InitiativeTracker tracker = new(characterSprites[combattant.Name + " " + combattant.Team.ToString()], ref currentCombattant);
-                initiative.AddChild(tracker.Panel);
-            }
-            UserInterface.Active.AddEntity(topPanel);
-
-            Panel characterControlPanels = new(new Vector2(500, 120 * combattants.Count + 10), PanelSkin.Default, Anchor.BottomLeft)
+            characterControlPanels = new(new Vector2(500, 120 * combattants.Count + 10), PanelSkin.Default, Anchor.BottomLeft)
             {
                 Padding = new Vector2(5)
             };
+
             foreach (Combattant combattant in combattants)
             {
-                CharacterControlsPanel characterControlPanel = new(combattant, hexMap);
-                uiUpdatingEntities.Add(characterControlPanel);
-                characterControlPanels.AddChild(characterControlPanel.Panel);
-                characterControlPanel.Panel.Visible = combattant == gameLoop.CurrentCombattant;
+                Combattant currentCombattant = combattant;
+                InitiativeTracker tracker = new(characterSprites[currentCombattant.Name + " " + currentCombattant.Team.ToString()], ref currentCombattant);
+                initiative.AddChild(tracker.Panel);
+
+                CharacterControlsPanel characterControlsPanel = new(currentCombattant, hexMap, ActionClicked);
+                uiUpdatingEntities.Add(characterControlsPanel);
+                characterControlPanels.AddChild(characterControlsPanel.Panel);
+                characterControlsPanel.Panel.Visible = currentCombattant == gameLoop.CurrentCombattant;
+
+                Sprite characterSprite = characterSprites[currentCombattant.Name + " " + currentCombattant.Team.ToString()];
+                CombattantEntity entity = new(ref currentCombattant, characterSprite, CommonTileFeatures.CreateDeathSprite(characterSprite), ref tracker, ref characterControlsPanel, ref _map);
+                uiUpdatingEntities.Add(entity);
             }
+            // end add
+            UserInterface.Active.AddEntity(topPanel);
             UserInterface.Active.AddEntity(characterControlPanels);
         }
 
@@ -113,18 +117,53 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             }
 
             _map = new Map(hexMap, characterSprites);
+            foreach (Tile t in _map.Tiles)
+                RegisterClickable(t);
+        }
+
+        public void ActionClicked(GeonBit.UI.Entities.Entity entity)
+        {
+            string actionName = ((Button)entity).Tag;
+            if (string.IsNullOrEmpty(actionName)) return;
+
+            var actions = gameLoop.CurrentCombattant.Creature.GetCombatActions();
+            gameLoop.ChosenAction = actions.FirstOrDefault(a => a.Name == actionName);
         }
 
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
             _map.Update();
+            SetCurrentCharacterPanel(gameLoop.CurrentCombattant);
+            var tile = _map.ClickedTile;
+            if (tile != null)
+            {
+                if (tile.TileBase.Highlighted)
+                    gameLoop.ChosenTargets = [tile.TileBase];
+                foreach (Tile t in _map.Tiles)
+                    t.TileBase.Highlighted = false;
+
+                currentCharacterPanel.ToggleAbilityButtons();
+            }
+            if (gameLoop.ActionsAvailable != actionsAvailable)
+            {
+                actionsAvailable = gameLoop.ActionsAvailable;
+                currentCharacterPanel.SetActionNumber(actionsAvailable);
+            }
             foreach (var entity in uiUpdatingEntities)
             {
-                if (entity is InitiativeTracker tracker)
-                {
-                    tracker.Update();
-                }
+                entity.Update();
+            }
+        }
+
+        private void SetCurrentCharacterPanel(Combattant combattant)
+        {
+            var visiblePanelEntity = characterControlPanels.Children.FirstOrDefault(p => p.Visible);
+            foreach (var characterControlPanel in uiUpdatingEntities.OfType<CharacterControlsPanel>())
+            {
+                characterControlPanel.Panel.Visible = characterControlPanel.Combattant == combattant;
+                if (characterControlPanel.Panel.Visible)
+                    currentCharacterPanel = characterControlPanel;
             }
         }
 

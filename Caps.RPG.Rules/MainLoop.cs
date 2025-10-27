@@ -1,8 +1,6 @@
 ﻿using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Maps;
-using System;
-using static System.Collections.Specialized.BitVector32;
 
 namespace Caps.RPG.Rules
 {
@@ -89,11 +87,17 @@ namespace Caps.RPG.Rules
         }
 
 
+        private int actionsAvailable;
         private readonly ManualResetEvent actionSetEvent = new(false);
         private CombatAction? chosenAction;
         private readonly ManualResetEvent targetsSetEvent = new(false);
         private TileBase[]? chosenTargets;
         private ActionResult? actionResult;
+
+        public int ActionsAvailable
+        {
+            get => actionsAvailable;
+        }
 
         public CombatAction ChosenAction
         {
@@ -143,14 +147,14 @@ namespace Caps.RPG.Rules
 
         public void StartAsyncLoop()
         {
-            int MAX_ACTIONS = 3;
             while (State.HasNoVictor())
             {
                 foreach (Combattant currentCreature in State.CombatOrder)
                 {
+                    CurrentCombattant = currentCreature;
                     if (currentCreature.Creature.Status != Creature.HealthStatus.Alive) continue;
 
-                    int actionsAvailable = MAX_ACTIONS;
+                    actionsAvailable = currentCreature.ActionCounts;
                     do
                     {
                         CombatAction chosen = ChosenAction;

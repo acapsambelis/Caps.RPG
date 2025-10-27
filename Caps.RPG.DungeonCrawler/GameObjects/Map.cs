@@ -5,7 +5,6 @@ using Caps.RPG.Rules.Maps;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,6 +17,41 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
         private readonly TileMap mapData;
         private readonly Tile[,] tiles;
         private readonly Dictionary<string, Sprite> characterSprites;
+        private Tile clickedTile;
+
+        public Tile[,] Tiles => tiles;
+
+        public Tile this[TileBase tileBase]
+        {
+            get
+            {
+                for (int x = 0; x < tiles.GetLength(0); x++)
+                {
+                    for (int y = 0; y < tiles.GetLength(1); y++)
+                    {
+                        if (tiles[x, y].TileBase == tileBase)
+                        {
+                            return tiles[x, y];
+                        }
+                    }
+                }
+                throw new ArgumentException("TileBase not found in map.");
+            }
+        }
+
+        public Tile ClickedTile
+        {
+            get
+            {
+                var ret = clickedTile;
+                clickedTile = null;
+                return ret;
+            }
+            private set
+            {
+                clickedTile = value;
+            }
+        }
 
         public Map(TileMap mapData, Dictionary<string, Sprite> characterSprites)
         {
@@ -38,8 +72,14 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
                     {
                         tiles[x, y] = new Tile(Grassland, mapData[x, y], x, y);
                     }
+                    tiles[x, y].OnClick += TileClicked;
                 }
             }
+        }
+
+        private void TileClicked(object sender, EventArgs e)
+        {
+            ClickedTile = sender as Tile;
         }
 
         public void Update()
@@ -53,6 +93,7 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
                 {
                     t.Color = Color.White;
                 }
+                t.Update();
             }
         }
 

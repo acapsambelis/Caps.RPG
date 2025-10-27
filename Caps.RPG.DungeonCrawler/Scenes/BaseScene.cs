@@ -55,13 +55,13 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         {
             if (cameraMode != CameraSceneMode.FullScreen)
             {
-                if (Core.Input.Mouse.WasButtonJustPressed(Caps.RPG.MonoGame.Input.MouseButton.Left))
+                if (Core.Input.Mouse.WasButtonJustPressed(MonoGame.Input.MouseButtons.Left))
                     Core.Camera.Mode = CameraMoveMode.Drag;
-                if (Core.Input.Mouse.WasButtonJustReleased(Caps.RPG.MonoGame.Input.MouseButton.Left))
+                if (Core.Input.Mouse.WasButtonJustReleased(MonoGame.Input.MouseButtons.Left))
                     Core.Camera.Mode = CameraMoveMode.Static;
-                if (Core.Input.Mouse.WasButtonJustPressed(Caps.RPG.MonoGame.Input.MouseButton.Middle))
+                if (Core.Input.Mouse.WasButtonJustPressed(MonoGame.Input.MouseButtons.Middle))
                     Core.Camera.Mode = CameraMoveMode.Point;
-                if (Core.Input.Mouse.WasButtonJustPressed(Caps.RPG.MonoGame.Input.MouseButton.Right))
+                if (Core.Input.Mouse.WasButtonJustPressed(MonoGame.Input.MouseButtons.Right))
                     Core.Camera.Mode = CameraMoveMode.Follow;
 
                 if (cameraMode != CameraSceneMode.FullScreen)
@@ -70,6 +70,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                     Core.Camera.MoveCamera(gameTime);
                 Core.Camera.ZoomCamera();
             }
+            base.Update(gameTime);
         }
     }
 }

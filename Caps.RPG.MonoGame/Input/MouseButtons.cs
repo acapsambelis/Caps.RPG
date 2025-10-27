@@ -1,6 +1,6 @@
 ﻿namespace Caps.RPG.MonoGame.Input
 {
-    public enum MouseButton
+    public enum MouseButtons
     {
         Left,
         Middle,

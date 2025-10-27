@@ -49,6 +49,8 @@ namespace Caps.RPG.DungeonCrawler.UI
             );
             if (setup.NeedsEmptyTile)
                 validTargets = [.. validTargets.Where(t => t.IsEmpty())];
+            if (setup.TargetType == ActionSetup.SourceType.SingleCreature)
+                validTargets = [.. validTargets.Where(t => t.GetFeature<Combattant>() != null)];
 
             return validTargets;
         }

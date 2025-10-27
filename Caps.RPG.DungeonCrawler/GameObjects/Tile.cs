@@ -3,11 +3,11 @@ using Microsoft.Xna.Framework;
 using Caps.RPG.MonoGame;
 using Caps.RPG.MonoGame.Graphics;
 using Caps.RPG.Rules.Maps;
-using Caps.RPG.DungeonCrawler.Scenes;
+using System;
 
 namespace Caps.RPG.DungeonCrawler.GameObjects
 {
-    public class Tile
+    public class Tile : Clickable
     {
         public Sprite BaseSprite { get; }
         public Color Color = Color.White;
@@ -58,12 +58,48 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
                 CommonTileFeatures.Highlight.Draw(Core.SpriteBatch, Position);
             }
             // Draw coordinates as debug text
-            //var font = BaseScene.Font;
-            //if (font != null)
-            //{
-            //    string coordsText = $"{TileBase.Coords.Pos.IntX:0},{TileBase.Coords.Pos.IntY:0}";
-            //    Core.SpriteBatch.DrawString(font, coordsText, Position, Color.Black);
-            //}
+            var font = Scenes.BaseScene.Font;
+            if (font != null)
+            {
+                string coordsText = $"{TileBase.Coords.Pos.IntX:0},{TileBase.Coords.Pos.IntY:0}";
+                Core.SpriteBatch.DrawString(font, coordsText, Position, Color.Black);
+            }
+        }
+
+        public override bool IsInside(Vector2 point)
+        {
+            // the tile is drawn centered at Position, with BaseSprite's width/height
+            float width = BaseSprite.Width;
+            float height = BaseSprite.Height;
+            float left = Position.X - width / 2;
+            float top = Position.Y - height / 2;
+            float right = left + width;
+            float bottom = top + height;
+
+            // Rectangle check
+            if (point.X < left || point.X > right || point.Y < top || point.Y > bottom)
+                return false;
+
+            // If hex tile (height > width), use hexagon hit test
+            if (height > width)
+            {
+                // Axial hexagon math (pointy-topped)
+                float relX = point.X - Position.X;
+                float relY = point.Y - Position.Y;
+                float q = (float)(Math.Sqrt(3) / 3 * relX - 1.0 / 3 * relY) / (height / 2);
+                float r = (2.0f / 3 * relY) / (height / 2);
+                return Math.Abs(q) + Math.Abs(r) + Math.Abs(-q - r) <= 1.0f;
+            }
+            else
+            {
+                // Flat-topped hex or rectangle: just use rectangle
+                return true;
+            }
+        }
+
+        public void Update()
+        {
+            
         }
     }
 }

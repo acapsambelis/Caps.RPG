@@ -1,11 +1,12 @@
 using Caps.RPG.MonoGame.Graphics;
 using Caps.RPG.Rules.Creatures;
+using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Maps;
-using FlatRedBall.Glue.StateInterpolation;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Caps.RPG.DungeonCrawler.UI
 {
@@ -18,11 +19,13 @@ namespace Caps.RPG.DungeonCrawler.UI
 
         private readonly Label nameLabel;
         private readonly ProgressBar healthBar;
-        private readonly Panel abilitiesPanel;
+        private readonly List<Button> actionButtons = [];
+        private readonly Panel actionCounters;
 
+        public Combattant Combattant => combattant;
         public Panel Panel { get; }
 
-        public CharacterControlsPanel(Combattant combattant, TileMap map)
+        public CharacterControlsPanel(Combattant combattant, TileMap map, GeonBit.UI.EventCallback actionSelection)
         {
             this.map = map;
             this.combattant = combattant;
@@ -49,13 +52,28 @@ namespace Caps.RPG.DungeonCrawler.UI
             healthBar.ProgressFill.FillColor = healthBar.FillColor;
             Panel.AddChild(healthBar);
 
+            actionCounters = new Panel(new Vector2(0, 30), PanelSkin.Simple, Anchor.AutoCenter)
+            {
+                Padding = new Vector2(5)
+            };
+            for (int i = 0; i < combattant.ActionCounts; i++)
+            {
+                actionCounters.AddChild(new CheckBox("", Anchor.AutoInline)
+                {
+                    Checked = true,
+                    Padding = new Vector2(5, 0),
+                    Locked = true,
+                    Tag = i.ToString()
+                });
+            }
+
             // Calculate the number of rows needed for the ability buttons
             var actions = combattant.Creature.GetCombatActions();
             int buttonsPerRow = 5;
             int buttonSize = (int)((Panel.Size.X - new Vector2(5).X) / buttonsPerRow) - (int)(new Vector2(5).X);
 
             // Set the abilitiesPanel height to fit all rows
-            abilitiesPanel = new Panel(new Vector2(0, 0), PanelSkin.Simple, Anchor.AutoCenter)
+            Panel abilitiesPanel = new(new Vector2(0, 0), PanelSkin.Simple, Anchor.AutoCenter)
             {
                 Padding = new Vector2(5)
             };
@@ -80,22 +98,17 @@ namespace Caps.RPG.DungeonCrawler.UI
                 var action = actions[i];
                 Button actionButton = new("", ButtonSkin.Default, Anchor.AutoInlineNoBreak, size: new Vector2(buttonSize))
                 {
-                    ToolTipText = $"{action.Name} (Cost: {action.Cost})"
+                    ToolTipText = $"{action.Name} (Cost: {action.Cost})",
+                    Tag = action.Name,
+                    ToggleMode = true
                 };
                 actionButtonPadding = actionButton.Padding;
-
-                actionButton.OnClick += entity =>
-                {
-                    TileBase[] validTiles = ActionSetupManager.ValidTiles(map, combattant, action.Setup);
-                    foreach (var tile in validTiles)
-                        tile.Highlighted = true;
-                    var getTarget = ActionSetupManager.GetAction(action.Setup);
-                    TileBase[] target = getTarget?.Invoke(map, combattant, action.Setup);
-                };
+                actionButton.OnClick += ActionClicked;
+                actionButton.OnClick += actionSelection;
 
                 if (ActionIcons.TryGetValue(action.Name.ToLower(), out var icon) && icon != null)
                 {
-                    Image iconImage = new(icon.GetTexture(), new Vector2(buttonSize - 10), anchor: Anchor.Center);
+                    Image iconImage = new(icon.GetTextureWithColor(), new Vector2(buttonSize - 10), anchor: Anchor.Center);
                     actionButton.AddChild(iconImage, true);
                 }
                 else
@@ -108,7 +121,7 @@ namespace Caps.RPG.DungeonCrawler.UI
                     actionButton.AddChild(iconLabel, true);
                 }
                         
-
+                actionButtons.Add(actionButton);
                 rowPanel.AddChild(actionButton);
             }
             Panel.AddChild(abilitiesPanel);
@@ -121,6 +134,37 @@ namespace Caps.RPG.DungeonCrawler.UI
         public void Update()
         {
 
+        }
+
+        public void SetActionNumber(int number)
+        {
+            foreach (CheckBox box in actionCounters.Children.Where(c => c is CheckBox).Cast<CheckBox>())
+            {
+                int index = int.Parse(box.Tag);
+                box.Checked = index < number;
+            }
+        }
+
+        public void ActionClicked(Entity entity)
+        {
+            string actionName = ((Button)entity).Tag;
+            if (string.IsNullOrEmpty(actionName)) return;
+
+            var actions = combattant.Creature.GetCombatActions();
+            CombatAction action = actions.FirstOrDefault(a => a.Name == actionName);
+            TileBase[] validTiles = ActionSetupManager.ValidTiles(map, combattant, action.Setup);
+            foreach (var tile in validTiles)
+                tile.Highlighted = true;
+            //var getTarget = ActionSetupManager.GetAction(action.Setup);
+            //TileBase[] target = getTarget?.Invoke(map, combattant, action.Setup);
+        }
+
+        public void ToggleAbilityButtons()
+        {
+            foreach (var button in actionButtons)
+            {
+                button.Checked = false;
+            }
         }
     }
 }

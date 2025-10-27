@@ -43,6 +43,12 @@ namespace Caps.RPG.MonoGame.Graphics
             SourceRectangle = new Rectangle(x, y, width, height);
         }
 
+        public TextureRegion(TextureRegion other)
+        {
+            Texture = other.Texture;
+            SourceRectangle = other.SourceRectangle;
+        }
+
         /// <summary>
         /// Submit this texture region for drawing in the current batch.
         /// </summary>

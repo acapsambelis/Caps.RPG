@@ -61,9 +61,9 @@ namespace Caps.RPG.Rules.Maps
             return a + (b - a) * t;
         }
 
-        public T GetFeature<T>() where T : TileFeature
+        public T? GetFeature<T>() where T : TileFeature
         {
-            return Features.Values.OfType<T>().FirstOrDefault() ?? throw new InvalidOperationException($"No feature of type {typeof(T).Name} found.");
+            return Features.Values.OfType<T>().FirstOrDefault();
         }
 
         public bool IsEmpty()

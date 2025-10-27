@@ -22,6 +22,24 @@ namespace Caps.RPG.DungeonCrawler.UI
 
         public Panel Panel => panel;
 
+        public Sprite CharacterSprite
+        {
+            get => characterSprite;
+            set
+            {
+                characterSprite = value;
+                panel.Children.Where(c => c is Image).ToList().ForEach(child =>
+                {
+                    panel.RemoveChild(child);
+                    panel.AddChild(new Image(
+                        characterSprite.GetTextureWithColor(),
+                        size: new Vector2(topPanelHeight - 25),
+                        anchor: Anchor.Center
+                    ));
+                });
+            }
+        }
+
         public InitiativeTracker(Sprite characterSprite, ref Combattant data) : base()
         {
             this.characterSprite = characterSprite;
@@ -36,7 +54,7 @@ namespace Caps.RPG.DungeonCrawler.UI
 
             // Character image
             Image character = new(
-                characterSprite.GetTexture(),
+                characterSprite.GetTextureWithColor(),
                 size: new Vector2(topPanelHeight - 25),
                 anchor: Anchor.Center
             );

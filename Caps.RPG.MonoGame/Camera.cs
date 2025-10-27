@@ -80,7 +80,7 @@ namespace Caps.RPG.MonoGame
         {
             if (UserInterface.Active.ActiveEntity is not GeonBit.UI.Entities.RootPanel)
                 return;
-            if (_mouseInfo.IsButtonDown(Input.MouseButton.Left))
+            if (_mouseInfo.IsButtonDown(MouseButtons.Left))
             {
                 if (_mouseInfo.XDelta != 0 || _mouseInfo.YDelta != 0)
                 {
@@ -145,9 +145,20 @@ namespace Caps.RPG.MonoGame
         }
 
 
+        // Plan (pseudocode):
+        // 1. The current GetTranslation() transforms world -> screen with:
+        //      screenPos = ((worldPos - CameraCenter) * Zoom) + viewSize
+        // 2. To get world from screen we need to invert that:
+        //      worldPos = ((screenPos - viewSize) / Zoom) + CameraCenter
+        // 3. Implement the inverse transformation, guarding implicitly against invalid Zoom
+        //    (Zoom is already clamped elsewhere), return the computed world position.
         public Vector2 GetWorldPosition(Vector2 screenPosition)
         {
-            return GetTopLeft() + screenPosition;
+            // screenCenter is stored in `viewSize` (used as translation back in GetTranslation)
+            var screenCenter = viewSize;
+
+            // Undo translation to center, then undo scaling, then translate by camera center
+            return ((screenPosition - screenCenter) / Zoom) + CameraCenter;
         }
 
         public void MoveToward(Vector2 target, float deltaTimeInMs, float movePercentage = .02f)
