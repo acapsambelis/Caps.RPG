@@ -63,11 +63,19 @@ namespace Caps.RPG.MonoGame
             get => _zoom;
             set => _zoom = Math.Clamp(value, 0.1f, 5f); // Prevent extreme zooms
         }
+
         public Vector2 FollowPosition
         {
             get => _followPosition;
             set => _followPosition = value;
         }
+
+        public bool DirectOrder
+        {
+            get;
+            set;
+        }
+
         public Vector2 GetTopLeft() => CameraCenter - viewSize;
 
         public Camera(Vector2 viewSize, MouseInfo mouseInfo)
@@ -78,8 +86,9 @@ namespace Caps.RPG.MonoGame
 
         public void MoveCamera(GameTime gameTime, RectangleF? worldSize = null)
         {
-            if (UserInterface.Active.ActiveEntity is not GeonBit.UI.Entities.RootPanel)
+            if (UserInterface.Active.ActiveEntity is not GeonBit.UI.Entities.RootPanel && !DirectOrder)
                 return;
+            int pixelsMoved = 0;
             if (_mouseInfo.IsButtonDown(MouseButtons.Left))
             {
                 if (_mouseInfo.XDelta != 0 || _mouseInfo.YDelta != 0)
@@ -87,17 +96,20 @@ namespace Caps.RPG.MonoGame
                     var newMouseWorldPosition = GetWorldPosition(_mouseInfo.Position.ToVector2());
                     var difference = _dragStartPosition - newMouseWorldPosition;
                     var targetPosition = CameraCenter + difference;
-                    MoveToward(targetPosition, (float)gameTime.ElapsedGameTime.TotalMilliseconds, 0.5f);
+                    pixelsMoved = MoveToward(targetPosition, (float)gameTime.ElapsedGameTime.TotalMilliseconds, 0.5f);
                     _dragStartPosition = newMouseWorldPosition;
                 }
             }
             if (Mode == CameraMoveMode.Point)
-                MoveToward(_pointDestination, (float)gameTime.ElapsedGameTime.TotalMilliseconds, 0.1f);
+                pixelsMoved = MoveToward(_pointDestination, (float)gameTime.ElapsedGameTime.TotalMilliseconds, 0.1f);
             if (Mode == CameraMoveMode.Follow)
-                MoveToward(_followPosition, (float)gameTime.ElapsedGameTime.TotalMilliseconds);
+                pixelsMoved = MoveToward(_followPosition, (float)gameTime.ElapsedGameTime.TotalMilliseconds);
 
             if (worldSize.HasValue)
                 ClampToWorld(worldSize.Value);
+
+            // mark order complete when camera stops moving
+            DirectOrder = DirectOrder && pixelsMoved != 0;
         }
 
         private void ClampToWorld(RectangleF worldSize)
@@ -161,7 +173,9 @@ namespace Caps.RPG.MonoGame
             return ((screenPosition - screenCenter) / Zoom) + CameraCenter;
         }
 
-        public void MoveToward(Vector2 target, float deltaTimeInMs, float movePercentage = .02f)
+
+        // returns the number of pixels moved
+        public int MoveToward(Vector2 target, float deltaTimeInMs, float movePercentage = .02f)
         {
             //figure out which direction to move the camera
             Vector2 differenceInPosition = target - CameraCenter;
@@ -184,6 +198,8 @@ namespace Caps.RPG.MonoGame
             {
                 CameraCenter = target;
             }
+
+            return (int)Math.Round(Math.Sqrt(differenceInPosition.X * differenceInPosition.X + differenceInPosition.Y * differenceInPosition.Y));
         }
 
         public Matrix GetTranslation()

@@ -1,6 +1,8 @@
 ﻿using Caps.RPG.DungeonCrawler.UI;
 using Caps.RPG.MonoGame.Graphics;
 using Caps.RPG.Rules.Creatures;
+using Caps.RPG.Rules.Maps;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,26 +18,27 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
         public InitiativeTracker InitiativeTracker { get; }
         public CharacterControlsPanel CharacterControlsPanel { get; }
         
-        private Map map;
-
+        private readonly Map map;
+        private readonly Texture2D icon;
         private readonly Sprite deathSprite;
+        private readonly Texture2D deathIcon;
 
-        public CombattantEntity(ref Combattant combattant, Sprite sprite, Sprite deathSprite, ref InitiativeTracker initiativeTracker, ref CharacterControlsPanel characterControlsPanel, ref Map map)
+        public CombattantEntity(ref Combattant combattant, Sprite sprite, ref Map map, GeonBit.UI.EventCallback ActionClicked)
         {
             Combattant = combattant;
             Combattant.OnPositionChanged += Moved;
             Combattant.OnHealthChanged += HealthChanged;
-            Sprite = sprite;
-            InitiativeTracker = initiativeTracker;
-            CharacterControlsPanel = characterControlsPanel;
-            this.map = map;
             Combattant.OnUnconsious += Unconsious;
-            //deathSprite = new(sprite)
-            //{
-            //    Color = Microsoft.Xna.Framework.Color.Gray,
-            //    Rotation = (float)(Math.PI / 2)
-            //};
-            this.deathSprite = deathSprite;
+
+            Sprite = sprite;
+            icon = Sprite.GetTextureWithColor();
+            deathSprite = CommonTileFeatures.CreateDeathSprite(sprite);
+            deathIcon = deathSprite.GetTextureWithColor();
+
+            InitiativeTracker = new(sprite, ref combattant, ref map);
+            CharacterControlsPanel = new(combattant, icon, map, ActionClicked);
+
+            this.map = map;
         }
 
         private void Moved(object sender, PositionChangedEventArgs e)
@@ -68,6 +71,12 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
         {
             InitiativeTracker.Update();
             CharacterControlsPanel.Update();
+        }
+
+        public bool SetVisibility(Combattant combattant)
+        {
+            CharacterControlsPanel.Panel.Visible = Combattant == combattant;
+            return Combattant == combattant;
         }
     }
 }

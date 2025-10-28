@@ -1,4 +1,6 @@
-﻿using Caps.RPG.MonoGame.Graphics;
+﻿using Caps.RPG.DungeonCrawler.GameObjects;
+using Caps.RPG.MonoGame;
+using Caps.RPG.MonoGame.Graphics;
 using Caps.RPG.Rules.Creatures;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
@@ -16,6 +18,7 @@ namespace Caps.RPG.DungeonCrawler.UI
 
         private Sprite characterSprite;
         private Combattant data;
+        private Map mapData;
         private Panel panel;
         private ProgressBar healthBar;
         private bool isFocused = false;
@@ -40,10 +43,11 @@ namespace Caps.RPG.DungeonCrawler.UI
             }
         }
 
-        public InitiativeTracker(Sprite characterSprite, ref Combattant data) : base()
+        public InitiativeTracker(Sprite characterSprite, ref Combattant data, ref Map map) : base()
         {
             this.characterSprite = characterSprite;
             this.data = data;
+            this.mapData = map;
 
             // Container for image and health bar
             panel = new(new Vector2(topPanelHeight), PanelSkin.None, Anchor.AutoInline)
@@ -51,6 +55,7 @@ namespace Caps.RPG.DungeonCrawler.UI
                 Padding = Vector2.Zero,
                 FillColor = ConsoleColorToXnaColor(data.Team.Color)
             };
+            panel.OnClick += CenterCamera;
 
             // Character image
             Image character = new(
@@ -58,7 +63,7 @@ namespace Caps.RPG.DungeonCrawler.UI
                 size: new Vector2(topPanelHeight - 25),
                 anchor: Anchor.Center
             );
-            panel.AddChild(character);
+            panel.AddChild(character, true);
             // Health bar
             float healthPercent = data.Health / (float)Math.Max(1, data.Creature.MaxHealth);
             healthBar = new ProgressBar(0, 100)
@@ -71,7 +76,14 @@ namespace Caps.RPG.DungeonCrawler.UI
             };
             healthBar.ProgressFill.FillColor = healthBar.FillColor;
             healthBar.ToolTipText = $"HP: {data.Health} / {data.Creature.MaxHealth}";
-            panel.AddChild(healthBar);
+            panel.AddChild(healthBar, true);
+        }
+
+        private void CenterCamera(Entity entity)
+        {
+            Core.Camera.FollowPosition = mapData.GetTilePosition(data.Position);
+            Core.Camera.Mode = CameraMoveMode.Follow;
+            Core.Camera.DirectOrder = true;
         }
 
         public void Update()

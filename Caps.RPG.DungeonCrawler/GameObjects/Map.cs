@@ -19,6 +19,8 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
         private readonly Dictionary<string, Sprite> characterSprites;
         private Tile clickedTile;
 
+        public TileMap MapData => mapData;
+
         public Tile[,] Tiles => tiles;
 
         public Tile this[TileBase tileBase]

@@ -82,16 +82,11 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             foreach (Combattant combattant in combattants)
             {
                 Combattant currentCombattant = combattant;
-                InitiativeTracker tracker = new(characterSprites[currentCombattant.Name + " " + currentCombattant.Team.ToString()], ref currentCombattant);
-                initiative.AddChild(tracker.Panel);
-
-                CharacterControlsPanel characterControlsPanel = new(currentCombattant, hexMap, ActionClicked);
-                uiUpdatingEntities.Add(characterControlsPanel);
-                characterControlPanels.AddChild(characterControlsPanel.Panel);
-                characterControlsPanel.Panel.Visible = currentCombattant == gameLoop.CurrentCombattant;
-
                 Sprite characterSprite = characterSprites[currentCombattant.Name + " " + currentCombattant.Team.ToString()];
-                CombattantEntity entity = new(ref currentCombattant, characterSprite, CommonTileFeatures.CreateDeathSprite(characterSprite), ref tracker, ref characterControlsPanel, ref _map);
+                CombattantEntity entity = new(ref currentCombattant, characterSprite, ref _map, ActionClicked);
+                characterControlPanels.AddChild(entity.CharacterControlsPanel.Panel);
+                initiative.AddChild(entity.InitiativeTracker.Panel);
+                entity.CharacterControlsPanel.Panel.Visible = currentCombattant == gameLoop.CurrentCombattant;
                 uiUpdatingEntities.Add(entity);
             }
             // end add
@@ -158,12 +153,10 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
         private void SetCurrentCharacterPanel(Combattant combattant)
         {
-            var visiblePanelEntity = characterControlPanels.Children.FirstOrDefault(p => p.Visible);
-            foreach (var characterControlPanel in uiUpdatingEntities.OfType<CharacterControlsPanel>())
+            foreach (var combattantEntity in uiUpdatingEntities.OfType<CombattantEntity>())
             {
-                characterControlPanel.Panel.Visible = characterControlPanel.Combattant == combattant;
-                if (characterControlPanel.Panel.Visible)
-                    currentCharacterPanel = characterControlPanel;
+                if (combattantEntity.SetVisibility(combattant))
+                    currentCharacterPanel = combattantEntity.CharacterControlsPanel;
             }
         }
 

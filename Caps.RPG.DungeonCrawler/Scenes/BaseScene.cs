@@ -57,12 +57,8 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             {
                 if (Core.Input.Mouse.WasButtonJustPressed(MonoGame.Input.MouseButtons.Left))
                     Core.Camera.Mode = CameraMoveMode.Drag;
-                if (Core.Input.Mouse.WasButtonJustReleased(MonoGame.Input.MouseButtons.Left))
-                    Core.Camera.Mode = CameraMoveMode.Static;
                 if (Core.Input.Mouse.WasButtonJustPressed(MonoGame.Input.MouseButtons.Middle))
                     Core.Camera.Mode = CameraMoveMode.Point;
-                if (Core.Input.Mouse.WasButtonJustPressed(MonoGame.Input.MouseButtons.Right))
-                    Core.Camera.Mode = CameraMoveMode.Follow;
 
                 if (cameraMode != CameraSceneMode.FullScreen)
                     Core.Camera.MoveCamera(gameTime, worldSize);

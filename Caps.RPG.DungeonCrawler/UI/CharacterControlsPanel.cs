@@ -1,9 +1,13 @@
+using Caps.RPG.DungeonCrawler.GameObjects;
+using Caps.RPG.MonoGame;
 using Caps.RPG.MonoGame.Graphics;
 using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Maps;
+using GeonBit.UI;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +18,11 @@ namespace Caps.RPG.DungeonCrawler.UI
     {
         public static readonly Dictionary<string, Sprite> ActionIcons = [];
 
-        private readonly TileMap map;
+        private readonly Map map;
         private readonly Combattant combattant;
 
         private readonly Label nameLabel;
+        private readonly Image characterPortrait;
         private readonly ProgressBar healthBar;
         private readonly List<Button> actionButtons = [];
         private readonly Panel actionCounters;
@@ -25,7 +30,7 @@ namespace Caps.RPG.DungeonCrawler.UI
         public Combattant Combattant => combattant;
         public Panel Panel { get; }
 
-        public CharacterControlsPanel(Combattant combattant, TileMap map, GeonBit.UI.EventCallback actionSelection)
+        public CharacterControlsPanel(Combattant combattant, Texture2D characterIcon, Map map, EventCallback actionSelection)
         {
             this.map = map;
             this.combattant = combattant;
@@ -35,12 +40,29 @@ namespace Caps.RPG.DungeonCrawler.UI
                 Padding = new Vector2(10)
             };
 
+            int panelPadding = 10;
+            Panel detailsPanel = new(new Vector2((Panel.Size.X - panelPadding) * 2 / 3, 0), PanelSkin.None, anchor: Anchor.TopRight)
+            {
+                Padding = new Vector2(panelPadding)
+            };
+            detailsPanel.OnClick += CenterCamera;
+
             nameLabel = new Label(combattant.Name, Anchor.AutoCenter)
             {
                 Scale = 1.5f,
-                Padding = new Vector2(0, 5)
+                Padding = new Vector2(0, 5),
             };
-            Panel.AddChild(nameLabel);
+            detailsPanel.AddChild(nameLabel, true);
+            Panel.AddChild(detailsPanel);
+
+            Panel portraitPanel = new(new Vector2((Panel.Size.X - panelPadding) / 3), PanelSkin.None, anchor: Anchor.TopLeft)
+            {
+                Padding = new Vector2(panelPadding),
+            };
+            portraitPanel.OnClick += CenterCamera;
+            characterPortrait = new Image(characterIcon, new Vector2(portraitPanel.Size.X - panelPadding), anchor: Anchor.Center);
+            portraitPanel.AddChild(characterPortrait, true);
+            Panel.AddChild(portraitPanel);
 
             healthBar = new ProgressBar(0, 100, Anchor.AutoCenter)
             {
@@ -52,20 +74,22 @@ namespace Caps.RPG.DungeonCrawler.UI
             healthBar.ProgressFill.FillColor = healthBar.FillColor;
             Panel.AddChild(healthBar);
 
-            actionCounters = new Panel(new Vector2(0, 30), PanelSkin.Simple, Anchor.AutoCenter)
-            {
-                Padding = new Vector2(5)
-            };
-            for (int i = 0; i < combattant.ActionCounts; i++)
-            {
-                actionCounters.AddChild(new CheckBox("", Anchor.AutoInline)
-                {
-                    Checked = true,
-                    Padding = new Vector2(5, 0),
-                    Locked = true,
-                    Tag = i.ToString()
-                });
-            }
+            //actionCounters = new Panel(new Vector2(0, 300), PanelSkin.Alternative, Anchor.AutoCenter)
+            //{
+            //    Padding = new Vector2(5)
+            //};
+            //for (int i = 0; i < combattant.ActionCounts; i++)
+            //{
+            //    Anchor anchor = i == 0 ? Anchor.Auto : Anchor.AutoInline;
+            //    actionCounters.AddChild(new RadioButton("", anchor)
+            //    {
+            //        Checked = true,
+            //        Padding = new Vector2(5, 0),
+            //        Locked = true,
+            //        Tag = i.ToString()
+            //    });
+            //}
+            //Panel.AddChild(actionCounters);
 
             // Calculate the number of rows needed for the ability buttons
             var actions = combattant.Creature.GetCombatActions();
@@ -124,11 +148,19 @@ namespace Caps.RPG.DungeonCrawler.UI
                 actionButtons.Add(actionButton);
                 rowPanel.AddChild(actionButton);
             }
+            Panel.AddChild(new HorizontalLine());
             Panel.AddChild(abilitiesPanel);
 
             nameLabel.Text = combattant.Name;
             healthBar.Value = (int)(healthPercent * 100);
             healthBar.ToolTipText = $"HP: {combattant.Health} / {combattant.Creature.MaxHealth}";
+        }
+
+        private void CenterCamera(Entity entity)
+        {
+            Core.Camera.FollowPosition = map.GetTilePosition(combattant.Position);
+            Core.Camera.Mode = CameraMoveMode.Follow;
+            Core.Camera.DirectOrder = true;
         }
 
         public void Update()
@@ -138,11 +170,11 @@ namespace Caps.RPG.DungeonCrawler.UI
 
         public void SetActionNumber(int number)
         {
-            foreach (CheckBox box in actionCounters.Children.Where(c => c is CheckBox).Cast<CheckBox>())
-            {
-                int index = int.Parse(box.Tag);
-                box.Checked = index < number;
-            }
+            //foreach (CheckBox box in actionCounters.Children.Where(c => c is CheckBox).Cast<CheckBox>())
+            //{
+            //    int index = int.Parse(box.Tag);
+            //    box.Checked = index < number;
+            //}
         }
 
         public void ActionClicked(Entity entity)
@@ -152,11 +184,9 @@ namespace Caps.RPG.DungeonCrawler.UI
 
             var actions = combattant.Creature.GetCombatActions();
             CombatAction action = actions.FirstOrDefault(a => a.Name == actionName);
-            TileBase[] validTiles = ActionSetupManager.ValidTiles(map, combattant, action.Setup);
+            TileBase[] validTiles = ActionSetupManager.ValidTiles(map.MapData, combattant, action.Setup);
             foreach (var tile in validTiles)
                 tile.Highlighted = true;
-            //var getTarget = ActionSetupManager.GetAction(action.Setup);
-            //TileBase[] target = getTarget?.Invoke(map, combattant, action.Setup);
         }
 
         public void ToggleAbilityButtons()
