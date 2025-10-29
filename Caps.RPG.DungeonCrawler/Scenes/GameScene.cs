@@ -12,6 +12,7 @@ using Caps.Util.Lua;
 using GeonBit.UI;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,6 +29,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         private readonly List<IUIEntity> uiUpdatingEntities = [];
         private Panel characterControlPanels;
         private CharacterControlsPanel currentCharacterPanel;
+        private SelectList actionLog;
         private int actionsAvailable;
         private CombatAction tentativeAction;
 
@@ -49,6 +51,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
 
             gameLoop = new(hexMap, combattants);
+            gameLoop.OnActionCompleted += LogAction;
 
             base.Initialize();
             InitializeUI();
@@ -76,7 +79,9 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 Padding = Vector2.Zero
             };
             topPanel.AddChild(initiative);
+            UserInterface.Active.AddEntity(topPanel);
 
+            // create character panels
             characterControlPanels = new(new Vector2(500, 120 * combattants.Count + 10), PanelSkin.Default, Anchor.BottomLeft)
             {
                 Padding = new Vector2(5)
@@ -91,9 +96,21 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 entity.CharacterControlsPanel.Panel.Visible = currentCombattant == gameLoop.CurrentCombattant;
                 uiUpdatingEntities.Add(entity);
             }
-            // end add
-            UserInterface.Active.AddEntity(topPanel);
             UserInterface.Active.AddEntity(characterControlPanels);
+
+            // create action log (for debug/the informed player)
+            Panel actionLogPanel = new(new Vector2(1000, 160), PanelSkin.Simple, Anchor.BottomCenter, new Vector2(-10, 0))
+            {
+                Visible = true
+            };
+            actionLog = new(size: new Vector2(-1, 120))
+            {
+                ExtraSpaceBetweenLines = -8,
+                ItemsScale = 0.5f,
+                Locked = true,
+            };
+            actionLogPanel.AddChild(actionLog);
+            UserInterface.Active.AddEntity(actionLogPanel);
         }
 
         public override void LoadContent()
@@ -125,6 +142,13 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
             var actions = gameLoop.CurrentCombattant.Creature.GetCombatActions();
             tentativeAction = actions.FirstOrDefault(a => a.Name == actionName);
+        }
+
+        private void LogAction(object sender, ActionCompletedEventArgs e)
+        {
+            List<string> tokens = [.. e.Result.ToString(130).Split('\n')];
+            tokens.ForEach(actionLog.AddItem);
+            actionLog.scrollToEnd();
         }
 
         public override void Update(GameTime gameTime)

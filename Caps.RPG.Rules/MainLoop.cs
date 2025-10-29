@@ -86,13 +86,14 @@ namespace Caps.RPG.Rules
             }
         }
 
-
+        
         private int actionsAvailable;
         private readonly ManualResetEvent actionSetEvent = new(false);
         private CombatAction? chosenAction;
         private readonly ManualResetEvent targetsSetEvent = new(false);
         private TileBase[]? chosenTargets;
-        private ActionResult? actionResult;
+
+        public event EventHandler<ActionCompletedEventArgs>? OnActionCompleted;
 
         public int ActionsAvailable
         {
@@ -130,17 +131,10 @@ namespace Caps.RPG.Rules
             }
         }
 
-        public ActionResult? ActionResult
-        {
-            get { return actionResult; }
-            internal set { actionResult = value; }
-        }
-
         public void ResetChoices()
         {
             chosenAction = null;
             chosenTargets = null;
-            actionResult = null;
             actionSetEvent.Reset();
             targetsSetEvent.Reset();
         }
@@ -161,12 +155,22 @@ namespace Caps.RPG.Rules
                         TileBase[] targets = chosen.Setup.NeedsTarget ? ChosenTargets : [];
                         ActionResult result = chosen.Execution(currentCreature, targets);
                         actionsAvailable -= chosen.Cost;
-                        ActionResult = result;
+                        OnActionCompleted?.Invoke(this, new ActionCompletedEventArgs(result));
 
                         // loop while action points remain
                     } while (actionsAvailable > 0 && currentCreature.Creature.Status == Creature.HealthStatus.Alive);
                 }
             }
+        }
+    }
+
+    public class ActionCompletedEventArgs : EventArgs
+    {
+        public ActionResult? Result { get; }
+
+        public ActionCompletedEventArgs(ActionResult result)
+        {
+            this.Result = result;
         }
     }
 }
