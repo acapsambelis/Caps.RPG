@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Caps.RPG.DungeonCrawler.UI
 {
@@ -17,10 +16,10 @@ namespace Caps.RPG.DungeonCrawler.UI
         private readonly static int topPanelHeight = 128;
 
         private Sprite characterSprite;
-        private Combattant data;
-        private Map mapData;
-        private Panel panel;
-        private ProgressBar healthBar;
+        private readonly Combattant data;
+        private readonly Map mapData;
+        private readonly Panel panel;
+        private readonly ProgressBar healthBar;
         private bool isFocused = false;
 
         public Panel Panel => panel;
@@ -72,7 +71,7 @@ namespace Caps.RPG.DungeonCrawler.UI
             {
                 Anchor = Anchor.BottomCenter,
                 Size = new Vector2(topPanelHeight - 20, 16),
-                FillColor = healthPercent > 0.5f ? Color.LimeGreen : (healthPercent > 0.25f ? Color.Orange : Color.Red),
+                FillColor = GetColorForHealth(data.Health, data.Creature.MaxHealth),
                 Padding = new Vector2(0, 4),
                 Value = (int)(healthPercent * 100)
             };
@@ -102,7 +101,15 @@ namespace Caps.RPG.DungeonCrawler.UI
         {
             healthBar.Value = (int)(data.Health / (float)Math.Max(1, data.Creature.MaxHealth) * 100);
             healthBar.ToolTipText = $"HP: {data.Health} / {data.Creature.MaxHealth}";
+            healthBar.FillColor = GetColorForHealth(data.Health, data.Creature.MaxHealth);
+            healthBar.ProgressFill.FillColor = healthBar.FillColor;
             panel.FillColor = isFocused ? Color.Gold : ConsoleColorToXnaColor(data.Team.Color);
+        }
+
+        private static Color GetColorForHealth(int current, int max)
+        {
+            float healthPercent = current / (float)Math.Max(1, max);
+            return healthPercent > 0.5f ? Color.LimeGreen : (healthPercent > 0.25f ? Color.Orange : Color.Red);
         }
 
         private static Color ConsoleColorToXnaColor(ConsoleColor color)
