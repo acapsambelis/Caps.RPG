@@ -4,7 +4,7 @@ namespace Caps.RPG.Rules.Maps
 {
     public class HexMap : TileMap
     {
-        public HexMap() : base(gridWidth: 16, gridDepth: 9) { }
+        public HexMap(int width, int height) : base(width, height) { }
 
         public override TileBase this[Vector2D pos]
         {
@@ -60,7 +60,7 @@ namespace Caps.RPG.Rules.Maps
 
         public static HexMap GenerateRandomMap(int seed, int obstacleWeight)
         {
-            var map = new HexMap();
+            var map = new HexMap(16, 9);
             var random = new Random(seed);
             for (var r = 0; r < map._gridDepth; r++)
             {
@@ -69,7 +69,7 @@ namespace Caps.RPG.Rules.Maps
                 {
                     var tile = new HexTile(new HexCoords(q, r));
                     if (random.Next(1, 20) <= obstacleWeight)
-                        tile.Features.Add(0, new TileFeature("#Obstacle", false, Util.TerminalColors.Gray));
+                        tile.Features.Add(0, new TileFeature("Rock", false, Util.TerminalColors.Gray));
                     map.Tiles.Add(tile.Coords.Pos, tile);
                 }
             }

@@ -12,8 +12,12 @@ namespace Caps.RPG.Rules.Creatures
     {
         private Creature _creature;
         private TerminalColor _team;
-        private TileBase position;
+        private TileBase _position;
         private bool _wasLoaded = false;
+
+        public event EventHandler<PositionChangedEventArgs>? OnPositionChanged;
+        public event EventHandler<HealthChangedEventArgs>? OnHealthChanged;
+        public event EventHandler? OnUnconsious;
 
         [SubDataObject("Creature")]
         public Creature Creature { get { return _creature; } set { _creature = value; } }
@@ -22,9 +26,15 @@ namespace Caps.RPG.Rules.Creatures
         [SubDataObject("Position")]
         public TileBase Position
         {
-            get { return position; }
-            set { position = value; }
+            get { return _position; }
+            set
+            {
+                var eventArgs = new PositionChangedEventArgs(_position);
+                _position = value;
+                OnPositionChanged?.Invoke(this, eventArgs);
+            }
         }
+        public int ActionCounts { get => 3; }
 
         public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
 
@@ -36,7 +46,15 @@ namespace Caps.RPG.Rules.Creatures
         public int Health
         {
             get { return Creature.Health; }
-            set { Creature.Health = value; }
+            set {
+                int delta = value - Creature.Health;
+                Creature.Health = value;
+                OnHealthChanged?.Invoke(this, new HealthChangedEventArgs(delta));
+                if (Creature.Status == Creature.HealthStatus.Unconsious)
+                {
+                    OnUnconsious?.Invoke(this, EventArgs.Empty);
+                }
+            }
         }
 
         public int MoveSpeed
@@ -50,7 +68,7 @@ namespace Caps.RPG.Rules.Creatures
         {
             _creature = creature;
             _team = team;
-            this.position = position;
+            _position = position;
             position.Features.Add(0, this);
         }
 
@@ -61,10 +79,10 @@ namespace Caps.RPG.Rules.Creatures
 
         public void Move(TileBase newPosition)
         {
-            var feature = position.Features.Where(f => f.Value is Combattant comb && comb == this).FirstOrDefault();
+            var feature = _position.Features.Where(f => f.Value is Combattant comb && comb == this).FirstOrDefault();
             if (feature.Value != null)
             {
-                position.Features.Remove(feature.Key);
+                _position.Features.Remove(feature.Key);
             }
             Position = newPosition;
             newPosition.Features.Add(feature.Key, this);
@@ -85,7 +103,6 @@ namespace Caps.RPG.Rules.Creatures
         public readonly static List<CombatAction> ActionList =
         [
             new CombatAction("Attack", "Attack one target with a physical attack.", 1, Attack, new ActionSetup(true, 1, ActionSetup.SourceType.SingleCreature)),
-            new CombatAction("Pass", "Do nothing.", 99, Pass, new ActionSetup()),
             new CombatAction("Move", "Move your speed.", 1, Move, new ActionSetup(true, typeof(Combattant).GetProperty("MoveSpeed"), ActionSetup.SourceType.SingleTile, MapShape.Tile, needsEmptyTile: true)),
         ];
         public static List<CombatAction> GetGenericList()
@@ -110,11 +127,6 @@ namespace Caps.RPG.Rules.Creatures
                 return new ActionResult(source.Name + " attacked " + creature.Name + " with a " + (source.Creature.AttackBonus + toHit) + "(" + toHit + " + " + source.Creature.AttackBonus + ") to hit. " + damage + " was delt.");
             }
             return new ActionResult(source.Name + " attacked an invalid target");
-        }
-
-        public static ActionResult Pass(Combattant source, TileBase[] targets)
-        {
-            return new ActionResult();
         }
 
         public static ActionResult Move(Combattant source, TileBase[] targets)
@@ -152,5 +164,25 @@ namespace Caps.RPG.Rules.Creatures
         }
 
         #endregion
+    }
+
+    public class PositionChangedEventArgs : EventArgs
+    {
+        public TileBase? OldPosition { get; }
+
+        public PositionChangedEventArgs(TileBase? oldPosition)
+        {
+            OldPosition = oldPosition;
+        }
+    }
+
+    public class HealthChangedEventArgs : EventArgs
+    {
+        public int? HealthDelta { get; }
+
+        public HealthChangedEventArgs(int? healthDelta)
+        {
+            HealthDelta = healthDelta;
+        }
     }
 }

@@ -96,23 +96,17 @@ namespace Caps.RPG.MonoGame.Input
         /// </summary>
         /// <param name="button">The mouse button to check.</param>
         /// <returns>true if the specified mouse button is currently down; otherwise, false.</returns>
-        public bool IsButtonDown(MouseButton button)
+        public bool IsButtonDown(MouseButtons button)
         {
-            switch (button)
+            return button switch
             {
-                case MouseButton.Left:
-                    return CurrentState.LeftButton == ButtonState.Pressed;
-                case MouseButton.Middle:
-                    return CurrentState.MiddleButton == ButtonState.Pressed;
-                case MouseButton.Right:
-                    return CurrentState.RightButton == ButtonState.Pressed;
-                case MouseButton.XButton1:
-                    return CurrentState.XButton1 == ButtonState.Pressed;
-                case MouseButton.XButton2:
-                    return CurrentState.XButton2 == ButtonState.Pressed;
-                default:
-                    return false;
-            }
+                MouseButtons.Left => CurrentState.LeftButton == ButtonState.Pressed,
+                MouseButtons.Middle => CurrentState.MiddleButton == ButtonState.Pressed,
+                MouseButtons.Right => CurrentState.RightButton == ButtonState.Pressed,
+                MouseButtons.XButton1 => CurrentState.XButton1 == ButtonState.Pressed,
+                MouseButtons.XButton2 => CurrentState.XButton2 == ButtonState.Pressed,
+                _ => false,
+            };
         }
 
         /// <summary>
@@ -120,23 +114,17 @@ namespace Caps.RPG.MonoGame.Input
         /// </summary>
         /// <param name="button">The mouse button to check.</param>
         /// <returns>true if the specified mouse button is currently up; otherwise, false.</returns>
-        public bool IsButtonUp(MouseButton button)
+        public bool IsButtonUp(MouseButtons button)
         {
-            switch (button)
+            return button switch
             {
-                case MouseButton.Left:
-                    return CurrentState.LeftButton == ButtonState.Released;
-                case MouseButton.Middle:
-                    return CurrentState.MiddleButton == ButtonState.Released;
-                case MouseButton.Right:
-                    return CurrentState.RightButton == ButtonState.Released;
-                case MouseButton.XButton1:
-                    return CurrentState.XButton1 == ButtonState.Released;
-                case MouseButton.XButton2:
-                    return CurrentState.XButton2 == ButtonState.Released;
-                default:
-                    return false;
-            }
+                MouseButtons.Left => CurrentState.LeftButton == ButtonState.Released,
+                MouseButtons.Middle => CurrentState.MiddleButton == ButtonState.Released,
+                MouseButtons.Right => CurrentState.RightButton == ButtonState.Released,
+                MouseButtons.XButton1 => CurrentState.XButton1 == ButtonState.Released,
+                MouseButtons.XButton2 => CurrentState.XButton2 == ButtonState.Released,
+                _ => false,
+            };
         }
 
         /// <summary>
@@ -144,23 +132,17 @@ namespace Caps.RPG.MonoGame.Input
         /// </summary>
         /// <param name="button">The mouse button to check.</param>
         /// <returns>true if the specified mouse button was just pressed on the current frame; otherwise, false.</returns>
-        public bool WasButtonJustPressed(MouseButton button)
+        public bool WasButtonJustPressed(MouseButtons button)
         {
-            switch (button)
+            return button switch
             {
-                case MouseButton.Left:
-                    return CurrentState.LeftButton == ButtonState.Pressed && PreviousState.LeftButton == ButtonState.Released;
-                case MouseButton.Middle:
-                    return CurrentState.MiddleButton == ButtonState.Pressed && PreviousState.MiddleButton == ButtonState.Released;
-                case MouseButton.Right:
-                    return CurrentState.RightButton == ButtonState.Pressed && PreviousState.RightButton == ButtonState.Released;
-                case MouseButton.XButton1:
-                    return CurrentState.XButton1 == ButtonState.Pressed && PreviousState.XButton1 == ButtonState.Released;
-                case MouseButton.XButton2:
-                    return CurrentState.XButton2 == ButtonState.Pressed && PreviousState.XButton2 == ButtonState.Released;
-                default:
-                    return false;
-            }
+                MouseButtons.Left => CurrentState.LeftButton == ButtonState.Pressed && PreviousState.LeftButton == ButtonState.Released,
+                MouseButtons.Middle => CurrentState.MiddleButton == ButtonState.Pressed && PreviousState.MiddleButton == ButtonState.Released,
+                MouseButtons.Right => CurrentState.RightButton == ButtonState.Pressed && PreviousState.RightButton == ButtonState.Released,
+                MouseButtons.XButton1 => CurrentState.XButton1 == ButtonState.Pressed && PreviousState.XButton1 == ButtonState.Released,
+                MouseButtons.XButton2 => CurrentState.XButton2 == ButtonState.Pressed && PreviousState.XButton2 == ButtonState.Released,
+                _ => false,
+            };
         }
 
         /// <summary>
@@ -168,23 +150,17 @@ namespace Caps.RPG.MonoGame.Input
         /// </summary>
         /// <param name="button">The mouse button to check.</param>
         /// <returns>true if the specified mouse button was just released on the current frame; otherwise, false.</returns>F
-        public bool WasButtonJustReleased(MouseButton button)
+        public bool WasButtonJustReleased(MouseButtons button)
         {
-            switch (button)
+            return button switch
             {
-                case MouseButton.Left:
-                    return CurrentState.LeftButton == ButtonState.Released && PreviousState.LeftButton == ButtonState.Pressed;
-                case MouseButton.Middle:
-                    return CurrentState.MiddleButton == ButtonState.Released && PreviousState.MiddleButton == ButtonState.Pressed;
-                case MouseButton.Right:
-                    return CurrentState.RightButton == ButtonState.Released && PreviousState.RightButton == ButtonState.Pressed;
-                case MouseButton.XButton1:
-                    return CurrentState.XButton1 == ButtonState.Released && PreviousState.XButton1 == ButtonState.Pressed;
-                case MouseButton.XButton2:
-                    return CurrentState.XButton2 == ButtonState.Released && PreviousState.XButton2 == ButtonState.Pressed;
-                default:
-                    return false;
-            }
+                MouseButtons.Left => CurrentState.LeftButton == ButtonState.Released && PreviousState.LeftButton == ButtonState.Pressed,
+                MouseButtons.Middle => CurrentState.MiddleButton == ButtonState.Released && PreviousState.MiddleButton == ButtonState.Pressed,
+                MouseButtons.Right => CurrentState.RightButton == ButtonState.Released && PreviousState.RightButton == ButtonState.Pressed,
+                MouseButtons.XButton1 => CurrentState.XButton1 == ButtonState.Released && PreviousState.XButton1 == ButtonState.Pressed,
+                MouseButtons.XButton2 => CurrentState.XButton2 == ButtonState.Released && PreviousState.XButton2 == ButtonState.Pressed,
+                _ => false,
+            };
         }
 
         /// <summary>

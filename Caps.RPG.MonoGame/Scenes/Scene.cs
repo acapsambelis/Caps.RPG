@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using Caps.RPG.MonoGame.Graphics;
+using Caps.RPG.MonoGame.Input;
+using GeonBit.UI;
+using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 
@@ -18,6 +23,8 @@ namespace Caps.RPG.MonoGame.Scenes
         /// Gets a value that indicates if the scene has been disposed of.
         /// </summary>
         public bool IsDisposed { get; private set; }
+
+        private List<Clickable> registeredClickables = [];
 
         /// <summary>
         /// Creates a new scene instance.
@@ -53,6 +60,15 @@ namespace Caps.RPG.MonoGame.Scenes
         public virtual void LoadContent() { }
 
         /// <summary>
+        /// Add a clickable object to the list
+        /// </summary>
+        /// <param name="clickable"></param>
+        public void RegisterClickable(Clickable clickable)
+        {
+            registeredClickables.Add(clickable);
+        }
+
+        /// <summary>
         /// Unloads scene-specific content.
         /// </summary>
         public virtual void UnloadContent()
@@ -64,7 +80,21 @@ namespace Caps.RPG.MonoGame.Scenes
         /// Updates this scene.
         /// </summary>
         /// <param name="gameTime">A snapshot of the timing values for the current frame.</param>
-        public virtual void Update(GameTime gameTime) { }
+        public virtual void Update(GameTime gameTime)
+        {
+            var mousePos = Core.Camera.GetWorldPosition(Core.Input.Mouse.Position.ToVector2());
+            if (!Core.Input.Mouse.WasButtonJustPressed(MouseButtons.Left) || registeredClickables == null || UserInterface.Active.ActiveEntity is not RootPanel)
+                return;
+            foreach (Clickable clickable in registeredClickables)
+            {
+                if (clickable.IsInside(mousePos))
+                {
+                    clickable.FireClick(EventArgs.Empty);
+                }
+            }
+        }
+
+
 
         /// <summary>
         /// Draws this scene.

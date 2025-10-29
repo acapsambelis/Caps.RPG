@@ -11,7 +11,7 @@ namespace Caps.RPG.GameApp
         // The background theme song
         private Song _themeSong;
 
-        public TutorialGame() : base("Dungeon Slime", 1280, 720, false)
+        public TutorialGame() : base("Dungeon Slime")
         {
 
         }

@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Caps.RPG.MonoGame.Audio;
+using Caps.RPG.MonoGame.Input;
+using Caps.RPG.MonoGame.Scenes;
+using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Caps.RPG.MonoGame.Audio;
-using Caps.RPG.MonoGame.Input;
-using Caps.RPG.MonoGame.Scenes;
+using System;
 
 namespace Caps.RPG.MonoGame
 {
@@ -18,11 +19,9 @@ namespace Caps.RPG.MonoGame
         /// </summary>
         public static Core Instance => s_instance;
 
-        // The scene that is currently active.
         private static Scene s_activeScene;
-
-        // The next scene to switch to, if there is one.
         private static Scene s_nextScene;
+        private static Vector2 windowSize;
 
         /// <summary>
         /// Gets the graphics device manager to control the presentation of graphics.
@@ -60,64 +59,74 @@ namespace Caps.RPG.MonoGame
         public static AudioController Audio { get; private set; }
 
         /// <summary>
+        /// Gets a reference to the camera used to offset the view of the game world.
+        /// </summary>
+        public static Camera Camera { get; private set; }
+
+        /// <summary>
         /// Creates a new Core instance.
         /// </summary>
         /// <param name="title">The title to display in the title bar of the game window.</param>
-        /// <param name="width">The initial width, in pixels, of the game window.</param>
-        /// <param name="height">The initial height, in pixels, of the game window.</param>
-        /// <param name="fullScreen">Indicates if the game should start in fullscreen mode.</param>
-        public Core(string title, int width, int height, bool fullScreen)
+        public Core(string title)
         {
-            // Ensure that multiple cores are not created.
-            if (s_instance != null)
-            {
-                throw new InvalidOperationException($"Only a single Core instance can be created");
-            }
-
-            // Store reference to engine for global member access.
+            if (s_instance != null) throw new InvalidOperationException($"Only a single Core instance can be created");
             s_instance = this;
 
             // Create a new graphics device manager.
             Graphics = new GraphicsDeviceManager(this);
 
-            // Set the graphics defaults
-            Graphics.PreferredBackBufferWidth = width;
-            Graphics.PreferredBackBufferHeight = height;
-            Graphics.IsFullScreen = fullScreen;
-
-            // Apply the graphic presentation changes
             Graphics.ApplyChanges();
-
-            // Set the window title
             Window.Title = title;
 
-            // Set the core's content manager to a reference of hte base Game's
-            // content manager.
+            // Set the core's content manager to a reference of hte base Game's content manager.
             Content = base.Content;
-
-            // Set the root directory for content
             Content.RootDirectory = "Content";
 
-            // Mouse is visible by default
-            IsMouseVisible = true;
+            // Make window borderless assuming fullscreen is used
+            Window.IsBorderless = true;
         }
 
         protected override void Initialize()
         {
             base.Initialize();
-
             // Set the core's graphics device to a reference of the base Game's
             // graphics device.
             GraphicsDevice = base.GraphicsDevice;
+            windowSize = MakeFullScreen();
 
-            // Create the sprite batch instance.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-
-            // Create a new input manager
             Input = new InputManager();
-
-            // Create a new audio controller.
             Audio = new AudioController();
+            Camera = new Camera(windowSize / 2, Input.Mouse);
+
+            InitializeUI();
+            base.Initialize();
+        }
+
+        private static Vector2 MakeFullScreen()
+        {
+            // make the window fullscreen (but still with border and top control bar)
+            int _ScreenWidth = Graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Width;
+            int _ScreenHeight = Graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Height;
+            Graphics.PreferredBackBufferWidth = _ScreenWidth;
+            Graphics.PreferredBackBufferHeight = _ScreenHeight;
+            Graphics.IsFullScreen = false;
+            Graphics.ApplyChanges();
+
+            return new Vector2(_ScreenWidth, _ScreenHeight);
+        }
+
+        protected void InitializeUI()
+        {
+            UserInterface.Initialize(Content, BuiltinThemes.hd);
+            UserInterface.Active.UseRenderTarget = true;
+            UserInterface.Active.IncludeCursorInRenderTarget = false;
+        }
+
+
+        protected override void LoadContent()
+        {
+            base.LoadContent();
         }
 
         protected override void UnloadContent()
@@ -130,46 +139,30 @@ namespace Caps.RPG.MonoGame
 
         protected override void Update(GameTime gameTime)
         {
-            // Update the input manager
+            // make sure window is focused
+            if (!IsActive)
+                return;
+
+            UserInterface.Active.Update(gameTime);
             Input.Update(gameTime);
 
             if (ExitOnEscape && Input.Keyboard.IsKeyDown(Keys.Escape))
-            {
                 Exit();
-            }
 
-            // if there is a next scene waiting to be switch to, then transition
-            // to that scene
+            // if there is a next scene waiting to be switch to, then transition to that scene
             if (s_nextScene != null)
-            {
                 TransitionScene();
-            }
 
-            // If there is an active scene, update it.
-            if (s_activeScene != null)
-            {
-                s_activeScene.Update(gameTime);
-            }
+            s_activeScene?.Update(gameTime);  // If there is an active scene, update it.
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            // If there is an active scene, draw it.
-            if (s_activeScene != null)
-            {
-                s_activeScene.Draw(gameTime);
-            }
+            s_activeScene?.Draw(gameTime);  // If there is an active scene, draw it.
 
             base.Draw(gameTime);
-        }
-
-
-        public static void ChangeResolution(int width, int height)
-        {
-            Graphics.PreferredBackBufferWidth = width;
-            Graphics.PreferredBackBufferHeight = height;
         }
 
         public static void ChangeScene(Scene next)
@@ -182,13 +175,16 @@ namespace Caps.RPG.MonoGame
             }
         }
 
+        public static Vector2 GetCursorPosition()
+        {
+            return Input.GetMouseWorldPosition(Camera.GetTranslation());
+        }
+
         private static void TransitionScene()
         {
+            UserInterface.Active.Clear();
             // If there is an active scene, dispose of it
-            if (s_activeScene != null)
-            {
-                s_activeScene.Dispose();
-            }
+            s_activeScene?.Dispose();
 
             // Force the garbage collector to collect to ensure memory is cleared
             GC.Collect();
@@ -202,10 +198,7 @@ namespace Caps.RPG.MonoGame
             // If the active scene now is not null, initialize it.
             // Remember, just like with Game, the Initialize call also calls the
             // Scene.LoadContent
-            if (s_activeScene != null)
-            {
-                s_activeScene.Initialize();
-            }
+            s_activeScene?.Initialize();
         }
     }
 }
