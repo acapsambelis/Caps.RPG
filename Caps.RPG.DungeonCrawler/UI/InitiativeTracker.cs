@@ -50,12 +50,14 @@ namespace Caps.RPG.DungeonCrawler.UI
             this.mapData = map;
 
             // Container for image and health bar
-            panel = new(new Vector2(topPanelHeight), PanelSkin.None, Anchor.AutoInline)
+            panel = new(new Vector2(topPanelHeight), PanelSkin.Fancy, Anchor.AutoInline)
             {
                 Padding = Vector2.Zero,
                 FillColor = ConsoleColorToXnaColor(data.Team.Color)
             };
             panel.OnClick += CenterCamera;
+            panel.OnMouseEnter += HighlightCharacter;
+            panel.OnMouseLeave += UnhighlightCharacter;
 
             // Character image
             Image character = new(
@@ -84,6 +86,16 @@ namespace Caps.RPG.DungeonCrawler.UI
             Core.Camera.FollowPosition = mapData.GetTilePosition(data.Position);
             Core.Camera.Mode = CameraMoveMode.Follow;
             Core.Camera.DirectOrder = true;
+        }
+
+        private void HighlightCharacter(Entity entity)
+        {
+            data.Position.Highlighted = true;
+        }
+
+        private void UnhighlightCharacter(Entity entity)
+        {
+            data.Position.Highlighted = false;
         }
 
         public void Update()

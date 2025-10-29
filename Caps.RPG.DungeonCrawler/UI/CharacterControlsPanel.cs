@@ -46,6 +46,8 @@ namespace Caps.RPG.DungeonCrawler.UI
                 Padding = new Vector2(panelPadding)
             };
             detailsPanel.OnClick += CenterCamera;
+            detailsPanel.OnMouseEnter += HighlightCharacter;
+            detailsPanel.OnMouseLeave += UnhighlightCharacter;
 
             nameLabel = new Label(combattant.Name, Anchor.AutoCenter)
             {
@@ -60,6 +62,8 @@ namespace Caps.RPG.DungeonCrawler.UI
                 Padding = new Vector2(panelPadding),
             };
             portraitPanel.OnClick += CenterCamera;
+            portraitPanel.OnMouseEnter += HighlightCharacter;
+            portraitPanel.OnMouseLeave += UnhighlightCharacter;
             characterPortrait = new Image(characterIcon, new Vector2(portraitPanel.Size.X - panelPadding), anchor: Anchor.Center);
             portraitPanel.AddChild(characterPortrait, true);
             Panel.AddChild(portraitPanel);
@@ -137,10 +141,10 @@ namespace Caps.RPG.DungeonCrawler.UI
                 }
                 else
                 {
-                    Label iconLabel = new("?", Anchor.AutoCenter)
+                    Label iconLabel = new("?", Anchor.Center, size: new Vector2(buttonSize - 10))
                     {
                         Scale = 3.0f,
-                        Padding = new Vector2(0)
+                        Padding = Vector2.Zero
                     };
                     actionButton.AddChild(iconLabel, true);
                 }
@@ -161,6 +165,16 @@ namespace Caps.RPG.DungeonCrawler.UI
             Core.Camera.FollowPosition = map.GetTilePosition(combattant.Position);
             Core.Camera.Mode = CameraMoveMode.Follow;
             Core.Camera.DirectOrder = true;
+        }
+
+        private void HighlightCharacter(Entity entity)
+        {
+            combattant.Position.Highlighted = true;
+        }
+
+        private void UnhighlightCharacter(Entity entity)
+        {
+            combattant.Position.Highlighted = false;
         }
 
         public void Update()

@@ -74,11 +74,11 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 Padding = Vector2.Zero
             };
             topPanel.AddChild(initiative);
+
             characterControlPanels = new(new Vector2(500, 120 * combattants.Count + 10), PanelSkin.Default, Anchor.BottomLeft)
             {
                 Padding = new Vector2(5)
             };
-
             foreach (Combattant combattant in combattants)
             {
                 Combattant currentCombattant = combattant;
