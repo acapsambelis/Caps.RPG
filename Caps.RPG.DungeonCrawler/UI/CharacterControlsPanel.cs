@@ -111,9 +111,10 @@ namespace Caps.RPG.DungeonCrawler.UI
                 healthBar = new ProgressBar(0, 100, Anchor.AutoCenter)
                 {
                     Size = new Vector2(0, 40),
-                    Value = combattant.Health,
                     FillColor = healthPercent > 0.5f ? Color.LimeGreen : (healthPercent > 0.25f ? Color.Orange : Color.Red),
-                    Padding = new Vector2(0, 10)
+                    Padding = new Vector2(0, 10),
+                    Value = (int)(healthPercent * 100),
+                    ToolTipText = $"HP: {combattant.Health} / {combattant.Creature.MaxHealth}"
                 };
                 healthBar.ProgressFill.FillColor = healthBar.FillColor;
                 Panel.AddChild(healthBar);
@@ -124,10 +125,6 @@ namespace Caps.RPG.DungeonCrawler.UI
             //
             Panel.AddChild(new HorizontalLine());
             Panel.AddChild(GetActionsTabs(actionSelection));
-
-            nameLabel.Text = combattant.Name;
-            healthBar.Value = (int)(healthPercent * 100);
-            healthBar.ToolTipText = $"HP: {combattant.Health} / {combattant.Creature.MaxHealth}";
         }
 
         private Panel GetActionsTabs(EventCallback actionSelection)
