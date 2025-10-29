@@ -58,12 +58,12 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
                 CommonTileFeatures.Highlight.Draw(Core.SpriteBatch, Position);
             }
             // Draw coordinates as debug text
-            var font = Scenes.BaseScene.Font;
-            if (font != null)
-            {
-                string coordsText = $"{TileBase.Coords.Pos.IntX:0},{TileBase.Coords.Pos.IntY:0}";
-                Core.SpriteBatch.DrawString(font, coordsText, Position, Color.Black);
-            }
+            //var font = Scenes.BaseScene.Font;
+            //if (font != null)
+            //{
+            //    string coordsText = $"{TileBase.Coords.Pos.IntX:0},{TileBase.Coords.Pos.IntY:0}";
+            //    Core.SpriteBatch.DrawString(font, coordsText, Position, Color.Black);
+            //}
         }
 
         public override bool IsInside(Vector2 point)
