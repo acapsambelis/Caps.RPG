@@ -1041,6 +1041,18 @@ Related to the cleric is the paladin, who is typically a Lawful Good[citation ne
                         tab.panel.AddChild(new Paragraph(@"PanelTab creates a group of internal panels with toggle buttons to switch between them.
 
 Choose a tab in the buttons above for more info..."));
+                        Button b = new Button("Testing");
+                        b.OnClick += (Entity ent) =>
+                        {
+                            GeonBit.UI.Utils.MessageBox.ShowMsgBox("You clicked the button in Tab 1!", "Good job!");
+                        };
+                        tab.panel.AddChild(b);
+                        Button b2 = new Button("Testing2");
+                        b2.OnClick += (Entity ent) =>
+                        {
+                            GeonBit.UI.Utils.MessageBox.ShowMsgBox("You clicked the button in Tab 1.2!", "Good job!");
+                        };
+                        tab.panel.AddChild(b2);
                     }
 
                     // add second panel

@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text;
 using Caps.RPG.Rules.Attributes;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Creatures.Classed.Classes;
@@ -20,11 +21,27 @@ namespace Caps.RPG.Rules.Creatures.Classed
             ClassLevelMakeup = new ClassLevelMakeup(classes);
         }
 
+        public override string Description(bool full = false)
+        {
+            if (full)
+            {
+                return base.Description(full) + "\n" + ClassLevelMakeup.ToString();
+            }
+            else
+            {
+                StringBuilder sb = new();
+                foreach (var c in ClassLevelMakeup.ClassLevels)
+                {
+                    sb.Append($"{c.Key.Name} {c.Value} | ");
+                }
+                return sb.ToString().Trim([' ', '|']);
+            }
+        }
+
         public int GetLevels(Type t)
         {
             return ClassLevelMakeup.GetLevels(t);
         }
-
 
         public override List<CombatAction> GetCombatActions()
         {

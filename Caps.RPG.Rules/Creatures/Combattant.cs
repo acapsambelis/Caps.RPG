@@ -103,7 +103,6 @@ namespace Caps.RPG.Rules.Creatures
         public readonly static List<CombatAction> ActionList =
         [
             new CombatAction("Attack", "Attack one target with a physical attack.", 1, Attack, new ActionSetup(true, 1, ActionSetup.SourceType.SingleCreature)),
-            new CombatAction("Pass", "Do nothing.", 99, Pass, new ActionSetup()),
             new CombatAction("Move", "Move your speed.", 1, Move, new ActionSetup(true, typeof(Combattant).GetProperty("MoveSpeed"), ActionSetup.SourceType.SingleTile, MapShape.Tile, needsEmptyTile: true)),
         ];
         public static List<CombatAction> GetGenericList()
@@ -128,11 +127,6 @@ namespace Caps.RPG.Rules.Creatures
                 return new ActionResult(source.Name + " attacked " + creature.Name + " with a " + (source.Creature.AttackBonus + toHit) + "(" + toHit + " + " + source.Creature.AttackBonus + ") to hit. " + damage + " was delt.");
             }
             return new ActionResult(source.Name + " attacked an invalid target");
-        }
-
-        public static ActionResult Pass(Combattant source, TileBase[] targets)
-        {
-            return new ActionResult();
         }
 
         public static ActionResult Move(Combattant source, TileBase[] targets)

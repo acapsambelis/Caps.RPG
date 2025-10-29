@@ -329,6 +329,11 @@ namespace Caps.RPG.Rules.Creatures
             return hash.ToHashCode();
         }
 
+        public virtual string Description(bool full=false)
+        {
+            return $"{Name}: A creature {Name}.";
+        }
+
         public static bool operator ==(Creature? left, Creature? right)
         {
             return EqualityComparer<Creature>.Default.Equals(left, right);

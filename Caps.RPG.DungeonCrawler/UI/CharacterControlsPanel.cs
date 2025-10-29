@@ -40,8 +40,12 @@ namespace Caps.RPG.DungeonCrawler.UI
                 Padding = new Vector2(10)
             };
 
+            //
+            // character details
+            //
+
             int panelPadding = 10;
-            Panel detailsPanel = new(new Vector2((Panel.Size.X - panelPadding) * 2 / 3, 0), PanelSkin.None, anchor: Anchor.TopRight)
+            Panel detailsPanel = new(new Vector2((Panel.Size.X - panelPadding) * 2 / 3, (Panel.Size.X - panelPadding) / 3), PanelSkin.None, anchor: Anchor.TopRight)
             {
                 Padding = new Vector2(panelPadding)
             };
@@ -49,118 +53,164 @@ namespace Caps.RPG.DungeonCrawler.UI
             detailsPanel.OnMouseEnter += HighlightCharacter;
             detailsPanel.OnMouseLeave += UnhighlightCharacter;
 
-            nameLabel = new Label(combattant.Name, Anchor.AutoCenter)
+            // name
             {
-                Scale = 1.5f,
-                Padding = new Vector2(0, 5),
-            };
-            detailsPanel.AddChild(nameLabel, true);
-            Panel.AddChild(detailsPanel);
-
-            Panel portraitPanel = new(new Vector2((Panel.Size.X - panelPadding) / 3), PanelSkin.None, anchor: Anchor.TopLeft)
-            {
-                Padding = new Vector2(panelPadding),
-            };
-            portraitPanel.OnClick += CenterCamera;
-            portraitPanel.OnMouseEnter += HighlightCharacter;
-            portraitPanel.OnMouseLeave += UnhighlightCharacter;
-            characterPortrait = new Image(characterIcon, new Vector2(portraitPanel.Size.X - panelPadding), anchor: Anchor.Center);
-            portraitPanel.AddChild(characterPortrait, true);
-            Panel.AddChild(portraitPanel);
-
-            healthBar = new ProgressBar(0, 100, Anchor.AutoCenter)
-            {
-                Size = new Vector2(0, 40),
-                Value = combattant.Health,
-                FillColor = healthPercent > 0.5f ? Color.LimeGreen : (healthPercent > 0.25f ? Color.Orange : Color.Red),
-                Padding = new Vector2(0, 10)
-            };
-            healthBar.ProgressFill.FillColor = healthBar.FillColor;
-            Panel.AddChild(healthBar);
-
-            //actionCounters = new Panel(new Vector2(0, 300), PanelSkin.Alternative, Anchor.AutoCenter)
-            //{
-            //    Padding = new Vector2(5)
-            //};
-            //for (int i = 0; i < combattant.ActionCounts; i++)
-            //{
-            //    Anchor anchor = i == 0 ? Anchor.Auto : Anchor.AutoInline;
-            //    actionCounters.AddChild(new RadioButton("", anchor)
-            //    {
-            //        Checked = true,
-            //        Padding = new Vector2(5, 0),
-            //        Locked = true,
-            //        Tag = i.ToString()
-            //    });
-            //}
-            //Panel.AddChild(actionCounters);
-
-            // Calculate the number of rows needed for the ability buttons
-            var actions = combattant.Creature.GetCombatActions();
-            int buttonsPerRow = 5;
-            int buttonSize = (int)((Panel.Size.X - new Vector2(5).X) / buttonsPerRow) - (int)(new Vector2(5).X);
-
-            // Set the abilitiesPanel height to fit all rows
-            Panel abilitiesPanel = new(new Vector2(0, 0), PanelSkin.Simple, Anchor.AutoCenter)
-            {
-                Padding = new Vector2(5)
-            };
-
-            // Add a button with an icon for each combat action, 5 per row
-            abilitiesPanel.ClearChildren();
-
-            Panel rowPanel = null;
-            var actionButtonPadding = Vector2.Zero;
-            for (int i = 0; i < actions.Count; i++)
-            {
-                if (i % buttonsPerRow == 0)
+                nameLabel = new Label(combattant.Name, Anchor.AutoCenter)
                 {
-                    rowPanel = new Panel(new Vector2(0, buttonSize), PanelSkin.None, Anchor.AutoCenter)
-                    {
-                        Padding = new Vector2(0, 2)
-                    };
-                    abilitiesPanel.Size = new Vector2(abilitiesPanel.Size.X, abilitiesPanel.Size.Y + buttonSize + actionButtonPadding.Y);
-                    abilitiesPanel.AddChild(rowPanel);
-                }
-
-                var action = actions[i];
-                Button actionButton = new("", ButtonSkin.Default, Anchor.AutoInlineNoBreak, size: new Vector2(buttonSize))
-                {
-                    ToolTipText = $"{action.Name} (Cost: {action.Cost})",
-                    Tag = action.Name,
-                    ToggleMode = true
+                    Scale = 1.5f,
+                    Padding = new Vector2(0, 5),
                 };
-                actionButtonPadding = actionButton.Padding;
-                actionButton.OnClick += ActionClicked;
-                actionButton.OnClick += actionSelection;
-
-                if (ActionIcons.TryGetValue(action.Name.ToLower(), out var icon) && icon != null)
-                {
-                    Image iconImage = new(icon.GetTextureWithColor(), new Vector2(buttonSize - 10), anchor: Anchor.Center);
-                    actionButton.AddChild(iconImage, true);
-                }
-                else
-                {
-                    Label iconLabel = new("?", Anchor.Center, size: new Vector2(buttonSize - 10))
-                    {
-                        Scale = 3.0f,
-                        Padding = Vector2.Zero
-                    };
-                    actionButton.AddChild(iconLabel, true);
-                }
-                        
-                actionButtons.Add(actionButton);
-                rowPanel.AddChild(actionButton);
+                detailsPanel.AddChild(nameLabel, true);
             }
+
+            // description
+            {
+                Label descriptionLabel = new(combattant.Creature.Description(), Anchor.Center)
+                {
+                    Padding = new Vector2(0, 5),
+                    ToolTipText = combattant.Creature.Description(full: true),
+                };
+                detailsPanel.AddChild(descriptionLabel);
+            }
+
+            // action counters
+            {
+                actionCounters = new Panel(new Vector2(0, 0), PanelSkin.None, Anchor.BottomCenter)
+                {
+                    Padding = new Vector2(0, 5),
+                };
+                for (int i = 0; i < combattant.ActionCounts; i++)
+                {
+                    Icon ic = new(IconType.OrbRed, Anchor.AutoInlineNoBreak)
+                    {
+                        Locked = true,
+                        Tag = i.ToString()
+                    };
+                    actionCounters.AddChild(ic);
+                }
+                actionCounters.Size = new Vector2(actionCounters.Children[0].EntityDefaultSize.X * combattant.ActionCounts, actionCounters.Children[0].EntityDefaultSize.Y);
+
+                detailsPanel.AddChild(actionCounters);
+                Panel.AddChild(detailsPanel);
+            }
+
+            // portrait
+            {
+                Panel portraitPanel = new(new Vector2((Panel.Size.X - panelPadding) / 3), PanelSkin.None, anchor: Anchor.TopLeft)
+                {
+                    Padding = new Vector2(panelPadding),
+                };
+                portraitPanel.OnClick += CenterCamera;
+                portraitPanel.OnMouseEnter += HighlightCharacter;
+                portraitPanel.OnMouseLeave += UnhighlightCharacter;
+                characterPortrait = new Image(characterIcon, new Vector2(portraitPanel.Size.X - panelPadding), anchor: Anchor.Center);
+                portraitPanel.AddChild(characterPortrait, true);
+                Panel.AddChild(portraitPanel);
+
+                // healthbar
+                healthBar = new ProgressBar(0, 100, Anchor.AutoCenter)
+                {
+                    Size = new Vector2(0, 40),
+                    Value = combattant.Health,
+                    FillColor = healthPercent > 0.5f ? Color.LimeGreen : (healthPercent > 0.25f ? Color.Orange : Color.Red),
+                    Padding = new Vector2(0, 10)
+                };
+                healthBar.ProgressFill.FillColor = healthBar.FillColor;
+                Panel.AddChild(healthBar);
+            }
+
+            //
+            // Abilities
+            //
             Panel.AddChild(new HorizontalLine());
-            Panel.AddChild(abilitiesPanel);
+            Panel.AddChild(GetActionsTabs(actionSelection));
 
             nameLabel.Text = combattant.Name;
             healthBar.Value = (int)(healthPercent * 100);
             healthBar.ToolTipText = $"HP: {combattant.Health} / {combattant.Creature.MaxHealth}";
         }
 
-        private void CenterCamera(Entity entity)
+        private Panel GetActionsTabs(EventCallback actionSelection)
+        {
+            // Calculate the number of rows needed for the ability buttons
+            var actions = combattant.Creature.GetCombatActions();
+            int buttonsPerRow = 5;
+            int buttonSize = (int)((Panel.Size.X - new Vector2(5).X) / buttonsPerRow) - (int)(new Vector2(5).X);
+
+            // Set the abilitiesPanel height to fit all rows
+            Panel abilitiesPanel = new(new Vector2(0, 0), PanelSkin.None, Anchor.AutoCenter)
+            {
+                Padding = new Vector2(5)
+            };
+            PanelTabs tabs = new()
+            {
+                BackgroundSkin = PanelSkin.None
+            };
+            abilitiesPanel.AddChild(tabs);
+
+            {
+                TabData tab = tabs.AddTab("All");
+                tab.panel.Padding = new Vector2(5);
+                // Add a button with an icon for each combat action, 5 per row
+                Panel rowPanel = null;
+                var actionButtonPadding = Vector2.Zero;
+                for (int i = 0; i < actions.Count; i++)
+                {
+                    if (i % buttonsPerRow == 0)
+                    {
+                        rowPanel = new Panel(new Vector2(0, buttonSize), PanelSkin.None, Anchor.AutoCenter)
+                        {
+                            Padding = new Vector2(0, 2)
+                        };
+                        tab.panel.Size = new Vector2(abilitiesPanel.Size.X, abilitiesPanel.Size.Y + buttonSize + actionButtonPadding.Y);
+                        tab.panel.AddChild(rowPanel);
+                    }
+
+                    var action = actions[i];
+                    Button actionButton = new("", ButtonSkin.Default, Anchor.AutoInlineNoBreak, size: new Vector2(buttonSize))
+                    {
+                        ToolTipText = $"{action.Name} (Cost: {action.Cost})",
+                        Tag = action.Name,
+                        ToggleMode = true
+                    };
+                    actionButtonPadding = actionButton.Padding;
+                    actionButton.OnClick += ActionClicked;
+                    actionButton.OnClick += actionSelection;
+
+                    if (ActionIcons.TryGetValue(action.Name.ToLower(), out var icon) && icon != null)
+                    {
+                        Image iconImage = new(icon.GetTextureWithColor(), new Vector2(buttonSize - 10), anchor: Anchor.Center);
+                        actionButton.AddChild(iconImage, true);
+                    }
+                    else
+                    {
+                        Label iconLabel = new("?", Anchor.Center, size: new Vector2(buttonSize - 10))
+                        {
+                            Scale = 3.0f,
+                            Padding = Vector2.Zero
+                        };
+                        actionButton.AddChild(iconLabel, true);
+                    }
+
+                    actionButtons.Add(actionButton);
+                    rowPanel.AddChild(actionButton);
+                }
+            }
+            {
+                TabData tab = tabs.AddTab("Common");
+                tab.panel.AddChild(new Header("Tab 2"));
+                tab.panel.AddChild(new Paragraph(@"Work in progress"));
+            }
+            {
+                TabData tab = tabs.AddTab("Items");
+                tab.panel.AddChild(new Header("Tab 3"));
+                tab.panel.AddChild(new Paragraph(@"Work in progress"));
+            }
+            
+            return abilitiesPanel;
+        }
+
+        public void CenterCamera(Entity entity)
         {
             Core.Camera.FollowPosition = map.GetTilePosition(combattant.Position);
             Core.Camera.Mode = CameraMoveMode.Follow;
@@ -184,15 +234,21 @@ namespace Caps.RPG.DungeonCrawler.UI
 
         public void SetActionNumber(int number)
         {
-            //foreach (CheckBox box in actionCounters.Children.Where(c => c is CheckBox).Cast<CheckBox>())
-            //{
-            //    int index = int.Parse(box.Tag);
-            //    box.Checked = index < number;
-            //}
+            foreach (Icon icon in actionCounters.Children.Where(c => c is Icon).Cast<Icon>())
+            {
+                int index = int.Parse(icon.Tag);
+                icon.Enabled = index < number;
+            }
         }
 
         public void ActionClicked(Entity entity)
         {
+            if ((entity as Button).Checked == false)
+            {
+                foreach (var tile in map.Tiles)
+                    tile.TileBase.Highlighted = false;
+                return;
+            }
             string actionName = ((Button)entity).Tag;
             if (string.IsNullOrEmpty(actionName)) return;
 

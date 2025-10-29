@@ -4,6 +4,7 @@ using Caps.RPG.MonoGame;
 using Caps.RPG.MonoGame.Graphics;
 using Caps.RPG.Rules;
 using Caps.RPG.Rules.Creatures;
+using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Creatures.Classed;
 using Caps.RPG.Rules.Maps;
 using Caps.Util;
@@ -28,6 +29,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         private Panel characterControlPanels;
         private CharacterControlsPanel currentCharacterPanel;
         private int actionsAvailable;
+        private CombatAction tentativeAction;
 
         public override void Initialize()
         {
@@ -122,7 +124,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             if (string.IsNullOrEmpty(actionName)) return;
 
             var actions = gameLoop.CurrentCombattant.Creature.GetCombatActions();
-            gameLoop.ChosenAction = actions.FirstOrDefault(a => a.Name == actionName);
+            tentativeAction = actions.FirstOrDefault(a => a.Name == actionName);
         }
 
         public override void Update(GameTime gameTime)
@@ -134,7 +136,14 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             if (tile != null)
             {
                 if (tile.TileBase.Highlighted)
-                    gameLoop.ChosenTargets = [tile.TileBase];
+                {
+                    if (tentativeAction != null)
+                    {
+                        gameLoop.ChosenAction = tentativeAction;
+                        tentativeAction = null;
+                        gameLoop.ChosenTargets = [tile.TileBase];
+                    }
+                }
                 foreach (Tile t in _map.Tiles)
                     t.TileBase.Highlighted = false;
 
