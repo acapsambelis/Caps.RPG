@@ -6,14 +6,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Caps.RPG.Rules.Creatures.Unclassed
 {
     public class Monster : Creature, IComputerControlled
     {
-        public MonsterBlueprint MonsterBlueprint;
+        private MonsterBlueprint _monsterBlueprint;
+        public MonsterBlueprint MonsterBlueprint
+        {
+            get { return _monsterBlueprint; }
+            set
+            {
+                _monsterBlueprint = value;
+                this.Attributes = value.Attributes;
+            }
+        }
+
         public Monster() { }
-        public Monster(string name, AttributeSet attributes) : base(name, attributes) { }
+        public Monster(string name, MonsterBlueprint monsterBlueprint) : base(name, monsterBlueprint.Attributes) { }
         public Monster(string name) : base(name, new AttributeSet()) { }
 
         public CombatAction ChooseAction()

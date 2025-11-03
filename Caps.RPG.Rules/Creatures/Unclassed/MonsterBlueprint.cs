@@ -1,10 +1,21 @@
-﻿namespace Caps.RPG.Rules.Creatures.Unclassed
+﻿using Caps.RPG.Rules.Attributes;
+
+namespace Caps.RPG.Rules.Creatures.Unclassed
 {
     public class MonsterBlueprint
     {
         public string Name;
-        public MonsterBlueprint() { }
-        public MonsterBlueprint(string name) { Name = name; }
+        public AttributeSet Attributes;
+
+        public MonsterBlueprint()
+        {
+            Attributes = new AttributeSet();
+        }
+        public MonsterBlueprint(string name, AttributeSet attributeSet)
+        {
+            Name = name;
+            Attributes = attributeSet;
+        }
 
         public override string ToString()
         {

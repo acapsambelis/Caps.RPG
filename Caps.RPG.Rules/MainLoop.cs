@@ -157,7 +157,7 @@ namespace Caps.RPG.Rules
                     actionsAvailable = currentCreature.ActionCounts;
                     do
                     {
-                        if (currentCreature is not IComputerControlled)
+                        if (!currentCreature.IsComputerControlled())
                         {
                             chosen = ChosenAction;
                             targets = chosen.Setup.NeedsTarget ? ChosenTargets : [];
@@ -165,8 +165,8 @@ namespace Caps.RPG.Rules
                         }
                         else
                         {
-                            chosen = (currentCreature as IComputerControlled)!.ChooseAction();
-                            targets = chosen.Setup.NeedsTarget ? (currentCreature as IComputerControlled)!.ChooseTargets() : [];
+                            chosen = (currentCreature.Creature as IComputerControlled)!.ChooseAction();
+                            targets = chosen.Setup.NeedsTarget ? (currentCreature.Creature as IComputerControlled)!.ChooseTargets() : [];
                             result = chosen.Execution(currentCreature, targets);
                         }
                         actionsAvailable -= chosen.Cost;
