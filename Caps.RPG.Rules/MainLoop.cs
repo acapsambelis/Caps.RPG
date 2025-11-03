@@ -94,6 +94,8 @@ namespace Caps.RPG.Rules
         private readonly ManualResetEvent targetsSetEvent = new(false);
         private TileBase[]? chosenTargets;
 
+        private static readonly CombatAction PassAction = new("Pass", "End turn", int.MaxValue, (src, targets) => new ActionResult("Turn ended"));
+
         public event EventHandler<ActionCompletedEventArgs>? OnActionCompleted;
 
         public int ActionsAvailable
@@ -173,6 +175,24 @@ namespace Caps.RPG.Rules
                         // loop while action points remain
                     } while (actionsAvailable > 0 && currentCreature.Creature.Status == Creature.HealthStatus.Alive);
                 }
+            }
+        }
+
+        public void ForceEndTurn()
+        {
+            // keep this atomic to avoid races with the loop reading these fields
+            lock (this)
+            {
+                // Inject a pass action and empty targets so any waiting getter will return quickly
+                chosenAction = PassAction;
+                chosenTargets = [];
+
+                // Unblock any threads waiting for a choice
+                actionSetEvent.Set();
+                targetsSetEvent.Set();
+
+                // Ensure the loop will exit the action loop for the current combattant
+                actionsAvailable = 0;
             }
         }
     }

@@ -23,7 +23,7 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
         private readonly Sprite deathSprite;
         private readonly Texture2D deathIcon;
 
-        public CombattantEntity(ref Combattant combattant, Sprite sprite, ref Map map, GeonBit.UI.EventCallback ActionClicked)
+        public CombattantEntity(ref Combattant combattant, Sprite sprite, ref Map map, GeonBit.UI.EventCallback ActionClicked, GeonBit.UI.EventCallback EndTurn)
         {
             Combattant = combattant;
             Combattant.OnPositionChanged += Moved;
@@ -36,7 +36,7 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
             deathIcon = deathSprite.GetTextureWithColor();
 
             InitiativeTracker = new(sprite, ref combattant, ref map);
-            CharacterControlsPanel = new(combattant, icon, map, ActionClicked);
+            CharacterControlsPanel = new(combattant, icon, map, ActionClicked, EndTurn);
 
             this.map = map;
         }

@@ -85,7 +85,8 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             UserInterface.Active.AddEntity(topPanel);
 
             // create character panels
-            characterControlPanels = new(new Vector2(500, 120 * combattants.Count + 10), PanelSkin.Default, Anchor.BottomLeft)
+            //characterControlPanels = new(new Vector2(500, 120 * combattants.Count + 10), PanelSkin.Default, Anchor.BottomLeft)
+            characterControlPanels = new(new Vector2(500, 730), PanelSkin.Default, Anchor.BottomLeft)
             {
                 Padding = new Vector2(5)
             };
@@ -94,7 +95,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 Combattant currentCombattant = combattant;
                 Sprite characterSprite;
                 characterSprite = characterSprites[currentCombattant.Name + " " + currentCombattant.Team.ToString()];
-                CombattantEntity entity = new(ref currentCombattant, characterSprite, ref _map, ActionClicked);
+                CombattantEntity entity = new(ref currentCombattant, characterSprite, ref _map, ActionClicked, EndTurn);
                 characterControlPanels.AddChild(entity.CharacterControlsPanel.Panel);
                 initiative.AddChild(entity.InitiativeTracker.Panel);
                 entity.CharacterControlsPanel.Panel.Visible = currentCombattant == gameLoop.CurrentCombattant;
@@ -146,13 +147,18 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 RegisterClickable(t);
         }
 
-        public void ActionClicked(GeonBit.UI.Entities.Entity entity)
+        private void ActionClicked(GeonBit.UI.Entities.Entity entity)
         {
             string actionName = ((Button)entity).Tag;
             if (string.IsNullOrEmpty(actionName)) return;
 
             var actions = gameLoop.CurrentCombattant.Creature.GetCombatActions();
             tentativeAction = actions.FirstOrDefault(a => a.Name == actionName);
+        }
+
+        private void EndTurn(GeonBit.UI.Entities.Entity entity)
+        {
+            gameLoop.ForceEndTurn();
         }
 
         private void LogAction(object sender, ActionCompletedEventArgs e)
