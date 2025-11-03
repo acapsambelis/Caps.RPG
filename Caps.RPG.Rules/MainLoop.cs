@@ -1,5 +1,6 @@
 ﻿using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Creatures.Actions;
+using Caps.RPG.Rules.Creatures.Unclassed;
 using Caps.RPG.Rules.Maps;
 
 namespace Caps.RPG.Rules
@@ -141,6 +142,9 @@ namespace Caps.RPG.Rules
 
         public void StartAsyncLoop()
         {
+            CombatAction chosen;
+            TileBase[] targets;
+            ActionResult result;
             while (State.HasNoVictor())
             {
                 foreach (Combattant currentCreature in State.CombatOrder)
@@ -151,9 +155,18 @@ namespace Caps.RPG.Rules
                     actionsAvailable = currentCreature.ActionCounts;
                     do
                     {
-                        CombatAction chosen = ChosenAction;
-                        TileBase[] targets = chosen.Setup.NeedsTarget ? ChosenTargets : [];
-                        ActionResult result = chosen.Execution(currentCreature, targets);
+                        if (currentCreature is not IComputerControlled)
+                        {
+                            chosen = ChosenAction;
+                            targets = chosen.Setup.NeedsTarget ? ChosenTargets : [];
+                            result = chosen.Execution(currentCreature, targets);
+                        }
+                        else
+                        {
+                            chosen = (currentCreature as IComputerControlled)!.ChooseAction();
+                            targets = chosen.Setup.NeedsTarget ? (currentCreature as IComputerControlled)!.ChooseTargets() : [];
+                            result = chosen.Execution(currentCreature, targets);
+                        }
                         actionsAvailable -= chosen.Cost;
                         OnActionCompleted?.Invoke(this, new ActionCompletedEventArgs(result));
 

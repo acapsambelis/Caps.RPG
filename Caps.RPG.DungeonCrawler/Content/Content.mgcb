@@ -4584,6 +4584,21 @@
 /processorParam:TextureFormat=Color
 /build:images/Icon.png
 
+#begin images/monsters-definition.xml
+/copy:images/monsters-definition.xml
+
+#begin images/monsters.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/monsters.png
+
 #begin images/tile.png
 /importer:TextureImporter
 /processor:TextureProcessor

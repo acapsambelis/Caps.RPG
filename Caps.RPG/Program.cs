@@ -26,7 +26,7 @@ namespace Caps.RPG
 
             foreach (Combattant combattant in combattants)
             {
-                combattant.HealAll();
+                combattant.HealMax();
             }
 
             MainLoop mainLoop = new(hexMap, combattants);

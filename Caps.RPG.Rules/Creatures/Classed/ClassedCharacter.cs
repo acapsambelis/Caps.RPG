@@ -3,11 +3,10 @@ using System.Text;
 using Caps.RPG.Rules.Attributes;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Creatures.Classed.Classes;
-using Caps.RPG.Rules.Creatures.Types;
 
 namespace Caps.RPG.Rules.Creatures.Classed
 {
-    public class ClassedCharacter : Creature, CreatureType
+    public class ClassedCharacter : Creature
     {
         public ClassLevelMakeup ClassLevelMakeup { get; internal set; }
 

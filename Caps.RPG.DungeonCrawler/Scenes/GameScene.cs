@@ -6,6 +6,7 @@ using Caps.RPG.Rules;
 using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Creatures.Classed;
+using Caps.RPG.Rules.Creatures.Unclassed;
 using Caps.RPG.Rules.Maps;
 using Caps.Util;
 using Caps.Util.Lua;
@@ -37,14 +38,16 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         {
             var characterLoader = new LuaEntityLoader("Characters");
             List<ClassedCharacter> blueTeam = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("BlueTeam");
-            List<ClassedCharacter> redTeam = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("RedTeam");
+            //List<ClassedCharacter> redTeam = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("RedTeam");
+            var monsterLoader = new LuaEntityLoader("Monsters");
+            List<Monster> redTeam = monsterLoader.LoadComponentsFromCategory<Monster>("MonsterInstances");
 
             combattants.AddRange(blueTeam.Select(c => new Combattant(c, TerminalColors.Blue, hexMap.RandomTile(true))));
             combattants.AddRange(redTeam.Select(c => new Combattant(c, TerminalColors.Red, hexMap.RandomTile(true))));
 
             foreach (Combattant combattant in combattants)
             {
-                combattant.HealAll();
+                combattant.HealMax();
             }
             combattants[0].Health = 1;
             combattants[1].Health = 15;
@@ -89,7 +92,8 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             foreach (Combattant combattant in combattants)
             {
                 Combattant currentCombattant = combattant;
-                Sprite characterSprite = characterSprites[currentCombattant.Name + " " + currentCombattant.Team.ToString()];
+                Sprite characterSprite;
+                characterSprite = characterSprites[currentCombattant.Name + " " + currentCombattant.Team.ToString()];
                 CombattantEntity entity = new(ref currentCombattant, characterSprite, ref _map, ActionClicked);
                 characterControlPanels.AddChild(entity.CharacterControlsPanel.Panel);
                 initiative.AddChild(entity.InitiativeTracker.Panel);
@@ -118,9 +122,16 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             base.LoadContent();
 
             TextureAtlas characterAtlas = TextureAtlas.FromFile(Core.Content, "images/characters-definition.xml");
-            foreach (Combattant combattant in combattants)
+            foreach (Combattant combattant in combattants.Where(c => c.Creature is not Monster))
             {
                 TextureRegion region = characterAtlas.GetRegion(combattant.Name + " " + combattant.Team.ToString());
+                characterSprites[combattant.Name + " " + combattant.Team.ToString()] = new Sprite(region, new Vector2(3));
+            }
+
+            TextureAtlas monsterAtlas = TextureAtlas.FromFile(Core.Content, "images/monsters-definition.xml");
+            foreach (Combattant combattant in combattants.Where(c => c.Creature is Monster))
+            {
+                TextureRegion region = monsterAtlas.GetRegion((combattant.Creature as Monster).MonsterBlueprint.ToString());
                 characterSprites[combattant.Name + " " + combattant.Team.ToString()] = new Sprite(region, new Vector2(3));
             }
 

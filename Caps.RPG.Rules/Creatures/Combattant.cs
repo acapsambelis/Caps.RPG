@@ -4,6 +4,7 @@ using Caps.RPG.Rules.Helpers;
 using Caps.RPG.Rules.Maps;
 using Caps.Util;
 using SNS.Data.DataSerializer;
+using Caps.RPG.Rules.Creatures.Unclassed;
 
 namespace Caps.RPG.Rules.Creatures
 {
@@ -88,14 +89,19 @@ namespace Caps.RPG.Rules.Creatures
             newPosition.Features.Add(feature.Key, this);
         }
 
+        public bool IsComputerControlled()
+        {
+            return _creature is IComputerControlled;
+        }
+
+        public void HealMax()
+        {
+            Health = Creature.MaxHealth;
+        }
+
         public static Creature[] GetTeam(TerminalColor name, Combattant[] creatures)
         {
             return creatures.Where(c => c.Team == name).Select(c => c.Creature).ToArray();
-        }
-
-        public void HealAll()
-        {
-            Health = Creature.MaxHealth;
         }
 
         #region Actions
