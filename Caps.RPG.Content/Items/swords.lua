@@ -7,13 +7,13 @@ Swords = {
             Modifiers = {
                 {
                     Source = SourceType.Hands,
-                    Target = TargetType.AttackBonus,
+                    Target = ModifiedValue.AttackBonus,
                     Type = ActionType.Set,
                     Bonus = 25
                 },
                 {
                     Source = SourceType.Hands,
-                    Target = TargetType.AttackDamage,
+                    Target = ModifiedValue.AttackDamage,
                     Type = ActionType.Set,
                     Bonus = 15
                 }

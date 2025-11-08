@@ -25,7 +25,7 @@ namespace Caps.RPG.Rules.Modifiers
         Hands = 15,
     }
 
-    public enum TargetType
+    public enum ModifiedValue
     {
         None = 0,
         Strength = 1,
@@ -46,39 +46,39 @@ namespace Caps.RPG.Rules.Modifiers
 
     public static class TargetTypeExtensions
     {
-        public static bool IsStat(this TargetType type)
+        public static bool IsStat(this ModifiedValue type)
         {
             return (int)type >= 1 && (int)type <= 8;
         }
-        public static Stat ToStat(this TargetType type)
+        public static Stat ToStat(this ModifiedValue type)
         {
             return type switch
             {
-                TargetType.Strength => Stat.Strength,
-                TargetType.Agility => Stat.Agility,
-                TargetType.Constitution => Stat.Constitution,
-                TargetType.Intellect => Stat.Intellect,
-                TargetType.Arcana => Stat.Arcana,
-                TargetType.Wisdom => Stat.Wisdom,
-                TargetType.Presence => Stat.Presence,
-                TargetType.Charisma => Stat.Charisma,
+                ModifiedValue.Strength => Stat.Strength,
+                ModifiedValue.Agility => Stat.Agility,
+                ModifiedValue.Constitution => Stat.Constitution,
+                ModifiedValue.Intellect => Stat.Intellect,
+                ModifiedValue.Arcana => Stat.Arcana,
+                ModifiedValue.Wisdom => Stat.Wisdom,
+                ModifiedValue.Presence => Stat.Presence,
+                ModifiedValue.Charisma => Stat.Charisma,
                 _ => Stat.None
             };
         }
 
-        public static TargetType ToTargetType(this Stat stat)
+        public static ModifiedValue ToTargetType(this Stat stat)
         {
             return stat switch
             {
-                Stat.Strength => TargetType.Strength,
-                Stat.Agility => TargetType.Agility,
-                Stat.Constitution => TargetType.Constitution,
-                Stat.Intellect => TargetType.Intellect,
-                Stat.Arcana => TargetType.Arcana,
-                Stat.Wisdom => TargetType.Wisdom,
-                Stat.Presence => TargetType.Presence,
-                Stat.Charisma => TargetType.Charisma,
-                _ => TargetType.None
+                Stat.Strength => ModifiedValue.Strength,
+                Stat.Agility => ModifiedValue.Agility,
+                Stat.Constitution => ModifiedValue.Constitution,
+                Stat.Intellect => ModifiedValue.Intellect,
+                Stat.Arcana => ModifiedValue.Arcana,
+                Stat.Wisdom => ModifiedValue.Wisdom,
+                Stat.Presence => ModifiedValue.Presence,
+                Stat.Charisma => ModifiedValue.Charisma,
+                _ => ModifiedValue.None
             };
         }
     }
@@ -126,7 +126,7 @@ namespace Caps.RPG.Rules.Modifiers
     {
         #region privateMembers
         private SourceType source = SourceType.Base;
-        private TargetType target;
+        private ModifiedValue target;
         private ActionType actionType = ActionType.Base;
         private int? bonus = null;
         private Dictionary<Die, int>? dice = null;
@@ -141,7 +141,7 @@ namespace Caps.RPG.Rules.Modifiers
             set { source = value; }
         }
         [DataProperty("Target")]
-        public TargetType Target
+        public ModifiedValue Target
         {
             get { return target; }
             set { target = value; }
@@ -181,7 +181,7 @@ namespace Caps.RPG.Rules.Modifiers
 
         public Modifier(
             SourceType source,
-            TargetType target,
+            ModifiedValue target,
             ActionType actionType,
             Dictionary<Die, int>? dice = null,
             int? bonus = null,
@@ -294,9 +294,9 @@ namespace Caps.RPG.Rules.Modifiers
 
         #region StandardModifiers
 
-        public static Dictionary<TargetType, List<Modifier>> GetCreatureModifiers()
+        public static Dictionary<ModifiedValue, List<Modifier>> GetCreatureModifiers()
         {
-            var clone = new Dictionary<TargetType, List<Modifier>>(CreatureModifiers.Count, CreatureModifiers.Comparer);
+            var clone = new Dictionary<ModifiedValue, List<Modifier>>(CreatureModifiers.Count, CreatureModifiers.Comparer);
             foreach (var kvp in CreatureModifiers)
             {
                 clone[kvp.Key] = [.. kvp.Value];
@@ -304,11 +304,11 @@ namespace Caps.RPG.Rules.Modifiers
             return clone;
         }
 
-        private static readonly Dictionary<TargetType, List<Modifier>> CreatureModifiers = new()
+        private static readonly Dictionary<ModifiedValue, List<Modifier>> CreatureModifiers = new()
         {
-            { TargetType.DefenseClass, new List<Modifier>() { new(SourceType.Base, TargetType.DefenseClass, ActionType.Base,  bonus:10) } },
-            { TargetType.AttackDamage, new List<Modifier>() { new(SourceType.Base, TargetType.AttackDamage, ActionType.Bonus, dice: new Dictionary<Die, int> {{ Die.D4, 1 }}) } },
-            { TargetType.AttackBonus,  new List<Modifier>() { new(SourceType.Base, TargetType.AttackBonus,  ActionType.Base,  bonus:1, stat: Attributes.Stat.Strength )} }
+            { ModifiedValue.DefenseClass, new List<Modifier>() { new(SourceType.Base, ModifiedValue.DefenseClass, ActionType.Base,  bonus:10) } },
+            { ModifiedValue.AttackDamage, new List<Modifier>() { new(SourceType.Base, ModifiedValue.AttackDamage, ActionType.Bonus, dice: new Dictionary<Die, int> {{ Die.D4, 1 }}) } },
+            { ModifiedValue.AttackBonus,  new List<Modifier>() { new(SourceType.Base, ModifiedValue.AttackBonus,  ActionType.Base,  bonus:1, stat: Attributes.Stat.Strength )} }
         };
 
         #endregion

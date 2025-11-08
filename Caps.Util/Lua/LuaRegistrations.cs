@@ -13,7 +13,11 @@ namespace Caps.Util.Lua
         public static void RegisterNamespacePrefixTypes(string namespacePrefix, Assembly assembly)
         {
             var types = assembly.GetTypes()
-                .Where(t => t.IsClass && t.Namespace != null && t.Namespace.StartsWith(namespacePrefix));
+                .Where(t =>
+                    (t.IsClass || (t.IsValueType && !t.IsEnum && !t.IsPrimitive)) &&
+                    t.Namespace != null &&
+                    t.Namespace.StartsWith(namespacePrefix)
+                );
 
             foreach (var type in types)
             {

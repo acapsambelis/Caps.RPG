@@ -25,7 +25,7 @@ namespace Caps.RPG.Rules.Inventory
             slot.SetItem(i);
         }
 
-        public Dictionary<TargetType, List<Modifier>> GetModifiers()
+        public Dictionary<ModifiedValue, List<Modifier>> GetModifiers()
         {
             return EquippedItems.GetAllModifiers();
         }

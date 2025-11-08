@@ -116,7 +116,7 @@ namespace Caps.RPG.Rules.Creatures
                 setup:       new ActionSetup(
                     needsSource: true,
                     sourcerange: 1,
-                    sourcetype: ActionSetup.SourceType.SingleCreature
+                    sourcetype: ActionSetup.TargetType.SingleCreature
                 )
                 {
                     Tags = [ActionSetup.ActionTags.Attack]
@@ -130,7 +130,7 @@ namespace Caps.RPG.Rules.Creatures
                 setup:       new ActionSetup(
                     needsSource:         true,
                     sourceRangeProperty: typeof(Combattant).GetProperty("MoveSpeed"),
-                    sourcetype:          ActionSetup.SourceType.SingleTile,
+                    sourcetype:          ActionSetup.TargetType.SingleTile,
                     mapShape:            MapShape.Tile,
                     needsEmptyTile:      true
                 )
@@ -155,7 +155,7 @@ namespace Caps.RPG.Rules.Creatures
                 bool hits = source.Creature.AttackBonus + toHit > creature.Creature.DefenseClass;
                 if (hits)
                 {
-                    damage = Modifier.SumAll(source.Creature.Modifiers[TargetType.AttackDamage], source.Creature.Attributes);
+                    damage = Modifier.SumAll(source.Creature.Modifiers[ModifiedValue.AttackDamage], source.Creature.Attributes);
                     creature.Health -= damage;
                 }
                 return new ActionResult(source.Name + " attacked " + creature.Name + " with a " + (source.Creature.AttackBonus + toHit) + "(" + toHit + " + " + source.Creature.AttackBonus + ") to hit. " + damage + " was delt.");

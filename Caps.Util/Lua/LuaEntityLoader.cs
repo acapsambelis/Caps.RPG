@@ -57,20 +57,22 @@ namespace Caps.Util.Lua
         private void RegisterAllEnums()
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var enumNames = new List<string>();
             foreach (var assembly in assemblies)
             {
                 foreach (var type in assembly.GetTypes())
                 {
-                    if (type.IsEnum && type.IsPublic)
+                    // Only register enums from your own namespace
+                    if (type.IsEnum && (type.IsPublic || type.IsNestedPublic) && type.Namespace?.StartsWith("MoonSharp") == false)
                     {
-                        // Register with MoonSharp
                         UserData.RegisterType(type);
-
-                        // Expose to Lua by name (e.g., Test)
                         _script.Globals[type.Name] = type;
+                        enumNames.Add(type.FullName ?? type.Name);
                     }
                 }
             }
+            var debugPath = Path.Combine(Path.GetTempPath(), "LuaEntityLoader_Enums.txt");
+            File.WriteAllLines(debugPath, enumNames);
         }
 
         /// <summary>

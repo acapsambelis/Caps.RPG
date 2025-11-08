@@ -146,7 +146,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
 
     public struct ActionSetup
     {
-        public enum SourceType
+        public enum TargetType
         {
             None,
             SingleCreature,
@@ -169,7 +169,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
         private bool needsSource;
         private double sourcerange = 0;
         private PropertyInfo? sourceRangeProperty;
-        private SourceType sourcetype;
+        private TargetType target;
         private MapShape mapShape;
         private double distanceFromSource;
         private bool needsEmptyTile;
@@ -182,10 +182,10 @@ namespace Caps.RPG.Rules.Creatures.Actions
             set { needsSource = value; }
         }
         [DataProperty("SourceType")]
-        public SourceType TargetType
+        public TargetType Target
         {
-            get { return sourcetype; }
-            set { sourcetype = value; }
+            get { return target; }
+            set { target = value; }
         }
         [DataProperty("MapShape")]
         public MapShape Shape
@@ -215,7 +215,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
         public ActionSetup(
             bool needsSource = false,
             double sourcerange = 0,
-            SourceType sourcetype = SourceType.None,
+            TargetType sourcetype = TargetType.None,
             MapShape mapShape = MapShape.None,
             double distanceFromSource = 0,
             bool needsEmptyTile = false
@@ -223,7 +223,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
         {
             this.needsSource = needsSource;
             this.sourcerange = sourcerange;
-            this.sourcetype = sourcetype;
+            this.target = sourcetype;
             this.mapShape = mapShape;
             this.distanceFromSource = distanceFromSource;
             this.needsEmptyTile = needsEmptyTile;
@@ -232,7 +232,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
         public ActionSetup(
             bool needsSource = false,
             PropertyInfo? sourceRangeProperty = null,
-            SourceType sourcetype = SourceType.None,
+            TargetType sourcetype = TargetType.None,
             MapShape mapShape = MapShape.None,
             double distanceFromSource = 0,
             bool needsEmptyTile = false
@@ -240,7 +240,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
         {
             this.needsSource = needsSource;
             this.sourceRangeProperty = sourceRangeProperty;
-            this.sourcetype = sourcetype;
+            this.target = sourcetype;
             this.mapShape = mapShape;
             this.distanceFromSource = distanceFromSource;
             this.needsEmptyTile = needsEmptyTile;
@@ -275,24 +275,24 @@ namespace Caps.RPG.Rules.Creatures.Actions
         public override string ToString()
         {
             StringBuilder sb = new();
-            switch (TargetType)
+            switch (Target)
             {
-                case SourceType.None:
+                case TargetType.None:
                     sb.Append("No Targeting");
                     break;
-                case SourceType.SingleCreature:
+                case TargetType.SingleCreature:
                     sb.Append("a single creature");
                     break;
-                case SourceType.MultipleCreature:
+                case TargetType.MultipleCreature:
                     sb.Append("a multiple creature");
                     break;
-                case SourceType.SingleTile:
+                case TargetType.SingleTile:
                     sb.Append("a single tile");
                     break;
-                case SourceType.Area:
+                case TargetType.Area:
                     sb.Append("an area");
                     break;
-                case SourceType.Custom:
+                case TargetType.Custom:
                     sb.Append("a custom target");
                     break;
             }
@@ -329,14 +329,14 @@ namespace Caps.RPG.Rules.Creatures.Actions
             return obj is ActionSetup setup &&
                    needsSource == setup.needsSource &&
                    sourcerange == setup.sourcerange &&
-                   sourcetype == setup.sourcetype &&
+                   target == setup.target &&
                    mapShape == setup.mapShape &&
                    distanceFromSource == setup.distanceFromSource;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(needsSource, sourcerange, sourcetype, mapShape, distanceFromSource);
+            return HashCode.Combine(needsSource, sourcerange, target, mapShape, distanceFromSource);
         }
 
         public static bool operator ==(ActionSetup left, ActionSetup right)

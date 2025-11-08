@@ -13,15 +13,15 @@ namespace Caps.RPG.DungeonCrawler.UI
     {
         public static Func<TileMap, Combattant, ActionSetup, TileBase[]> GetAction(ActionSetup setup)
         {
-            return setup.TargetType switch
+            return setup.Target switch
             {
-                ActionSetup.SourceType.SingleTile => ChooseSingleTile,
-                ActionSetup.SourceType.SingleCreature => ChooseSingleEntity,
-                ActionSetup.SourceType.Area => ChooseArea,
-                ActionSetup.SourceType.None => null,
-                ActionSetup.SourceType.MultipleCreature => null,
-                ActionSetup.SourceType.Custom => null,
-                _ => throw new NotImplementedException($"TargetType {setup.TargetType} not implemented in ActionSetupManager.GetAction"),
+                ActionSetup.TargetType.SingleTile => ChooseSingleTile,
+                ActionSetup.TargetType.SingleCreature => ChooseSingleEntity,
+                ActionSetup.TargetType.Area => ChooseArea,
+                ActionSetup.TargetType.None => null,
+                ActionSetup.TargetType.MultipleCreature => null,
+                ActionSetup.TargetType.Custom => null,
+                _ => throw new NotImplementedException($"TargetType {setup.Target} not implemented in ActionSetupManager.GetAction"),
             };
         }
 
@@ -49,7 +49,7 @@ namespace Caps.RPG.DungeonCrawler.UI
             );
             if (setup.NeedsEmptyTile)
                 validTargets = [.. validTargets.Where(t => t.IsEmpty())];
-            if (setup.TargetType == ActionSetup.SourceType.SingleCreature)
+            if (setup.Target == ActionSetup.TargetType.SingleCreature)
                 validTargets = [.. validTargets.Where(t => t.GetFeature<Combattant>() != null)];
 
             return validTargets;

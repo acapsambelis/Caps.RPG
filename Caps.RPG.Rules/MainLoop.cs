@@ -171,6 +171,8 @@ namespace Caps.RPG.Rules
                         actionsAvailable -= chosen.Cost;
                         OnActionCompleted?.Invoke(this, new ActionCompletedEventArgs(result));
 
+                        if (currentCreature.IsComputerControlled()) Thread.Sleep(500);
+
                         // loop while action points remain
                     } while (actionsAvailable > 0 && currentCreature.Creature.Status == Creature.HealthStatus.Alive);
                 }
