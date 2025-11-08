@@ -1,12 +1,8 @@
-﻿using Caps.RPG.Rules.Attributes;
-using Caps.RPG.Rules.Creatures.Actions;
+﻿using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Maps;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Caps.RPG.Rules.Creatures.Unclassed
 {
@@ -23,18 +19,24 @@ namespace Caps.RPG.Rules.Creatures.Unclassed
             }
         }
 
-        public Monster() { }
-        public Monster(string name, MonsterBlueprint monsterBlueprint) : base(name, monsterBlueprint.Attributes) { }
-        public Monster(string name) : base(name, new AttributeSet()) { }
+        private TileMap _map;
+        private readonly HashSet<Creature> _hostileList = [];
 
-        public CombatAction ChooseAction()
+        public TileMap FullMap { get => _map; set => _map = value; }
+
+
+        public Monster() { }
+
+        public (CombatAction, TileBase[]) ChooseAction(List<CombatAction> combatActions)
         {
-            throw new NotImplementedException();
+            var currentPosition = _map[this];
+            var ret = _monsterBlueprint.ChooseAction(this, [.. combatActions], _map, currentPosition);
+            return (ret.Item1, ret.Item2);
         }
 
-        public TileBase[] ChooseTargets()
+        public bool IsHostileTo(Creature other)
         {
-            throw new NotImplementedException();
+            return _hostileList.Contains(other) && other.Status == HealthStatus.Alive;
         }
     }
 

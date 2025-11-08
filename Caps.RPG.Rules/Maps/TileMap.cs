@@ -1,4 +1,5 @@
-﻿using Caps.RPG.Rules.Helpers;
+﻿using Caps.RPG.Rules.Creatures;
+using Caps.RPG.Rules.Helpers;
 
 namespace Caps.RPG.Rules.Maps
 {
@@ -37,6 +38,32 @@ namespace Caps.RPG.Rules.Maps
         {
             get { return this[new Vector2D(x, y)]; }
             set { this[new Vector2D(x, y)] = value; }
+        }
+
+        public TileBase this[TileFeature feature]
+        {
+            get
+            {
+                foreach (var tile in Tiles.Values)
+                {
+                    if (tile.Features.Any(f => f.Value == feature))
+                        return tile;
+                }
+                throw new ArgumentException("No tile with the specified feature exists.");
+            }
+        }
+
+        public TileBase this[Creature creature]
+        {
+            get
+            {
+                foreach (var tile in Tiles.Values)
+                {
+                    if (tile.Features.Any(f => f.Value is Combattant c && c.Creature == creature))
+                        return tile;
+                }
+                throw new ArgumentException("No tile with the specified feature exists.");
+            }
         }
 
         public TileBase RandomEmptyTile()
@@ -132,6 +159,93 @@ namespace Caps.RPG.Rules.Maps
         }
 
         protected abstract string GetPrintingOffset(int rowNumber);
+
+        public virtual TileBase[] GetFeaturesWithinRange(TileBase source, bool considerLOS, double? range, Func<TileFeature, bool>? filter = null)
+        {
+            List<TileBase> tilesInRange;
+            if (considerLOS)
+            {
+                tilesInRange = GetLineOfSight(source, (int)(range ?? Math.Max(_gridWidth, _gridDepth)));
+            }
+            else
+            {
+                tilesInRange = range != null
+                    ? NodesInRange(source, (float)range.Value)
+                    : [.. Tiles.Values];
+            }
+            var resultTiles = new List<TileBase>();
+            foreach (var tile in tilesInRange)
+            {
+                if (tile.Features.Count > 0)
+                {
+                    if (filter != null)
+                    {
+                        if (tile.Features.Any(f => filter(f.Value)))
+                        {
+                            resultTiles.Add(tile);
+                        }
+                    }
+                    else
+                    {
+                        resultTiles.Add(tile);
+                    }
+                }
+            }
+            return resultTiles.ToArray();
+        }
+
+        public virtual TileBase[] GetNearestFeature(TileBase source, Type featureType, bool considerLOS = false, Func<TileFeature, bool>? filter = null)
+        {
+            var tilesWithFeature = GetFeaturesWithinRange(
+                source,
+                considerLOS,
+                Math.Max(_gridWidth, _gridDepth),
+                f => f.GetType() == featureType && (filter == null || filter(f))
+            );
+            if (tilesWithFeature.Length == 0)
+                return [];
+            double nearestDistance = double.MaxValue;
+            TileBase? nearestTile = null;
+            foreach (var tile in tilesWithFeature)
+            {
+                double distance = source.GetDistance(tile);
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestTile = tile;
+                }
+            }
+            if (nearestTile != null)
+                return [nearestTile];
+            return [];
+        }
+
+        public virtual TileBase[] GetNearestEnemy(TileBase source, bool considerLOS = false)
+        {
+            Combattant sourceCombattant = source.GetFeature<Combattant>();
+            var tilesWithFeature = GetFeaturesWithinRange(
+                source,
+                considerLOS,
+                Math.Max(_gridWidth, _gridDepth),
+                f => f is Combattant c && c.Team != sourceCombattant.Team
+            );
+            if (tilesWithFeature.Length == 0)
+                return [];
+            double nearestDistance = double.MaxValue;
+            TileBase? nearestTile = null;
+            foreach (var tile in tilesWithFeature)
+            {
+                double distance = source.GetDistance(tile);
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestTile = tile;
+                }
+            }
+            if (nearestTile != null)
+                return [nearestTile];
+            return [];
+        }
 
         #region Shape Methods
 

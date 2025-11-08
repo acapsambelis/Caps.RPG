@@ -165,8 +165,7 @@ namespace Caps.RPG.Rules
                         }
                         else
                         {
-                            chosen = (currentCreature.Creature as IComputerControlled)!.ChooseAction();
-                            targets = chosen.Setup.NeedsTarget ? (currentCreature.Creature as IComputerControlled)!.ChooseTargets() : [];
+                            (chosen, targets) = (currentCreature.Creature as IComputerControlled)!.ChooseAction(currentCreature.GetCombatActions());
                             result = chosen.Execution(currentCreature, targets);
                         }
                         actionsAvailable -= chosen.Cost;

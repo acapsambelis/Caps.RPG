@@ -25,12 +25,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="GeonBit.UI" Version="4.3.0.4" />
-    <PackageReference Include="Gum.MonoGame" Version="2025.5.13.1" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Metadata\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Caps.RPG.Content\Caps.RPG.Content.csproj" />

@@ -48,6 +48,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             foreach (Combattant combattant in combattants)
             {
                 combattant.HealMax();
+                if (combattant.IsComputerControlled()) ((IComputerControlled)combattant.Creature).FullMap = hexMap;
             }
             combattants[0].Health = 1;
             combattants[1].Health = 15;

@@ -156,6 +156,16 @@ namespace Caps.RPG.Rules.Creatures.Actions
             Custom,
         }
 
+        public enum ActionTags
+        {
+            Attack,
+            Movement,
+            Healing,
+            Buff,
+            Debuff,
+            Utility,
+        }
+
         private bool needsSource;
         private double sourcerange = 0;
         private PropertyInfo? sourceRangeProperty;
@@ -163,6 +173,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
         private MapShape mapShape;
         private double distanceFromSource;
         private bool needsEmptyTile;
+        private ActionTags[] tags;
 
         [DataProperty("NeedsTarget")]
         public bool NeedsTarget
@@ -194,6 +205,12 @@ namespace Caps.RPG.Rules.Creatures.Actions
             get { return needsEmptyTile; }
             set { needsEmptyTile = value; }
         }
+        [DataProperty("Tags")]
+        public ActionTags[] Tags
+        {
+            get { return tags; }
+            set { tags = value; }
+        }
 
         public ActionSetup(
             bool needsSource = false,
@@ -210,6 +227,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
             this.mapShape = mapShape;
             this.distanceFromSource = distanceFromSource;
             this.needsEmptyTile = needsEmptyTile;
+            tags = [];
         }
         public ActionSetup(
             bool needsSource = false,
@@ -226,6 +244,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
             this.mapShape = mapShape;
             this.distanceFromSource = distanceFromSource;
             this.needsEmptyTile = needsEmptyTile;
+            tags = [];
         }
 
         public double GetRange(Combattant source)

@@ -108,8 +108,36 @@ namespace Caps.RPG.Rules.Creatures
 
         public readonly static List<CombatAction> ActionList =
         [
-            new CombatAction("Attack", "Attack one target with a physical attack.", 1, Attack, new ActionSetup(true, 1, ActionSetup.SourceType.SingleCreature)),
-            new CombatAction("Move", "Move your speed.", 1, Move, new ActionSetup(true, typeof(Combattant).GetProperty("MoveSpeed"), ActionSetup.SourceType.SingleTile, MapShape.Tile, needsEmptyTile: true)),
+            new CombatAction(
+                name:        "Attack",
+                description: "Attack one target with a physical attack.",
+                cost:        1,
+                action:      Attack,
+                setup:       new ActionSetup(
+                    needsSource: true,
+                    sourcerange: 1,
+                    sourcetype: ActionSetup.SourceType.SingleCreature
+                )
+                {
+                    Tags = [ActionSetup.ActionTags.Attack]
+                }
+            ),
+            new CombatAction(
+                name:        "Move",
+                description: "Move your speed.",
+                cost:        1,
+                action:      Move,
+                setup:       new ActionSetup(
+                    needsSource:         true,
+                    sourceRangeProperty: typeof(Combattant).GetProperty("MoveSpeed"),
+                    sourcetype:          ActionSetup.SourceType.SingleTile,
+                    mapShape:            MapShape.Tile,
+                    needsEmptyTile:      true
+                )
+                {
+                    Tags = [ActionSetup.ActionTags.Movement]
+                }
+            ),
         ];
         public static List<CombatAction> GetGenericList()
         {

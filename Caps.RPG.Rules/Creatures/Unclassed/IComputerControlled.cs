@@ -10,8 +10,8 @@ namespace Caps.RPG.Rules.Creatures.Unclassed
 {
     public interface IComputerControlled
     {
-        public CombatAction ChooseAction();
+        public TileMap FullMap { get; set; }
 
-        public TileBase[] ChooseTargets();
+        public (CombatAction, TileBase[]) ChooseAction(List<CombatAction> combatActions);
     }
 }
