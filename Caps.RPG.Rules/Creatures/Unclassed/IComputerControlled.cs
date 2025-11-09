@@ -12,6 +12,6 @@ namespace Caps.RPG.Rules.Creatures.Unclassed
     {
         public TileMap FullMap { get; set; }
 
-        public (CombatAction, TileBase[]) ChooseAction(List<CombatAction> combatActions);
+        public (CombatAction, TileBase[]) ChooseAction();
     }
 }

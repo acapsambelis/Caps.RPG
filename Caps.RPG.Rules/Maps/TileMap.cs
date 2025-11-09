@@ -89,59 +89,6 @@ namespace Caps.RPG.Rules.Maps
             return [.. Tiles.Values.Where(t => t?.GetDistance(center) <= range)];
         }
 
-        public virtual void PrintToConsole(Dictionary<TileBase, ConsoleColor?>? highlights = null)
-        {
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("  ");
-            for (int x = 0; x < _gridWidth; x++)
-            {
-                Console.Write((x % 10).ToString() + " ");
-            }
-            Console.WriteLine();
-            for (int r = 0; r < _gridDepth; r++)
-            {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write((r % 10).ToString() + " ");
-                Console.Write(GetPrintingOffset(r));
-                int rOffset = r >> 1;
-                for (int q = -rOffset; q < _gridWidth - rOffset; q++)
-                {
-                    var coords = new HexCoords(q, r);
-                    if (Tiles.TryGetValue(coords.Pos, out var node) && node != null)
-                    {
-                        ConsoleColor backgroundColor;
-                        ConsoleColor foregroundColor;
-                        if (highlights != null && highlights.TryGetValue(node, out ConsoleColor? value))
-                        {
-                            foregroundColor = value ?? node.HighlightColor;
-                            backgroundColor = value == null ? node.Color : ConsoleColor.Black;
-                        }
-                        else
-                        {
-                            foregroundColor = node.Color;
-                            backgroundColor = ConsoleColor.Black;
-                        }
-                        PrintColor(node.TextRepresentation().ToString(), foregroundColor, backgroundColor);
-                        Console.Write(' ');
-                    }
-                    else
-                    {
-                        Console.Write("  ");
-                    }
-                }
-                Console.WriteLine();
-            }
-            Console.ForegroundColor = ConsoleColor.White;
-        }
-
-        private static void PrintColor(string text, ConsoleColor foreground, ConsoleColor background)
-        {
-            Console.ForegroundColor = foreground;
-            Console.BackgroundColor = background;
-            Console.Write(text);
-            Console.ResetColor();
-        }
-
         public virtual List<TileBase> GetLineOfSight(TileBase start, int range)
         {
             var visibleTiles = new List<TileBase>();
@@ -220,7 +167,7 @@ namespace Caps.RPG.Rules.Maps
             return [];
         }
 
-        public virtual TileBase[] GetNearestEnemy(TileBase source, bool considerLOS = false)
+        public virtual TileBase? GetNearestEnemy(TileBase source, bool considerLOS = false)
         {
             Combattant sourceCombattant = source.GetFeature<Combattant>();
             var tilesWithFeature = GetFeaturesWithinRange(
@@ -230,7 +177,7 @@ namespace Caps.RPG.Rules.Maps
                 f => f is Combattant c && c.Team != sourceCombattant.Team
             );
             if (tilesWithFeature.Length == 0)
-                return [];
+                return null;
             double nearestDistance = double.MaxValue;
             TileBase? nearestTile = null;
             foreach (var tile in tilesWithFeature)
@@ -243,8 +190,8 @@ namespace Caps.RPG.Rules.Maps
                 }
             }
             if (nearestTile != null)
-                return [nearestTile];
-            return [];
+                return nearestTile;
+            return null;
         }
 
         #region Shape Methods

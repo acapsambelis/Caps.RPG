@@ -247,20 +247,20 @@ namespace Caps.RPG.Rules.Creatures.Actions
             tags = [];
         }
 
-        public double GetRange(Combattant source)
+        public double GetRange(Creature source)
         {
             if (needsSource && sourcerange > 0)
             {
                 return sourcerange;
             }
-            if (needsSource && sourceRangeProperty != null)
+            if (needsSource && sourceRangeProperty != null && source != null)
             {
                 return GetRangeFromProperty(source);
             }
             return distanceFromSource;
         }
 
-        private double GetRangeFromProperty(Combattant source)
+        private double GetRangeFromProperty(Creature source)
         {
             if (sourceRangeProperty == null)
                 throw new InvalidOperationException("sourceRangeProperty is not set.");

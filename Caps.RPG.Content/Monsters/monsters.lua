@@ -20,25 +20,46 @@ Monsters = {
 			--   availableActions : CombatAction[]
 			--                map : TileMap
 			--           position : TileBase
+			-- This basic combat think expects only two availabe actions: attack, and move.
+			--   It will move toward the nearest enemy or attack within range.
 			-- Returns one of the combat actions and optional targets in a SelectedAction object
 			CombatThink = function(self, availableActions, map, position)
-				-- Loop through available actions to find an enemy within range
 				local nearestEnemy = map:GetNearestEnemy(position)
 				if (nearestEnemy) then
-					--	self.MonsterBlueprint.Decide(availableActions[1], nearestEnemy)
-
+					local path = position.FindPath(nearestEnemy)
+					local minAttackDistance = 9999;
 					for _, action in ipairs(availableActions) do
 						if action.Setup.Tags then
 							if (contains(action.Setup.Tags, ActionTags.Attack)) then
-								print("Attack tag found using contains function")
+								local attackRange = action.Setup:GetRange(self)
+
+								if (attackRange < minAttackDistance) then
+									minAttackDistance = attackRange
+								end
+
+								-- if it can attack, then attack
+								if (nearestEnemy:GetDistance(position) <= attackRange) then
+									print("Within range")
+									self.MonsterBlueprint:Decide(action, { nearestEnemy })
+									return
+								end
 							end
-							if (contains(action.Setup.Tags, ActionTags.Attack)) then
-								print("Movement tag found using contains function")
+						end
+					end
+					for _, action in ipairs(availableActions) do
+						if action.Setup.Tags then
+							if (contains(action.Setup.Tags, ActionTags.Movement)) then
+								local movementRange = action.Setup:GetRange(self)
+								if (#path > minAttackDistance) then -- outside range
+									print("moving closer")
+									local farthestAble = path[math.min(movementRange, #path)]
+									self.MonsterBlueprint:Decide(action, { farthestAble })
+									return
+								end
 							end
 						end
 					end
 				end
-
 			end,
 		}
 	},

@@ -27,11 +27,9 @@ namespace Caps.RPG.Rules.Creatures.Unclassed
 
         public Monster() { }
 
-        public (CombatAction, TileBase[]) ChooseAction(List<CombatAction> combatActions)
+        public (CombatAction, TileBase[]) ChooseAction()
         {
-            var currentPosition = _map[this];
-            var ret = _monsterBlueprint.ChooseAction(this, [.. combatActions], _map, currentPosition);
-            return (ret.Item1, ret.Item2);
+            return _monsterBlueprint.ChooseAction(this, [..CombatActions], _map, _map[this]);
         }
 
         public bool IsHostileTo(Creature other)

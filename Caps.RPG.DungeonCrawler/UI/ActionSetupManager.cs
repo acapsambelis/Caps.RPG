@@ -45,7 +45,7 @@ namespace Caps.RPG.DungeonCrawler.UI
             // prepare valid targets
             TileBase[] validTargets = map.GetTiles(
                 source.Position,
-                setup.GetRange(source)
+                setup.GetRange(source.Creature)
             );
             if (setup.NeedsEmptyTile)
                 validTargets = [.. validTargets.Where(t => t.IsEmpty())];

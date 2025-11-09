@@ -60,7 +60,7 @@ namespace Caps.RPG.Rules
                             // prepare valid targets
                             TileBase[] validTargets = State.Map.GetTiles(
                                 currentCreature.Position,
-                                chosen.Setup.GetRange(currentCreature)
+                                chosen.Setup.GetRange(currentCreature.Creature)
                             );
                             if (chosen.Setup.NeedsEmptyTile)
                                 validTargets = [.. validTargets.Where(t => t.IsEmpty())];
@@ -165,7 +165,13 @@ namespace Caps.RPG.Rules
                         }
                         else
                         {
-                            (chosen, targets) = (currentCreature.Creature as IComputerControlled)!.ChooseAction(currentCreature.GetCombatActions());
+                            (chosen, targets) = (currentCreature.Creature as IComputerControlled)!.ChooseAction();
+                            if (chosen == null)
+                            {
+                                chosen = PassAction;
+                                targets = [];
+                                actionsAvailable = 0;
+                            }
                             result = chosen.Execution(currentCreature, targets);
                         }
                         actionsAvailable -= chosen.Cost;

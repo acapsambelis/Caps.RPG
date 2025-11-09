@@ -112,7 +112,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             actionLog = new(size: new Vector2(-1, 120))
             {
                 ExtraSpaceBetweenLines = -8,
-                ItemsScale = 0.5f,
+                ItemsScale = 0.75f,
                 Locked = true,
             };
             actionLogPanel.AddChild(actionLog);

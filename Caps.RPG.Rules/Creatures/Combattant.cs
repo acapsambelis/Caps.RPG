@@ -129,7 +129,7 @@ namespace Caps.RPG.Rules.Creatures
                 action:      Move,
                 setup:       new ActionSetup(
                     needsSource:         true,
-                    sourceRangeProperty: typeof(Combattant).GetProperty("MoveSpeed"),
+                    sourceRangeProperty: typeof(Creature).GetProperty(nameof(Creature.MoveSpeed)),
                     sourcetype:          ActionSetup.TargetType.SingleTile,
                     mapShape:            MapShape.Tile,
                     needsEmptyTile:      true
