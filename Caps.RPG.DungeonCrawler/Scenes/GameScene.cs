@@ -20,9 +20,10 @@ using System.Threading.Tasks;
 
 namespace Caps.RPG.DungeonCrawler.Scenes
 {
-    public class GameScene(CommonConfig config) : BaseScene(config, CameraSceneMode.Panning)
+    public class GameScene(CommonConfig config, ClassedCharacter[] playerCharacters) : BaseScene(config, CameraSceneMode.Panning)
     {
         private readonly TileMap hexMap = HexMap.GenerateRandomMap(0, 3);
+        private readonly ClassedCharacter[] playerCharacters = playerCharacters;
         private readonly List<Combattant> combattants = [];
         private readonly Dictionary<string, Sprite> characterSprites = [];
         private Map _map;
@@ -36,13 +37,13 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
         public override void Initialize()
         {
-            var characterLoader = new LuaEntityLoader("Characters");
-            List<ClassedCharacter> blueTeam = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("BlueTeam");
+            //var characterLoader = new LuaEntityLoader("Characters");
+            //List<ClassedCharacter> blueTeam = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("BlueTeam");
             //List<ClassedCharacter> redTeam = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("RedTeam");
             var monsterLoader = new LuaEntityLoader("Monsters");
             List<Monster> redTeam = monsterLoader.LoadComponentsFromCategory<Monster>("MonsterInstances");
 
-            combattants.AddRange(blueTeam.Select(c => new Combattant(c, TerminalColors.Blue, hexMap.RandomTile(true))));
+            combattants.AddRange(playerCharacters.Select(c => new Combattant(c, TerminalColors.Blue, hexMap.RandomTile(true))));
             combattants.AddRange(redTeam.Select(c => new Combattant(c, TerminalColors.Red, hexMap.RandomTile(true))));
 
             foreach (Combattant combattant in combattants)

@@ -86,15 +86,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
         public void Continue()
         {
-            Core.ChangeScene(new GameScene(config));
-            //if (!config.LastSaveFile.Equals(""))
-            //{
-            //    GeonBit.UI.Utils.MessageBox.ShowMsgBox("Continuing Game", $"In this example we won't actually load anything, but in a real project we would load the last save file located at '{config.LastSaveFile}'.");
-            //}
-            //else
-            //{
-            //    GeonBit.UI.Utils.MessageBox.ShowMsgBox("No Save File", "No last save file found! Please use 'Load Game' to load a previous save.");
-            //}
+            Core.ChangeScene(new PartyCreationScene(config));
         }
 
         public void NewGame()
