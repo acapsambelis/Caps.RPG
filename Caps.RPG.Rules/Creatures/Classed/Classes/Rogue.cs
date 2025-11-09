@@ -21,7 +21,7 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
 
         public readonly static Dictionary<int, CombatAction> actionDictionary = new Dictionary<int, CombatAction>()
         {
-            { 1, new CombatAction("Sneak Attack", "You deal damage to one target equal to 5 times your Rogue level.", 1, SneakAttack, new ActionSetup(true, 5, ActionSetup.SourceType.SingleCreature)) },
+            { 1, new CombatAction("Sneak Attack", "You deal damage to one target equal to 5 times your Rogue level.", 1, SneakAttack, new ActionSetup(true, 5, ActionSetup.TargetType.SingleCreature)) },
         };
 
         public static ActionResult SneakAttack(Combattant source, TileBase[] targets)

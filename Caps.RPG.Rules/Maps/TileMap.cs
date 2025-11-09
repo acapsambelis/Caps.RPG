@@ -1,4 +1,5 @@
-﻿using Caps.RPG.Rules.Helpers;
+﻿using Caps.RPG.Rules.Creatures;
+using Caps.RPG.Rules.Helpers;
 
 namespace Caps.RPG.Rules.Maps
 {
@@ -39,6 +40,32 @@ namespace Caps.RPG.Rules.Maps
             set { this[new Vector2D(x, y)] = value; }
         }
 
+        public TileBase this[TileFeature feature]
+        {
+            get
+            {
+                foreach (var tile in Tiles.Values)
+                {
+                    if (tile.Features.Any(f => f.Value == feature))
+                        return tile;
+                }
+                throw new ArgumentException("No tile with the specified feature exists.");
+            }
+        }
+
+        public TileBase this[Creature creature]
+        {
+            get
+            {
+                foreach (var tile in Tiles.Values)
+                {
+                    if (tile.Features.Any(f => f.Value is Combattant c && c.Creature == creature))
+                        return tile;
+                }
+                throw new ArgumentException("No tile with the specified feature exists.");
+            }
+        }
+
         public TileBase RandomEmptyTile()
         {
             List<TileBase> tiles = [.. Tiles.Values.Where(t => t.IsEmpty())];
@@ -62,59 +89,6 @@ namespace Caps.RPG.Rules.Maps
             return [.. Tiles.Values.Where(t => t?.GetDistance(center) <= range)];
         }
 
-        public virtual void PrintToConsole(Dictionary<TileBase, ConsoleColor?>? highlights = null)
-        {
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("  ");
-            for (int x = 0; x < _gridWidth; x++)
-            {
-                Console.Write((x % 10).ToString() + " ");
-            }
-            Console.WriteLine();
-            for (int r = 0; r < _gridDepth; r++)
-            {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write((r % 10).ToString() + " ");
-                Console.Write(GetPrintingOffset(r));
-                int rOffset = r >> 1;
-                for (int q = -rOffset; q < _gridWidth - rOffset; q++)
-                {
-                    var coords = new HexCoords(q, r);
-                    if (Tiles.TryGetValue(coords.Pos, out var node) && node != null)
-                    {
-                        ConsoleColor backgroundColor;
-                        ConsoleColor foregroundColor;
-                        if (highlights != null && highlights.TryGetValue(node, out ConsoleColor? value))
-                        {
-                            foregroundColor = value ?? node.HighlightColor;
-                            backgroundColor = value == null ? node.Color : ConsoleColor.Black;
-                        }
-                        else
-                        {
-                            foregroundColor = node.Color;
-                            backgroundColor = ConsoleColor.Black;
-                        }
-                        PrintColor(node.TextRepresentation().ToString(), foregroundColor, backgroundColor);
-                        Console.Write(' ');
-                    }
-                    else
-                    {
-                        Console.Write("  ");
-                    }
-                }
-                Console.WriteLine();
-            }
-            Console.ForegroundColor = ConsoleColor.White;
-        }
-
-        private static void PrintColor(string text, ConsoleColor foreground, ConsoleColor background)
-        {
-            Console.ForegroundColor = foreground;
-            Console.BackgroundColor = background;
-            Console.Write(text);
-            Console.ResetColor();
-        }
-
         public virtual List<TileBase> GetLineOfSight(TileBase start, int range)
         {
             var visibleTiles = new List<TileBase>();
@@ -132,6 +106,93 @@ namespace Caps.RPG.Rules.Maps
         }
 
         protected abstract string GetPrintingOffset(int rowNumber);
+
+        public virtual TileBase[] GetFeaturesWithinRange(TileBase source, bool considerLOS, double? range, Func<TileFeature, bool>? filter = null)
+        {
+            List<TileBase> tilesInRange;
+            if (considerLOS)
+            {
+                tilesInRange = GetLineOfSight(source, (int)(range ?? Math.Max(_gridWidth, _gridDepth)));
+            }
+            else
+            {
+                tilesInRange = range != null
+                    ? NodesInRange(source, (float)range.Value)
+                    : [.. Tiles.Values];
+            }
+            var resultTiles = new List<TileBase>();
+            foreach (var tile in tilesInRange)
+            {
+                if (tile.Features.Count > 0)
+                {
+                    if (filter != null)
+                    {
+                        if (tile.Features.Any(f => filter(f.Value)))
+                        {
+                            resultTiles.Add(tile);
+                        }
+                    }
+                    else
+                    {
+                        resultTiles.Add(tile);
+                    }
+                }
+            }
+            return resultTiles.ToArray();
+        }
+
+        public virtual TileBase[] GetNearestFeature(TileBase source, Type featureType, bool considerLOS = false, Func<TileFeature, bool>? filter = null)
+        {
+            var tilesWithFeature = GetFeaturesWithinRange(
+                source,
+                considerLOS,
+                Math.Max(_gridWidth, _gridDepth),
+                f => f.GetType() == featureType && (filter == null || filter(f))
+            );
+            if (tilesWithFeature.Length == 0)
+                return [];
+            double nearestDistance = double.MaxValue;
+            TileBase? nearestTile = null;
+            foreach (var tile in tilesWithFeature)
+            {
+                double distance = source.GetDistance(tile);
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestTile = tile;
+                }
+            }
+            if (nearestTile != null)
+                return [nearestTile];
+            return [];
+        }
+
+        public virtual TileBase? GetNearestEnemy(TileBase source, bool considerLOS = false)
+        {
+            Combattant sourceCombattant = source.GetFeature<Combattant>();
+            var tilesWithFeature = GetFeaturesWithinRange(
+                source,
+                considerLOS,
+                Math.Max(_gridWidth, _gridDepth),
+                f => f is Combattant c && c.Team != sourceCombattant.Team
+            );
+            if (tilesWithFeature.Length == 0)
+                return null;
+            double nearestDistance = double.MaxValue;
+            TileBase? nearestTile = null;
+            foreach (var tile in tilesWithFeature)
+            {
+                double distance = source.GetDistance(tile);
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestTile = tile;
+                }
+            }
+            if (nearestTile != null)
+                return nearestTile;
+            return null;
+        }
 
         #region Shape Methods
 

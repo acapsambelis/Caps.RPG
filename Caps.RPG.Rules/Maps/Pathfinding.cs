@@ -8,7 +8,7 @@ namespace Caps.RPG.Rules.Maps
 {
     public class Pathfinding
     {
-        public static List<TileBase> FindPath(TileBase startNode, TileBase targetNode)
+        public static List<TileBase> FindPathToEmpty(TileBase startNode, TileBase targetNode)
         {
             var toSearch = new List<TileBase>() { startNode };
             var processed = new List<TileBase>();
@@ -58,6 +58,33 @@ namespace Caps.RPG.Rules.Maps
                         }
                     }   
                 }
+            }
+
+            return [];
+        }
+
+        public static List<TileBase> FindPathToFilled(TileBase startNode, TileBase targetNode)
+        {
+            List<TileBase> shortestPath = null;
+            float shortestLength = float.MaxValue;
+
+            foreach (var neighbor in targetNode.Neighbors.Where(t => t.Walkable))
+            {
+                var path = FindPathToEmpty(startNode, neighbor);
+                if (path != null && path.Count > 0)
+                {
+                    if (path.Count < shortestLength)
+                    {
+                        shortestLength = path.Count;
+                        shortestPath = [.. path];
+                    }
+                }
+            }
+
+            if (shortestPath != null)
+            {
+                shortestPath.Reverse();
+                return shortestPath;
             }
 
             return [];

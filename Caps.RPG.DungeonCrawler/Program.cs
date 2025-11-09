@@ -1,6 +1,10 @@
 ﻿using Caps.Util.IO;
+using Caps.Util.Lua;
 using SNS.Data.DataSerializer.XmlExtensions;
+using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 
 namespace Caps.RPG.DungeonCrawler
 {
@@ -11,6 +15,7 @@ namespace Caps.RPG.DungeonCrawler
 
         private static void Main()
         {
+            RegisterLua();
             // load config
             var gameDataPath = ProgramFilesWrapper.GetGameDataPath(GAME_NAME);
             if (!Directory.Exists(gameDataPath))
@@ -24,13 +29,27 @@ namespace Caps.RPG.DungeonCrawler
 
 
             using var game = new DungeonCrawlerClient(config);
-            //using var game = new GeonBitUI_Examples();
             game.Run();
 
 
             // Write config back to the file it was loaded from
             using var writer = new StreamWriter(commonConfigPath, false);
             writer.Write(config.ToXml());
+        }
+
+        private static void RegisterLua()
+        {
+            var rulesAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                .FirstOrDefault(a => a.GetName().Name == "Caps.RPG.Rules");
+
+            if (rulesAssembly == null)
+            {
+                // Load from output directory
+                var assemblyPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Caps.RPG.Rules.dll");
+                rulesAssembly = Assembly.LoadFrom(assemblyPath);
+            }
+
+            LuaRegistrations.RegisterNamespacePrefixTypes("Caps.RPG.Rules", rulesAssembly);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Creatures.Actions;
+using Caps.RPG.Rules.Creatures.Unclassed;
 using Caps.RPG.Rules.Maps;
 
 namespace Caps.RPG.Rules
@@ -59,7 +60,7 @@ namespace Caps.RPG.Rules
                             // prepare valid targets
                             TileBase[] validTargets = State.Map.GetTiles(
                                 currentCreature.Position,
-                                chosen.Setup.GetRange(currentCreature)
+                                chosen.Setup.GetRange(currentCreature.Creature)
                             );
                             if (chosen.Setup.NeedsEmptyTile)
                                 validTargets = [.. validTargets.Where(t => t.IsEmpty())];
@@ -92,6 +93,8 @@ namespace Caps.RPG.Rules
         private CombatAction? chosenAction;
         private readonly ManualResetEvent targetsSetEvent = new(false);
         private TileBase[]? chosenTargets;
+
+        private static readonly CombatAction PassAction = new("Pass", "End turn", int.MaxValue, (src, targets) => new ActionResult("Turn ended"));
 
         public event EventHandler<ActionCompletedEventArgs>? OnActionCompleted;
 
@@ -141,6 +144,9 @@ namespace Caps.RPG.Rules
 
         public void StartAsyncLoop()
         {
+            CombatAction chosen;
+            TileBase[] targets;
+            ActionResult result;
             while (State.HasNoVictor())
             {
                 foreach (Combattant currentCreature in State.CombatOrder)
@@ -151,15 +157,49 @@ namespace Caps.RPG.Rules
                     actionsAvailable = currentCreature.ActionCounts;
                     do
                     {
-                        CombatAction chosen = ChosenAction;
-                        TileBase[] targets = chosen.Setup.NeedsTarget ? ChosenTargets : [];
-                        ActionResult result = chosen.Execution(currentCreature, targets);
+                        if (!currentCreature.IsComputerControlled())
+                        {
+                            chosen = ChosenAction;
+                            targets = chosen.Setup.NeedsTarget ? ChosenTargets : [];
+                            result = chosen.Execution(currentCreature, targets);
+                        }
+                        else
+                        {
+                            (chosen, targets) = (currentCreature.Creature as IComputerControlled)!.ChooseAction();
+                            if (chosen == null)
+                            {
+                                chosen = PassAction;
+                                targets = [];
+                                actionsAvailable = 0;
+                            }
+                            result = chosen.Execution(currentCreature, targets);
+                        }
                         actionsAvailable -= chosen.Cost;
                         OnActionCompleted?.Invoke(this, new ActionCompletedEventArgs(result));
+
+                        if (currentCreature.IsComputerControlled()) Thread.Sleep(500);
 
                         // loop while action points remain
                     } while (actionsAvailable > 0 && currentCreature.Creature.Status == Creature.HealthStatus.Alive);
                 }
+            }
+        }
+
+        public void ForceEndTurn()
+        {
+            // keep this atomic to avoid races with the loop reading these fields
+            lock (this)
+            {
+                // Inject a pass action and empty targets so any waiting getter will return quickly
+                chosenAction = PassAction;
+                chosenTargets = [];
+
+                // Unblock any threads waiting for a choice
+                actionSetEvent.Set();
+                targetsSetEvent.Set();
+
+                // Ensure the loop will exit the action loop for the current combattant
+                actionsAvailable = 0;
             }
         }
     }

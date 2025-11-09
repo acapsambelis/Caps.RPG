@@ -38,7 +38,7 @@ namespace Caps.RPG.Rules.Creatures
         private bool attackBonusChanged = true;
         private bool initiativeChanged = true;
         private bool moveSpeedChanged = true;
-        private Dictionary<TargetType, List<Modifier>> modifiers = [];
+        private Dictionary<ModifiedValue, List<Modifier>> modifiers = [];
         private int defenseClass;
         private int attackBonus;
         private int initiativeBonus;
@@ -57,7 +57,7 @@ namespace Caps.RPG.Rules.Creatures
         }
         public int MaxHealth
         {
-            get => GetModifierValue(TargetType.MaxHealth, ref maxHealthChanged, ref maxHealth) + attributes.GetMaxHealth();
+            get => GetModifierValue(ModifiedValue.MaxHealth, ref maxHealthChanged, ref maxHealth) + attributes.GetMaxHealth();
         }
         public int Health
         {
@@ -98,25 +98,25 @@ namespace Caps.RPG.Rules.Creatures
 
         public int DefenseClass
         {
-            get => GetModifierValue(TargetType.DefenseClass, ref defenseClassChanged, ref defenseClass);
+            get => GetModifierValue(ModifiedValue.DefenseClass, ref defenseClassChanged, ref defenseClass);
         }
 
         public int AttackBonus
         {
-            get => GetModifierValue(TargetType.AttackBonus, ref attackBonusChanged, ref attackBonus) ;
+            get => GetModifierValue(ModifiedValue.AttackBonus, ref attackBonusChanged, ref attackBonus) ;
         }
 
         public int InitiativeModifier
         {
-            get => GetModifierValue(TargetType.Initiative, ref initiativeChanged, ref initiativeBonus) + Attributes.InitiativeModifier();
+            get => GetModifierValue(ModifiedValue.Initiative, ref initiativeChanged, ref initiativeBonus) + Attributes.InitiativeModifier();
         }
 
         public int MoveSpeed
         {
-            get => GetModifierValue(TargetType.MovementSpeed, ref moveSpeedChanged, ref moveSpeed) + Attributes.MoveSpeed();
+            get => GetModifierValue(ModifiedValue.MovementSpeed, ref moveSpeedChanged, ref moveSpeed) + Attributes.MoveSpeed();
         }
         
-        private int GetModifierValue(TargetType targetType, ref bool changedFlag, ref int cachedValue)
+        private int GetModifierValue(ModifiedValue targetType, ref bool changedFlag, ref int cachedValue)
         {
             if (changedFlag)
             {
@@ -138,7 +138,7 @@ namespace Caps.RPG.Rules.Creatures
         }
 
         [DataProperty("Modifiers")]
-        public Dictionary<TargetType, List<Modifier>> Modifiers
+        public Dictionary<ModifiedValue, List<Modifier>> Modifiers
         {
             get { return modifiers; }
             set { modifiers = value; }
@@ -198,26 +198,26 @@ namespace Caps.RPG.Rules.Creatures
         {
             switch (modifier.Target)
             {
-                case TargetType.Strength:
-                case TargetType.Agility:
-                case TargetType.Constitution:
-                case TargetType.Intellect:
-                case TargetType.Arcana:
-                case TargetType.Wisdom:
-                case TargetType.Charisma:
-                case TargetType.Presence:
+                case ModifiedValue.Strength:
+                case ModifiedValue.Agility:
+                case ModifiedValue.Constitution:
+                case ModifiedValue.Intellect:
+                case ModifiedValue.Arcana:
+                case ModifiedValue.Wisdom:
+                case ModifiedValue.Charisma:
+                case ModifiedValue.Presence:
                     this.attributes.AddModifier(modifier, source);
                     return;
-                case TargetType.DefenseClass:
+                case ModifiedValue.DefenseClass:
                     this.defenseClassChanged = true;
                     break;
-                case TargetType.AttackBonus:
+                case ModifiedValue.AttackBonus:
                     this.attackBonusChanged = true;
                     break;
-                case TargetType.Initiative:
+                case ModifiedValue.Initiative:
                     this.initiativeChanged = true;
                     break;
-                case TargetType.MovementSpeed:
+                case ModifiedValue.MovementSpeed:
                     this.moveSpeedChanged = true;
                     break;
                 default:

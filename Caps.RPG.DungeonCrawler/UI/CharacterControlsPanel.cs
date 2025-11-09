@@ -30,12 +30,12 @@ namespace Caps.RPG.DungeonCrawler.UI
         public Combattant Combattant => combattant;
         public Panel Panel { get; }
 
-        public CharacterControlsPanel(Combattant combattant, Texture2D characterIcon, Map map, EventCallback actionSelection)
+        public CharacterControlsPanel(Combattant combattant, Texture2D characterIcon, Map map, EventCallback actionSelection, EventCallback endTurn)
         {
             this.map = map;
             this.combattant = combattant;
             float healthPercent = combattant.Health / (float)Math.Max(1, combattant.Creature.MaxHealth);
-            Panel = new Panel(new Vector2(500, 120), PanelSkin.None, Anchor.TopCenter)
+            Panel = new Panel(new Vector2(500, 730), PanelSkin.None, Anchor.TopCenter)
             {
                 Padding = new Vector2(10)
             };
@@ -125,6 +125,22 @@ namespace Caps.RPG.DungeonCrawler.UI
             //
             Panel.AddChild(new HorizontalLine());
             Panel.AddChild(GetActionsTabs(actionSelection));
+
+            //
+            // End turn button
+            //
+            Panel bottomPanel = new(new Vector2(0, 80), PanelSkin.None, Anchor.BottomCenter)
+            {
+                Padding = new Vector2(5)
+            };
+            Button endTurnButton = new("End Turn", ButtonSkin.Fancy, Anchor.Center, new Vector2(160, 40))
+            {
+                Padding = new Vector2(5),
+                ToolTipText = "End your turn immediately"
+            };
+            endTurnButton.OnClick += endTurn;
+            bottomPanel.AddChild(endTurnButton);
+            Panel.AddChild(bottomPanel);
         }
 
         private Panel GetActionsTabs(EventCallback actionSelection)

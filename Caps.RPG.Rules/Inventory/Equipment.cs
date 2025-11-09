@@ -167,9 +167,9 @@ namespace Caps.RPG.Rules.Inventory
             };
         }
 
-        public Dictionary<TargetType, List<Modifier>> GetAllModifiers()
+        public Dictionary<ModifiedValue, List<Modifier>> GetAllModifiers()
         {
-            Dictionary<TargetType, List<Modifier>> allModifiers = [];
+            Dictionary<ModifiedValue, List<Modifier>> allModifiers = [];
             InventorySlot[] slots = [
                 Crown, Face, HeadJewelry, Neck, Chest, Shoulders,
                 Back, Arms, Gloves, HandJewelry, Belt, Pants, Boots, Hands

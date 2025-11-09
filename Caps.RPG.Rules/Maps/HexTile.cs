@@ -59,11 +59,13 @@ namespace Caps.RPG.Rules.Maps
             this.q = q;
             this.r = r;
             Pos = q * new Vector2D(Sqrt3, 0) + r * new Vector2D(Sqrt3 / 2, 1.5f);
+            //Pos.x = Math.Round(Pos.x, 5);
+            //Pos.y = Math.Round(Pos.y, 5);
         }
 
         public override readonly string ToString()
         {
-            return $"r {r} + q {q}";
+            return $"r{r}q{q}";
         }
 
         public readonly float GetDistance(ICoords other) => (this - (HexCoords)other).AxialLength();

@@ -4,6 +4,7 @@ using Caps.RPG.Rules.Helpers;
 using Caps.RPG.Rules.Maps;
 using Caps.Util;
 using SNS.Data.DataSerializer;
+using Caps.RPG.Rules.Creatures.Unclassed;
 
 namespace Caps.RPG.Rules.Creatures
 {
@@ -88,22 +89,55 @@ namespace Caps.RPG.Rules.Creatures
             newPosition.Features.Add(feature.Key, this);
         }
 
+        public bool IsComputerControlled()
+        {
+            return _creature is IComputerControlled;
+        }
+
+        public void HealMax()
+        {
+            Health = Creature.MaxHealth;
+        }
+
         public static Creature[] GetTeam(TerminalColor name, Combattant[] creatures)
         {
             return creatures.Where(c => c.Team == name).Select(c => c.Creature).ToArray();
-        }
-
-        public void HealAll()
-        {
-            Health = Creature.MaxHealth;
         }
 
         #region Actions
 
         public readonly static List<CombatAction> ActionList =
         [
-            new CombatAction("Attack", "Attack one target with a physical attack.", 1, Attack, new ActionSetup(true, 1, ActionSetup.SourceType.SingleCreature)),
-            new CombatAction("Move", "Move your speed.", 1, Move, new ActionSetup(true, typeof(Combattant).GetProperty("MoveSpeed"), ActionSetup.SourceType.SingleTile, MapShape.Tile, needsEmptyTile: true)),
+            new CombatAction(
+                name:        "Attack",
+                description: "Attack one target with a physical attack.",
+                cost:        1,
+                action:      Attack,
+                setup:       new ActionSetup(
+                    needsSource: true,
+                    sourcerange: 1,
+                    sourcetype: ActionSetup.TargetType.SingleCreature
+                )
+                {
+                    Tags = [ActionSetup.ActionTags.Attack]
+                }
+            ),
+            new CombatAction(
+                name:        "Move",
+                description: "Move your speed.",
+                cost:        1,
+                action:      Move,
+                setup:       new ActionSetup(
+                    needsSource:         true,
+                    sourceRangeProperty: typeof(Creature).GetProperty(nameof(Creature.MoveSpeed)),
+                    sourcetype:          ActionSetup.TargetType.SingleTile,
+                    mapShape:            MapShape.Tile,
+                    needsEmptyTile:      true
+                )
+                {
+                    Tags = [ActionSetup.ActionTags.Movement]
+                }
+            ),
         ];
         public static List<CombatAction> GetGenericList()
         {
@@ -121,7 +155,7 @@ namespace Caps.RPG.Rules.Creatures
                 bool hits = source.Creature.AttackBonus + toHit > creature.Creature.DefenseClass;
                 if (hits)
                 {
-                    damage = Modifier.SumAll(source.Creature.Modifiers[TargetType.AttackDamage], source.Creature.Attributes);
+                    damage = Modifier.SumAll(source.Creature.Modifiers[ModifiedValue.AttackDamage], source.Creature.Attributes);
                     creature.Health -= damage;
                 }
                 return new ActionResult(source.Name + " attacked " + creature.Name + " with a " + (source.Creature.AttackBonus + toHit) + "(" + toHit + " + " + source.Creature.AttackBonus + ") to hit. " + damage + " was delt.");

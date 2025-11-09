@@ -26,7 +26,7 @@ namespace Caps.Util.Lua
                     throw new DirectoryNotFoundException($"Lua entity folder not found: {baseFolder}");
 
                 var entity = new Entity();
-                var wrapper = new LuaEntityWrapper(entity, _tableLookup);
+                var wrapper = new LuaEntityWrapper(entity, _tableLookup, _script);
 
                 if (data.Type == DataType.Table)
                 {
@@ -41,6 +41,13 @@ namespace Caps.Util.Lua
                 return UserData.Create(wrapper);
             });
 
+            _script.Globals["print"] = (Func<CallbackArguments, DynValue>)(args =>
+            {
+                string message = string.Join(" ", args.GetArray().Select(a => a.ToPrintString()));
+                Debug.WriteLine($"[Lua print] {message}");
+                return DynValue.Nil;
+            });
+
             UserData.RegisterType<LuaEntityWrapper>();
             RegisterAllEnums();
 
@@ -50,20 +57,22 @@ namespace Caps.Util.Lua
         private void RegisterAllEnums()
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var enumNames = new List<string>();
             foreach (var assembly in assemblies)
             {
                 foreach (var type in assembly.GetTypes())
                 {
-                    if (type.IsEnum && type.IsPublic)
+                    // Only register enums from your own namespace
+                    if (type.IsEnum && (type.IsPublic || type.IsNestedPublic) && type.Namespace?.StartsWith("MoonSharp") == false)
                     {
-                        // Register with MoonSharp
                         UserData.RegisterType(type);
-
-                        // Expose to Lua by name (e.g., Test)
                         _script.Globals[type.Name] = type;
+                        enumNames.Add(type.FullName ?? type.Name);
                     }
                 }
             }
+            var debugPath = Path.Combine(Path.GetTempPath(), "LuaEntityLoader_Enums.txt");
+            File.WriteAllLines(debugPath, enumNames);
         }
 
         /// <summary>
@@ -84,7 +93,7 @@ namespace Caps.Util.Lua
                 Debug.WriteLine($"[LuaEntityLoader] Reading Lua file: {script}");
                 allScripts.AppendLine(File.ReadAllText(script));
             }
-            LoadScript(allScripts.ToString());
+            LoadScript(allScripts.ToString(), baseFolder);
         }
 
         // Recursively loads Lua files in the order specified by _load_order.lua
@@ -128,8 +137,10 @@ namespace Caps.Util.Lua
             return result;
         }
 
-        public void LoadScript(string luaScript)
+        public void LoadScript(string luaScript, string baseFolder)
         {
+            var debugPath = Path.Combine(Path.GetTempPath(), $"LuaEntityLoader_{baseFolder}.txt");
+            File.WriteAllText(debugPath, luaScript);
             try
             {
                 Debug.WriteLine("[LuaEntityLoader] Executing Lua script.");
@@ -166,7 +177,7 @@ namespace Caps.Util.Lua
 
                     var entry = pair.Value.Table;
                     var entity = new Entity();
-                    var wrapper = new LuaEntityWrapper(entity, _tableLookup);
+                    var wrapper = new LuaEntityWrapper(entity, _tableLookup, _script);
 
                     foreach (var comp in entry.Pairs)
                     {

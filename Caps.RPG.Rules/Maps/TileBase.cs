@@ -1,6 +1,4 @@
-﻿using Caps.Util;
-
-namespace Caps.RPG.Rules.Maps
+﻿namespace Caps.RPG.Rules.Maps
 {
     public abstract class TileBase
     {
@@ -13,14 +11,6 @@ namespace Caps.RPG.Rules.Maps
         public bool Walkable { get { return !Features.Values.Any(feature => !feature.Walkable); } }
         public ICoords Coords;
         public SortedList<int, TileFeature> Features { get; protected set; } = [];
-        public ConsoleColor Color
-        {
-            get { return Features.Count > 0 ? Features.First().Value.Color : ConsoleColor.DarkGreen; }
-        }
-        public ConsoleColor HighlightColor
-        {
-            get { return Features.Count > 0 ? Features.First().Value.HighlightColor : ConsoleColor.Green; }
-        }
         public bool Highlighted { get; set; } = false;
 
         public TileBase(ICoords coords)
@@ -32,16 +22,6 @@ namespace Caps.RPG.Rules.Maps
             H = 0;
         }
 
-        public virtual char TextRepresentation()
-        {
-            if (Features.Count == 0) return '.';
-            var sortedFeatures = Features.OrderBy(f => f.Key).ToList();
-            if (sortedFeatures.Last().Value is TileFeature feature)
-            {
-                return feature.TextRepresentation();
-            }
-            return '#';
-        }
         public float GetDistance(TileBase other) => Coords.GetDistance(other.Coords); // Helper to reduce noise in pathfinding
         internal abstract void CacheNeighbors(TileMap map);
 
@@ -69,6 +49,14 @@ namespace Caps.RPG.Rules.Maps
         public bool IsEmpty()
         {
             return Features.Count == 0;
+        }
+
+        public List<TileBase> FindPath(TileBase targetNode)
+        {
+            if (targetNode.Walkable)
+                return Pathfinding.FindPathToEmpty(this, targetNode);
+            else
+                return Pathfinding.FindPathToFilled(this, targetNode);
         }
     }
 

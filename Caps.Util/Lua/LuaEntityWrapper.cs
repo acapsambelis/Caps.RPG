@@ -9,12 +9,14 @@ namespace Caps.Util.Lua
     {
         private readonly Entity _entity;
         private readonly Dictionary<Table, Entity> _tableLookup;
+        private readonly Script _script;
         public Entity Entity => _entity;
 
-        public LuaEntityWrapper(Entity entity, Dictionary<Table, Entity> tableLookup)
+        public LuaEntityWrapper(Entity entity, Dictionary<Table, Entity> tableLookup, Script script)
         {
             _entity = entity;
             _tableLookup = tableLookup;
+            _script = script;
             Debug.WriteLine($"[LuaEntityWrapper] Created for Entity Id={entity.Id}");
         }
 
@@ -39,6 +41,12 @@ namespace Caps.Util.Lua
 
                 if (field != null)
                 {
+                    if (value.Type == DataType.Function && typeof(Delegate).IsAssignableFrom(field.FieldType))
+                    {
+                        var del = BindLuaFunction(data, fieldName, field.FieldType, _script);
+                        field.SetValue(instance, del);
+                        continue;
+                    }
                     if (value.Type != DataType.Nil)
                     {
                         object convertedValue;
@@ -57,6 +65,12 @@ namespace Caps.Util.Lua
 
                 if (prop != null && prop.CanWrite)
                 {
+                    if (value.Type == DataType.Function && typeof(Delegate).IsAssignableFrom(prop.PropertyType))
+                    {
+                        var del = BindLuaFunction(data, fieldName, prop.PropertyType, _script);
+                        prop.SetValue(instance, del);
+                        continue;
+                    }
                     if (value.Type != DataType.Nil)
                     {
                         object convertedValue;
@@ -265,10 +279,19 @@ namespace Caps.Util.Lua
                     if (table.Get(field.Name) is DynValue val && val.Type != DataType.Nil)
                     {
                         object fieldValue;
-                        if (val.Type == DataType.Table && (field.FieldType.IsClass || field.FieldType.IsGenericType))
+                        if (val.Type == DataType.Function && typeof(Delegate).IsAssignableFrom(field.FieldType))
+                        {
+                            // Handle delegate assignment from Lua function
+                            fieldValue = BindLuaFunction(table, field.Name, field.FieldType, _script);
+                        }
+                        else if (val.Type == DataType.Table && (field.FieldType.IsClass || field.FieldType.IsGenericType))
+                        {
                             fieldValue = ConvertLuaTableToObject(val.Table, field.FieldType);
+                        }
                         else
+                        {
                             fieldValue = val.ToObject(field.FieldType);
+                        }
 
                         field.SetValue(obj, fieldValue);
                     }
@@ -281,10 +304,19 @@ namespace Caps.Util.Lua
                     if (table.Get(prop.Name) is DynValue val && val.Type != DataType.Nil)
                     {
                         object propValue;
-                        if (val.Type == DataType.Table && (prop.PropertyType.IsClass || prop.PropertyType.IsGenericType))
+                        if (val.Type == DataType.Function && typeof(Delegate).IsAssignableFrom(prop.PropertyType))
+                        {
+                            // Handle delegate assignment from Lua function
+                            propValue = BindLuaFunction(table, prop.Name, prop.PropertyType, _script);
+                        }
+                        else if (val.Type == DataType.Table && (prop.PropertyType.IsClass || prop.PropertyType.IsGenericType))
+                        {
                             propValue = ConvertLuaTableToObject(val.Table, prop.PropertyType);
+                        }
                         else
+                        {
                             propValue = val.ToObject(prop.PropertyType);
+                        }
 
                         prop.SetValue(obj, propValue);
                     }
@@ -320,6 +352,66 @@ namespace Caps.Util.Lua
                 .FirstOrDefault(t => t.Name == typeName || t.FullName == typeName)
                 ?? throw new Exception($"Type '{typeName}' not found in any loaded assemblies.");
             return type;
+        }
+
+        /// <summary>
+        /// Converts a Lua function in a Table to a C# delegate of the specified type.
+        /// </summary>
+        public static Delegate? BindLuaFunction(Table table, string fieldName, Type delegateType, Script script)
+        {
+            var dynValue = table.Get(fieldName);
+            if (dynValue.Type != DataType.Function)
+                return null;
+
+            var closure = dynValue.Function;
+            var invokeMethod = delegateType.GetMethod("Invoke");
+            var parameters = invokeMethod.GetParameters();
+
+            // Build a lambda that matches the delegate signature
+            var paramExprs = parameters.Select(p => System.Linq.Expressions.Expression.Parameter(p.ParameterType, p.Name)).ToArray();
+            var selfExpr = paramExprs[0];
+            var argsArrayExpr = System.Linq.Expressions.Expression.NewArrayInit(
+                typeof(object),
+                paramExprs.Skip(1).Select(p =>
+                    p.Type.IsValueType
+                        ? System.Linq.Expressions.Expression.Convert(p, typeof(object))
+                        : (System.Linq.Expressions.Expression)p
+                )
+            );
+
+            var callExpr = System.Linq.Expressions.Expression.Call(
+                typeof(LuaEntityWrapper).GetMethod(nameof(InvokeLuaFunction), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static),
+                System.Linq.Expressions.Expression.Constant(script),
+                System.Linq.Expressions.Expression.Constant(closure),
+                selfExpr,
+                argsArrayExpr
+            );
+
+            System.Linq.Expressions.Expression body;
+            if (invokeMethod.ReturnType == typeof(void))
+            {
+                // Discard the result if the delegate returns void
+                body = System.Linq.Expressions.Expression.Block(callExpr);
+            }
+            else
+            {
+                // Convert the result to the expected return type
+                body = System.Linq.Expressions.Expression.Convert(callExpr, invokeMethod.ReturnType);
+            }
+
+            var lambda = System.Linq.Expressions.Expression.Lambda(delegateType, body, paramExprs);
+            return lambda.Compile();
+        }
+
+        // Helper method to call Lua function
+        private static object InvokeLuaFunction(Script script, Closure closure, object self, object[] args)
+        {
+            var luaArgs = new DynValue[args.Length + 1];
+            luaArgs[0] = DynValue.FromObject(script, self);
+            for (int i = 0; i < args.Length; i++)
+                luaArgs[i + 1] = DynValue.FromObject(script, args[i]);
+            var result = script.Call(closure, luaArgs);
+            return result.ToObject(typeof(object));
         }
     }
 }

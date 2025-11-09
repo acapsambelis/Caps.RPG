@@ -52,7 +52,7 @@ namespace Caps.RPG.MonoGame.Graphics
         public void AddRegion(string name, int x, int y, int width, int height)
         {
             TextureRegion region = new TextureRegion(Texture, x, y, width, height);
-            _regions.Add(name, region);
+            _regions.Add(name.ToLower(), region);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Caps.RPG.MonoGame.Graphics
         /// <returns>The TextureRegion with the specified name.</returns>
         public TextureRegion GetRegion(string name)
         {
-            return _regions[name];
+            return _regions[name.ToLower()];
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Caps.RPG.MonoGame.Graphics
         /// <returns></returns>
         public bool RemoveRegion(string name)
         {
-            return _regions.Remove(name);
+            return _regions.Remove(name.ToLower());
         }
 
         /// <summary>
