@@ -82,6 +82,9 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             Button exitButton = new("Exit", ButtonSkin.Default, Anchor.BottomRight, size: new Vector2(windowWidth / 20, 60), offset:new Vector2(10, 10));
             exitButton.OnClick += btn => { Core.Instance.Exit(); };
             UserInterface.Active.AddEntity(exitButton);
+            Button showExample = new Button("Show Example", ButtonSkin.Default, Anchor.TopRight, new Vector2(200, 75));
+            showExample.OnClick += (btn) => { Core.ChangeScene(new ExampleCharacterCreatorScene(config)); };
+            UserInterface.Active.AddEntity(showExample);
         }
 
         public void Continue()
@@ -108,7 +111,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 config.LastSaveFile = filename;
                 GeonBit.UI.Utils.MessageBox.ShowMsgBox("Save name", string.Format("Save created: " + config.LastSaveFile));
             });
-
+            Core.ChangeScene(new PartyCreationScene(config));
         }
 
         public void LoadGame()

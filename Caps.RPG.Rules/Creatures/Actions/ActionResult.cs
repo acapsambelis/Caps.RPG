@@ -4,26 +4,11 @@ using Caps.Util;
 
 namespace Caps.RPG.Rules.Creatures.Actions
 {
-    public class ActionResult
+    public class ActionResult(string description)
     {
-        private readonly string description;
-        private readonly TerminalColor color;
+        private readonly string description = description;
 
-        public ActionResult()
-        {
-            description = "";
-            color = TerminalColors.Gray;
-        }
-        public ActionResult(string description)
-        {
-            this.description = description;
-            color = TerminalColors.Gray;
-        }
-        public ActionResult(string description, TerminalColor color)
-        {
-            this.description = description;
-            this.color = color;
-        }
+        public ActionResult() : this("") { }
 
         public override string ToString()
         {
@@ -72,11 +57,6 @@ namespace Caps.RPG.Rules.Creatures.Actions
             }
 
             return sb.ToString();
-        }
-
-        public ConsoleColor Color
-        {
-            get { return color.Color; }
         }
     }
 }

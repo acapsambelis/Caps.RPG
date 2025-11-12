@@ -152,13 +152,12 @@ namespace Caps.RPG.Rules.Modifiers
             get { return actionType; }
             set { actionType = value; }
         }
-        //[DataProperty("Bonus")]
-        //public int? Bonus
-        //{
-        //    get { return bonus; }
-        //    set { bonus = value; }
-        //}
-        public int Bonus { get; set; }
+        [DataProperty("Bonus")]
+        public int? Bonus
+        {
+            get { return bonus; }
+            set { bonus = value; }
+        }
         [DataProperty("Dice")]
         public Dictionary<Die, int>? Dice
         {

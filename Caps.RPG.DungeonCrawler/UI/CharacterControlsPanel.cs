@@ -8,6 +8,7 @@ using GeonBit.UI;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SNS.Data.DataSerializer.DataExtensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -119,6 +120,8 @@ namespace Caps.RPG.DungeonCrawler.UI
                 healthBar.ProgressFill.FillColor = healthBar.FillColor;
                 Panel.AddChild(healthBar);
             }
+
+            if (combattant.IsComputerControlled()) return;
 
             //
             // Abilities
@@ -242,7 +245,10 @@ namespace Caps.RPG.DungeonCrawler.UI
 
         public void Update()
         {
-
+            healthBar.Value = (int)(combattant.Health / (float)Math.Max(1, combattant.Creature.MaxHealth) * 100);
+            healthBar.ToolTipText = $"HP: {combattant.Health} / {combattant.Creature.MaxHealth}";
+            healthBar.FillColor = GetColorForHealth(combattant.Health, combattant.Creature.MaxHealth);
+            healthBar.ProgressFill.FillColor = healthBar.FillColor;
         }
 
         public void SetActionNumber(int number)
@@ -278,6 +284,12 @@ namespace Caps.RPG.DungeonCrawler.UI
             {
                 button.Checked = false;
             }
+        }
+
+        private static Color GetColorForHealth(int current, int max)
+        {
+            float healthPercent = current / (float)Math.Max(1, max);
+            return healthPercent > 0.5f ? Color.LimeGreen : (healthPercent > 0.25f ? Color.Orange : Color.Red);
         }
     }
 }

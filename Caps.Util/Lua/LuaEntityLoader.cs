@@ -153,9 +153,37 @@ namespace Caps.Util.Lua
             }
             catch (ScriptRuntimeException ex)
             {
-                Debug.WriteLine($"[LuaEntityLoader] Lua runtime error: {ex.DecoratedMessage}");
-                throw new Exception($"Lua runtime error: {ex.DecoratedMessage}", ex);
+                var decorated = ex.DecoratedMessage;
+                int lineNumber = ex.DecoratedMessage != null && ex.DecoratedMessage.Contains("chunk_1:(")
+                    ? ParseLineNumberFromDecoratedMessage(ex.DecoratedMessage)
+                    : -1;
+
+                string codeContext = "";
+                if (lineNumber > 0)
+                {
+                    var lines = luaScript.Split('\n');
+                    int start = Math.Max(0, lineNumber - 2);
+                    int end = Math.Min(lines.Length - 1, lineNumber);
+                    codeContext = string.Join("\n", lines.Skip(start).Take(end - start + 1));
+                }
+
+                var message = $"Lua runtime error: {decorated}\n" +
+                              (lineNumber > 0 ? $"At line {lineNumber}:\n{codeContext}" : "") +
+                              $"\n\nTip: This usually means you tried to index a nil value (e.g., a typo or missing table/field).";
+
+                Debug.WriteLine($"[LuaEntityLoader] {message}");
+                throw new Exception(message, ex);
             }
+        }
+
+        // Helper to extract the line number from the decorated message
+        private static int ParseLineNumberFromDecoratedMessage(string decoratedMessage)
+        {
+            // Example: chunk_1:(75,0-161,1)
+            var match = System.Text.RegularExpressions.Regex.Match(decoratedMessage, @"chunk_1:\((\d+),");
+            if (match.Success && int.TryParse(match.Groups[1].Value, out int line))
+                return line + 1; // Lua lines are 1-based
+            return -1;
         }
 
         public List<Entity> LoadEntitiesFromCategory(string categoryName)
@@ -164,7 +192,7 @@ namespace Caps.Util.Lua
 
             void LoadCategoryRecursive(string catName)
             {
-                DynValue globalTable = _script.Globals.Get(catName);
+                DynValue globalTable = GetNestedTable(catName);
                 if (globalTable.Type != DataType.Table)
                     throw new Exception($"'{catName}' is not a valid table in Lua.");
 
@@ -331,6 +359,15 @@ namespace Caps.Util.Lua
             }
 
             return null;
+        }
+
+        private DynValue GetNestedTable(string path)
+        {
+            var parts = path.Split('.');
+            DynValue current = _script.Globals.Get(parts[0]);
+            for (int i = 1; i < parts.Length && current.Type == DataType.Table; i++)
+                current = current.Table.Get(parts[i]);
+            return current;
         }
     }
 }

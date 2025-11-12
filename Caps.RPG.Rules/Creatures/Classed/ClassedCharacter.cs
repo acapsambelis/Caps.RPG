@@ -11,11 +11,11 @@ namespace Caps.RPG.Rules.Creatures.Classed
         public ClassLevelMakeup ClassLevelMakeup { get; internal set; }
 
         public ClassedCharacter() { }
-        public ClassedCharacter(string name, AttributeSet attributes) : base(name, attributes)
+        public ClassedCharacter(string name, CreatureType creatureType, AttributeSet attributes) : base(name, creatureType, attributes)
         {
             ClassLevelMakeup = new ClassLevelMakeup();
         }
-        public ClassedCharacter(string name, AttributeSet attributes, Dictionary<Type, int> classes) : base(name, attributes)
+        public ClassedCharacter(string name, AttributeSet attributes, CreatureType creatureType, Dictionary<Type, int> classes) : base(name, creatureType, attributes)
         {
             ClassLevelMakeup = new ClassLevelMakeup(classes);
         }
@@ -29,6 +29,7 @@ namespace Caps.RPG.Rules.Creatures.Classed
             else
             {
                 StringBuilder sb = new();
+                sb.Append(CreatureType.Name + " ");
                 foreach (var c in ClassLevelMakeup.ClassLevels)
                 {
                     sb.Append($"{c.Key.Name} {c.Value} | ");
