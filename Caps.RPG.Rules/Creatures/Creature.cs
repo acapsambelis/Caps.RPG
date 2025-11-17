@@ -202,7 +202,7 @@ namespace Caps.RPG.Rules.Creatures
 
         public virtual List<CombatAction> GetCombatActions()
         {
-            return combatActions;
+            return [.. combatActions, .. Inventory.GetCombatActions()];
         }
 
         public void Equip(Item item)

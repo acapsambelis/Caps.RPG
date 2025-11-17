@@ -346,7 +346,7 @@ namespace Caps.Util.Lua
                 type == typeof(decimal);
         }
 
-        private static Type ResolveTypeFromString(string typeName)
+        internal static Type ResolveTypeFromString(string typeName)
         {
             Type? type = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes())
                 .FirstOrDefault(t => t.Name == typeName || t.FullName == typeName)
@@ -357,7 +357,7 @@ namespace Caps.Util.Lua
         /// <summary>
         /// Converts a Lua function in a Table to a C# delegate of the specified type.
         /// </summary>
-        public static Delegate? BindLuaFunction(Table table, string fieldName, Type delegateType, Script script)
+        public Delegate? BindLuaFunction(Table table, string fieldName, Type delegateType, Script script)
         {
             var dynValue = table.Get(fieldName);
             if (dynValue.Type != DataType.Function)
@@ -367,7 +367,6 @@ namespace Caps.Util.Lua
             var invokeMethod = delegateType.GetMethod("Invoke");
             var parameters = invokeMethod.GetParameters();
 
-            // Build a lambda that matches the delegate signature
             var paramExprs = parameters.Select(p => System.Linq.Expressions.Expression.Parameter(p.ParameterType, p.Name)).ToArray();
             var selfExpr = paramExprs[0];
             var argsArrayExpr = System.Linq.Expressions.Expression.NewArrayInit(
@@ -379,23 +378,24 @@ namespace Caps.Util.Lua
                 )
             );
 
+            var thisExpr = System.Linq.Expressions.Expression.Constant(this);
+
             var callExpr = System.Linq.Expressions.Expression.Call(
-                typeof(LuaEntityWrapper).GetMethod(nameof(InvokeLuaFunction), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static),
-                System.Linq.Expressions.Expression.Constant(script),
+                thisExpr,
+                typeof(LuaEntityWrapper).GetMethod(nameof(InvokeLuaFunction), BindingFlags.NonPublic | BindingFlags.Instance),
                 System.Linq.Expressions.Expression.Constant(closure),
                 selfExpr,
-                argsArrayExpr
+                argsArrayExpr,
+                System.Linq.Expressions.Expression.Constant(invokeMethod.ReturnType)
             );
 
             System.Linq.Expressions.Expression body;
             if (invokeMethod.ReturnType == typeof(void))
             {
-                // Discard the result if the delegate returns void
                 body = System.Linq.Expressions.Expression.Block(callExpr);
             }
             else
             {
-                // Convert the result to the expected return type
                 body = System.Linq.Expressions.Expression.Convert(callExpr, invokeMethod.ReturnType);
             }
 
@@ -403,15 +403,18 @@ namespace Caps.Util.Lua
             return lambda.Compile();
         }
 
-        // Helper method to call Lua function
-        private static object InvokeLuaFunction(Script script, Closure closure, object self, object[] args)
+        private object InvokeLuaFunction(Closure closure, object self, object[] args, Type returnType)
         {
             var luaArgs = new DynValue[args.Length + 1];
-            luaArgs[0] = DynValue.FromObject(script, self);
+            luaArgs[0] = DynValue.FromObject(_script, self);
             for (int i = 0; i < args.Length; i++)
-                luaArgs[i + 1] = DynValue.FromObject(script, args[i]);
-            var result = script.Call(closure, luaArgs);
-            return result.ToObject(typeof(object));
+                luaArgs[i + 1] = DynValue.FromObject(_script, args[i]);
+            var result = _script.Call(closure, luaArgs);
+            if (result.Type == DataType.UserData)
+                return result.ToObject(returnType);
+            if (result.Type == DataType.Table)
+                return ConvertLuaTableToObject(result.Table, returnType);
+            return result.ToObject(returnType);
         }
     }
 }

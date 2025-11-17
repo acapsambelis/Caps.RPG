@@ -6,7 +6,8 @@ namespace Caps.Util.Lua.ExampleSetup
     {
         static void Main()
         {
-            var loader = new LuaEntityLoader("Entities");
+            var env = new LuaEnvironment("Caps.Util.Lua.ExampleSetup");
+            var loader = env.LoadFromFolder("Entities");
 
             var planets = loader.LoadEntitiesFromCategory("Planets");
             foreach (var planetEntity in planets)

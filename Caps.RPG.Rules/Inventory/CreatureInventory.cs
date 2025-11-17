@@ -1,4 +1,5 @@
-﻿using Caps.RPG.Rules.Modifiers;
+﻿using Caps.RPG.Rules.Creatures.Actions;
+using Caps.RPG.Rules.Modifiers;
 using SNS.Data.DataSerializer;
 
 namespace Caps.RPG.Rules.Inventory
@@ -18,7 +19,7 @@ namespace Caps.RPG.Rules.Inventory
             EquippedItems = new Equipment();
         }
 
-        internal void Equip(Item i)
+        public void Equip(Item i)
         {
             var possibleNull = EquippedItems.GetSlotForItem(i);
             InventorySlot slot = possibleNull ?? new InventorySlot(ItemType.None);
@@ -28,6 +29,11 @@ namespace Caps.RPG.Rules.Inventory
         public Dictionary<ModifiedValue, List<Modifier>> GetModifiers()
         {
             return EquippedItems.GetAllModifiers();
+        }
+
+        public List<CombatAction> GetCombatActions()
+        {
+            return EquippedItems.GetCombatActions();
         }
 
         public override bool Equals(object? obj)

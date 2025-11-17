@@ -3,7 +3,6 @@ using Caps.RPG.MonoGame.Graphics;
 using Caps.RPG.Rules.Creatures;
 using Caps.RPG.Rules.Creatures.Classed;
 using Caps.RPG.Rules.Creatures.Classed.Classes;
-using Caps.Util.Lua;
 using GeonBit.UI;
 using GeonBit.UI.Entities;
 using GeonBit.UI.Entities.TextValidators;
@@ -18,14 +17,12 @@ namespace Caps.RPG.DungeonCrawler.Scenes
     {
         public static readonly string PLAYER_TEAM = "PLAYER";
 
-        private ClassedCharacter[] playerCharacters;
         private CreatureType[] creatureTypes;
         private readonly CharacterCreationData[] characterData = new CharacterCreationData[config.PartySize];
 
         public override void Initialize()
         {
-            var characterLoader = new LuaEntityLoader("Characters");
-            playerCharacters = [.. characterLoader.LoadComponentsFromCategory<ClassedCharacter>("BlueTeam")];
+            var characterLoader = Program.LuaEnvironment.LoadFromFolder("Characters");
             creatureTypes = [.. characterLoader.LoadComponentsFromCategory<CreatureType>("CreatureTypes.Humanoids")];
 
             for (int i = 0; i < config.PartySize; i++)

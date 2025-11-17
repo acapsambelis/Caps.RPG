@@ -27,7 +27,13 @@ namespace Caps.RPG.Rules
         private readonly ManualResetEvent targetsSetEvent = new(false);
         private TileBase[]? chosenTargets;
 
-        private static readonly CombatAction PassAction = new("Pass", "End turn", int.MaxValue, (src, targets) => new ActionResult("Turn ended"));
+        private static readonly CombatAction PassAction = new CombatAction(
+            "Pass",
+            "End turn",
+            int.MaxValue,
+            (src, targets) => new ActionResult("Turn ended"),
+            new ActionSetup(false)
+        );
 
         public event EventHandler<ActionCompletedEventArgs>? OnActionCompleted;
 

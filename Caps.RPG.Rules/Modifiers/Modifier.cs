@@ -9,20 +9,50 @@ namespace Caps.RPG.Rules.Modifiers
     {
         None = 0,
         Base = 1,
-        Crown = 2,
-        Face = 3,
-        HeadJewelry = 4,
-        Neck = 5,
-        Chest = 6,
-        Shoulders = 7,
-        Back = 8,
-        Arms = 9,
-        Gloves = 10,
-        HandJewelry = 11,
-        Belt = 12,
-        Pants = 13,
-        Boots = 14,
-        Hands = 15,
+        ItemTag = 2,
+        Crown = 3,
+        Face = 4,
+        HeadJewelry = 5,
+        Neck = 6,
+        Chest = 7,
+        Shoulders = 8,
+        Back = 9,
+        Arms = 10,
+        Gloves = 11,
+        HandJewelry = 12,
+        Belt = 13,
+        Pants = 14,
+        Boots = 15,
+        Hands = 16,
+    }
+
+    public static class SourceTypeExtensions
+    {
+        public static bool IsItem(this SourceType type)
+        {
+            return (int)type >= 3 && (int)type <= 16;
+        }
+        public static ItemType ItemType(this SourceType type)
+        {
+            return type switch
+            {
+                SourceType.Crown       => Inventory.ItemType.Crown,
+                SourceType.Face        => Inventory.ItemType.Face,
+                SourceType.HeadJewelry => Inventory.ItemType.HeadJewelry,
+                SourceType.Neck        => Inventory.ItemType.Neck,
+                SourceType.Chest       => Inventory.ItemType.Chest,
+                SourceType.Shoulders   => Inventory.ItemType.Shoulders,
+                SourceType.Back        => Inventory.ItemType.Back,
+                SourceType.Arms        => Inventory.ItemType.Arms,
+                SourceType.Gloves      => Inventory.ItemType.Gloves,
+                SourceType.HandJewelry => Inventory.ItemType.HandJewelry,
+                SourceType.Belt        => Inventory.ItemType.Belt,
+                SourceType.Pants       => Inventory.ItemType.Pants,
+                SourceType.Boots       => Inventory.ItemType.Boots,
+                SourceType.Hands       => Inventory.ItemType.Hands,
+                _ => Inventory.ItemType.None
+            };
+        }
     }
 
     public enum ModifiedValue
@@ -89,36 +119,6 @@ namespace Caps.RPG.Rules.Modifiers
         Base = 1,
         Set = 2,
         Bonus = 3,
-    }
-
-    public static class SourceTypeExtensions
-    {
-        public static bool IsItem(this SourceType type)
-        {
-            return (int)type >= 2 && (int)type <= 15;
-        }
-
-        public static ItemType ItemType(this SourceType type)
-        {
-            return type switch
-            {
-                SourceType.Crown       => Inventory.ItemType.Crown,
-                SourceType.Face        => Inventory.ItemType.Face,
-                SourceType.HeadJewelry => Inventory.ItemType.HeadJewelry,
-                SourceType.Neck        => Inventory.ItemType.Neck,
-                SourceType.Chest       => Inventory.ItemType.Chest,
-                SourceType.Shoulders   => Inventory.ItemType.Shoulders,
-                SourceType.Back        => Inventory.ItemType.Back,
-                SourceType.Arms        => Inventory.ItemType.Arms,
-                SourceType.Gloves      => Inventory.ItemType.Gloves,
-                SourceType.HandJewelry => Inventory.ItemType.HandJewelry,
-                SourceType.Belt        => Inventory.ItemType.Belt,
-                SourceType.Pants       => Inventory.ItemType.Pants,
-                SourceType.Boots       => Inventory.ItemType.Boots,
-                SourceType.Hands       => Inventory.ItemType.Hands,
-                _ => Inventory.ItemType.None
-            };
-        }
     }
 
     [DataClass("Modifiers")]

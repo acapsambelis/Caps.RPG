@@ -149,7 +149,7 @@ namespace Caps.RPG.DungeonCrawler.UI
         private Panel GetActionsTabs(EventCallback actionSelection)
         {
             // Calculate the number of rows needed for the ability buttons
-            var actions = combattant.Creature.GetCombatActions();
+            var actions = combattant.GetCombatActions();
             int buttonsPerRow = 5;
             int buttonSize = (int)((Panel.Size.X - new Vector2(5).X) / buttonsPerRow) - (int)(new Vector2(5).X);
 
@@ -271,7 +271,7 @@ namespace Caps.RPG.DungeonCrawler.UI
             string actionName = ((Button)entity).Tag;
             if (string.IsNullOrEmpty(actionName)) return;
 
-            var actions = combattant.Creature.GetCombatActions();
+            var actions = combattant.GetCombatActions();
             CombatAction action = actions.FirstOrDefault(a => a.Name == actionName);
             TileBase[] validTiles = ActionSetupManager.ValidTiles(map.MapData, combattant, action.Setup);
             foreach (var tile in validTiles)

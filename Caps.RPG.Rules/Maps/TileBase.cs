@@ -43,7 +43,17 @@
 
         public T? GetFeature<T>() where T : TileFeature
         {
-            return Features.Values.OfType<T>().FirstOrDefault();
+            return GetFeatureByType(typeof(T)) as T;
+        }
+
+        public TileFeature? GetFeatureByTypeName(string typeName)
+        {
+            return Features.Values.FirstOrDefault(f => f.GetType().Name == typeName);
+        }
+
+        public TileFeature? GetFeatureByType(Type type)
+        {
+            return Features.Values.FirstOrDefault(f => f.GetType() == type);
         }
 
         public bool IsEmpty()

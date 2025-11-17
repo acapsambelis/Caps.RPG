@@ -4,11 +4,22 @@ using Caps.Util;
 
 namespace Caps.RPG.Rules.Creatures.Actions
 {
-    public class ActionResult(string description)
+    public class ActionResult
     {
-        private readonly string description = description;
+        private string description;
+
+        public string Description
+        {
+            get { return description; }
+            set { description = value; }
+        }
 
         public ActionResult() : this("") { }
+
+        public ActionResult(string description)
+        {
+            this.description = description;
+        }
 
         public override string ToString()
         {

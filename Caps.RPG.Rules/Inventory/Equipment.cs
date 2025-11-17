@@ -1,4 +1,5 @@
-﻿using Caps.RPG.Rules.Modifiers;
+﻿using Caps.RPG.Rules.Creatures.Actions;
+using Caps.RPG.Rules.Modifiers;
 using SNS.Data.DataSerializer;
 
 namespace Caps.RPG.Rules.Inventory
@@ -170,11 +171,7 @@ namespace Caps.RPG.Rules.Inventory
         public Dictionary<ModifiedValue, List<Modifier>> GetAllModifiers()
         {
             Dictionary<ModifiedValue, List<Modifier>> allModifiers = [];
-            InventorySlot[] slots = [
-                Crown, Face, HeadJewelry, Neck, Chest, Shoulders,
-                Back, Arms, Gloves, HandJewelry, Belt, Pants, Boots, Hands
-            ];
-            foreach (var slot in slots)
+            foreach (var slot in GetAllSlots())
             {
                 if (slot.Item != null)
                 {
@@ -191,6 +188,27 @@ namespace Caps.RPG.Rules.Inventory
                 }
             }
             return allModifiers;
+        }
+
+        public List<CombatAction> GetCombatActions()
+        {
+            List<CombatAction> actions = [];
+            foreach (var slot in GetAllSlots())
+            {
+                if (slot.Item != null)
+                {
+                    actions.AddRange(slot.Item.CombatActions);
+                }
+            }
+            return actions;
+        }
+
+        private List<InventorySlot> GetAllSlots()
+        {
+            return [
+                Crown, Face, HeadJewelry, Neck, Chest, Shoulders,
+                Back, Arms, Gloves, HandJewelry, Belt, Pants, Boots, Hands
+            ];
         }
 
         public override bool Equals(object? obj)

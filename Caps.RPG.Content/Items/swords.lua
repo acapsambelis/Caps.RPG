@@ -1,5 +1,5 @@
 Swords = {
-	HugeSword = {
+	DebugSword = {
         Sword = {
             Name = "Very Big Sword",
             Description = "Hits very hard.",

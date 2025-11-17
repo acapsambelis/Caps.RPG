@@ -114,8 +114,8 @@ namespace Caps.RPG.Rules.Creatures
                 cost:        1,
                 action:      Attack,
                 setup:       new ActionSetup(
-                    needsSource: true,
-                    sourcerange: 1,
+                    needsTarget: true,
+                    targetRange: 1,
                     sourcetype: ActionSetup.TargetType.SingleCreature
                 )
                 {
@@ -128,8 +128,8 @@ namespace Caps.RPG.Rules.Creatures
                 cost:        1,
                 action:      Move,
                 setup:       new ActionSetup(
-                    needsSource:         true,
-                    sourceRangeProperty: typeof(Creature).GetProperty(nameof(Creature.MoveSpeed)),
+                    needsTarget:         true,
+                    targetRangeProperty: typeof(Creature).GetProperty(nameof(Creature.MoveSpeed)),
                     sourcetype:          ActionSetup.TargetType.SingleTile,
                     mapShape:            MapShape.Tile,
                     needsEmptyTile:      true

@@ -15,10 +15,10 @@ namespace Caps.Util.Lua
         private Dictionary<Table, Entity> _tableLookup = new();
         private List<(object target, object fieldOrIndex, Table table, Type type)> _pendingReferences = new();
 
-        public LuaEntityLoader(string baseFolder)
+        internal LuaEntityLoader(string baseFolder, Script script)
         {
             Debug.WriteLine($"[LuaEntityLoader] Initializing loader for folder: {baseFolder}");
-            _script = new Script();
+            _script = script;
 
             _script.Globals["CreateEntity"] = (Func<DynValue, DynValue>)(data =>
             {
@@ -50,6 +50,14 @@ namespace Caps.Util.Lua
 
             UserData.RegisterType<LuaEntityWrapper>();
             RegisterAllEnums();
+
+            var registered = UserData.GetRegisteredTypes();
+            Table typesTable = new Table(_script);
+            foreach (var type in registered)
+            {
+                typesTable[type.Name] = DynValue.NewString(type.Name);
+            }
+            _script.Globals["Types"] = typesTable;
 
             LoadDataFromFolder(baseFolder);
         }

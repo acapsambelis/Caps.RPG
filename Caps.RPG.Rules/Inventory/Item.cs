@@ -1,4 +1,5 @@
-﻿using Caps.RPG.Rules.Modifiers;
+﻿using Caps.RPG.Rules.Creatures.Actions;
+using Caps.RPG.Rules.Modifiers;
 using SNS.Data.DataSerializer;
 
 namespace Caps.RPG.Rules.Inventory
@@ -23,20 +24,104 @@ namespace Caps.RPG.Rules.Inventory
         Hands = 15,
     }
 
+    public static class ItemTypeExtensions
+    {
+        public static SourceType SourceType(this ItemType type)
+        {
+            return type switch
+            {
+                ItemType.Crown => Modifiers.SourceType.Crown,
+                ItemType.Face => Modifiers.SourceType.Face,
+                ItemType.HeadJewelry => Modifiers.SourceType.HeadJewelry,
+                ItemType.Neck => Modifiers.SourceType.Neck,
+                ItemType.Chest => Modifiers.SourceType.Chest,
+                ItemType.Shoulders => Modifiers.SourceType.Shoulders,
+                ItemType.Back => Modifiers.SourceType.Back,
+                ItemType.Arms => Modifiers.SourceType.Arms,
+                ItemType.Gloves => Modifiers.SourceType.Gloves,
+                ItemType.HandJewelry => Modifiers.SourceType.HandJewelry,
+                ItemType.Belt => Modifiers.SourceType.Belt,
+                ItemType.Pants => Modifiers.SourceType.Pants,
+                ItemType.Boots => Modifiers.SourceType.Boots,
+                ItemType.Hands => Modifiers.SourceType.Hands,
+                _ => Modifiers.SourceType.None
+            };
+        }
+    }
+
     [DataClass("Items")]
     public class Item : IGenericDataObject<Item>
     {
+        private string name;
+        private string description;
+        private ItemType type;
+        private ItemTag[] itemTags;
+        private Modifier[] modifiers;
+        private CombatAction[] combatActions;
+
+        private bool modifiersChanged = true;
+
         [DataProperty("Name")]
-        public string Name { get; set; }
+        public string Name
+        {
+            get => name;
+            set => name = value;
+        }
         [DataProperty("Description")]
-        public string Description { get; set; }
+        public string Description
+        {
+            get => description;
+            set => description = value;
+        }
         [DataProperty("Type")]
-        public ItemType Type { get; set; }
+        public ItemType Type
+        {
+            get => type;
+            set => type = value;
+        }
+        [SubDataObject("Tags")]
+        public ItemTag[] Tags
+        {
+            get => itemTags;
+            set
+            {
+                itemTags = value; 
+                modifiersChanged = true;
+                foreach (var tag in itemTags)
+                {
+                    tag.Modifiers.ForEach(mod => mod.Source = Type.SourceType());
+                }
+            }
+        }
         [DataProperty("Modifiers")]
-        public Modifier[] Modifiers { get; set; }
+        public Modifier[] Modifiers
+        {
+            get
+            {
+                if (!modifiersChanged)
+                    return modifiers;
+                List<Modifier> allModifiers = [];
+                foreach (var tag in Tags)
+                {
+                    allModifiers.AddRange(tag.Modifiers);
+                }
+                allModifiers.AddRange(modifiers);
+                modifiers = [.. allModifiers];
+                modifiersChanged = false;
+                return modifiers;
+            }
+            set { modifiers = value; modifiersChanged = true; }
+        }
+        [DataProperty("CombatActions")]
+        public CombatAction[] CombatActions
+        {
+            get => combatActions;
+            set => combatActions = value;
+        }
 
         private bool _wasLoaded = false;
         public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
+
 
         public Item()
         {
@@ -44,6 +129,7 @@ namespace Caps.RPG.Rules.Inventory
             Description = "";
             Type = ItemType.None;
             Modifiers = [];
+            CombatActions = [];
         }
         public Item(string name, string description, ItemType type)
         {

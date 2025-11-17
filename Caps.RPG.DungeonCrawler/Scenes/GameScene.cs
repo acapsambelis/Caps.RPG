@@ -40,9 +40,16 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         {
             combattants.AddRange(playerCharacters.Select(c => new Combattant(c, PartyCreationScene.PLAYER_TEAM, hexMap.RandomTile(true))));
 
-            var monsterLoader = new LuaEntityLoader("Monsters");
+            var monsterLoader = Program.LuaEnvironment.LoadFromFolder("Monsters");
             List<Monster> redTeam = monsterLoader.LoadComponentsFromCategory<Monster>("MonsterInstances");
             combattants.AddRange(redTeam.Select(c => new Combattant(c, "MONSTERS", hexMap.RandomTile(true))));
+
+
+            var itemLoader = Program.LuaEnvironment.LoadFromFolder("Items");
+            var items = itemLoader.LoadComponentsFromCategory<Rules.Inventory.Item>("Swords");
+            var debugSword = items.FirstOrDefault(i => i.Name == "Debug Sword");
+            playerCharacters[0].Inventory.Equip(debugSword);
+            playerCharacters[1].Inventory.Equip(debugSword);
 
             foreach (Combattant combattant in combattants)
             {
@@ -143,7 +150,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             string actionName = ((Button)entity).Tag;
             if (string.IsNullOrEmpty(actionName)) return;
 
-            var actions = gameLoop.CurrentCombattant.Creature.GetCombatActions();
+            var actions = gameLoop.CurrentCombattant.GetCombatActions();
             tentativeAction = actions.FirstOrDefault(a => a.Name == actionName);
         }
 
