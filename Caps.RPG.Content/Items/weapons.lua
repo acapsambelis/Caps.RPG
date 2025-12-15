@@ -6,7 +6,20 @@ Swords = {
             Description = "A sword",
             Type = ItemType.Hands,
             Tags = {},
-            Modifiers = {},
+            Modifiers = {
+                {
+                    Source = SourceType.Hands,
+                    Target = ModifiedValue.AttackBonus,
+                    Type = ActionType.Set,
+                    Bonus = 25
+                },
+                {
+                    Source = SourceType.Hands,
+                    Target = ModifiedValue.AttackDamage,
+                    Type = ActionType.Set,
+                    Bonus = 15
+                }
+            },
             CombatActions = {
                 {
                     Name = "InstaKill",

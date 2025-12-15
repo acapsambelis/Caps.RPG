@@ -27,8 +27,14 @@ namespace Caps.RPG.Rules.Inventory
             this.ItemType = type;
         }
 
-        public bool SetItem(Item item)
+        public bool SetItem(Item? item)
         {
+            if (item == null)
+            {
+                this.item = null;
+                return true;
+            }
+
             if (ItemType == ItemType.None) ItemType = item.Type;
             if (ItemType == ItemType.Any || item.Type == ItemType)
             {

@@ -8,7 +8,6 @@ using GeonBit.UI;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SNS.Data.DataSerializer.DataExtensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +26,7 @@ namespace Caps.RPG.DungeonCrawler.UI
         private readonly ProgressBar healthBar;
         private readonly List<Button> actionButtons = [];
         private readonly Panel actionCounters;
+        private readonly EventCallback actionSelection;
 
         public Combattant Combattant => combattant;
         public Panel Panel { get; }
@@ -35,6 +35,7 @@ namespace Caps.RPG.DungeonCrawler.UI
         {
             this.map = map;
             this.combattant = combattant;
+            this.actionSelection = actionSelection;
             float healthPercent = combattant.Health / (float)Math.Max(1, combattant.Creature.MaxHealth);
             Panel = new Panel(new Vector2(500, 730), PanelSkin.None, Anchor.TopLeft)
             {
@@ -127,7 +128,13 @@ namespace Caps.RPG.DungeonCrawler.UI
             // Abilities
             //
             Panel.AddChild(new HorizontalLine());
-            Panel.AddChild(GetActionsTabs(actionSelection));
+            Panel actionsWrapper = new(new Vector2(0, 0), PanelSkin.None, Anchor.Auto)
+            {
+                Padding = new Vector2(0),
+                Tag = "actionsWrapper"
+            };
+            actionsWrapper.AddChild(GetActionsTabs(actionSelection));
+            Panel.AddChild(actionsWrapper);
 
             //
             // End turn button
@@ -150,6 +157,7 @@ namespace Caps.RPG.DungeonCrawler.UI
         {
             // Calculate the number of rows needed for the ability buttons
             var actions = combattant.GetCombatActions();
+            actionButtons.Clear();
             int buttonsPerRow = 5;
             int buttonSize = (int)((Panel.Size.X - new Vector2(5).X) / buttonsPerRow) - (int)(new Vector2(5).X);
 
@@ -231,6 +239,21 @@ namespace Caps.RPG.DungeonCrawler.UI
 
         public void Update()
         {
+            // if combat actions have changed, we may need to update the action buttons (e.g. new actions available)
+            if (!combattant.IsComputerControlled())
+            {
+                int currentActionButtonCount = actionButtons.Count;
+                int actualActionCount = combattant.GetCombatActions().Count;
+                if (currentActionButtonCount != actualActionCount)
+                {
+                    // rebuild action buttons
+                    Panel actionsWrapper = Panel.Children.Where(c => c is Panel p && p.Tag == "actionsWrapper").FirstOrDefault() as Panel;
+                    actionsWrapper.Children[0].RemoveFromParent();  // always only one child
+                    var output = GetActionsTabs(actionSelection);
+                    actionsWrapper.AddChild(output);
+                }
+            }
+
             healthBar.Value = (int)(combattant.Health / (float)Math.Max(1, combattant.Creature.MaxHealth) * 100);
             healthBar.ToolTipText = $"HP: {combattant.Health} / {combattant.Creature.MaxHealth}";
             healthBar.FillColor = GetColorForHealth(combattant.Health, combattant.Creature.MaxHealth);

@@ -47,10 +47,8 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             var crowns = itemLoader.LoadComponentsFromCategory<Rules.Inventory.Item>("Crowns");
             var debugSword = swords.FirstOrDefault(i => i.Name == "Debug Sword");
             var crown = crowns.FirstOrDefault(i => i.Name == "Royal Crown");
-            playerCharacters[0].Inventory.Equip(debugSword);
             playerCharacters[0].Inventory.Slots[0].Item = debugSword;
             playerCharacters[0].Inventory.Slots[3].Item = crown;
-            playerCharacters[1].Inventory.Equip(debugSword);
             playerCharacters[1].Inventory.Slots[1].Item = debugSword;
             playerCharacters[1].Inventory.Slots[3].Item = crown;
 

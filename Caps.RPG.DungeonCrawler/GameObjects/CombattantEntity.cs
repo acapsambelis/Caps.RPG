@@ -47,15 +47,15 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
 
             if (combattant.IsComputerControlled()) return;
 
-            SidebarButtons = BuildSidebar(combattant, sprite);
+            SidebarButtons = BuildSidebar(ref combattant, sprite);
         }
 
-        private Panel BuildSidebar(Combattant combattant, Sprite combattantSprite)
+        private Panel BuildSidebar(ref Combattant combattant, Sprite combattantSprite)
         {
             var panel = new Panel(new Vector2(75), PanelSkin.None, Anchor.BottomRight);
             panel.Padding = Vector2.Zero;
             
-            inventoryManager = new InventoryManager(combattant, combattantSprite);
+            inventoryManager = new InventoryManager(ref combattant, combattantSprite);
             Button inventory = new Button("INV", ButtonSkin.Default, Anchor.AutoInline, new Vector2(75));
             inventory.OnClick += (entity) =>
             {

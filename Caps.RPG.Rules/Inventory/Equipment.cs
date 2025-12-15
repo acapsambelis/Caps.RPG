@@ -133,7 +133,12 @@ namespace Caps.RPG.Rules.Inventory
 
         public InventorySlot GetSlotForItem(Item item)
         {
-            return item.Type switch
+            return GetSlotForItemType(item.Type);
+        }
+
+        public InventorySlot GetSlotForItemType(ItemType itemType)
+        {
+            return itemType switch
             {
                 ItemType.Crown => Crown,
                 ItemType.Face => Face,

@@ -1,4 +1,5 @@
-﻿using Caps.RPG.Rules.Creatures.Actions;
+﻿using Caps.RPG.Rules.Creatures;
+using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Modifiers;
 using SNS.Data.DataSerializer;
 
@@ -29,6 +30,19 @@ namespace Caps.RPG.Rules.Inventory
         public void Equip(Item i)
         {
             equipmentChanged = EquippedItems.GetSlotForItem(i).SetItem(i);
+        }
+
+        public void Unequip(InventorySlot slot)
+        {
+            equipmentChanged = slot.SetItem(null);
+        }
+
+        public Item? MoveItem(int oldSlot, int newSlot)
+        {
+            var item = Slots[oldSlot].Item;
+            Slots[oldSlot].Item = null;
+            Slots[newSlot].Item = item;
+            return Slots[newSlot].Item;
         }
 
         public Dictionary<ModifiedValue, List<Modifier>> GetModifiers()

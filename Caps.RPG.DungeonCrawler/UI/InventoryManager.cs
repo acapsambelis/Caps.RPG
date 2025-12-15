@@ -15,12 +15,13 @@ namespace Caps.RPG.DungeonCrawler.UI
     {
         private Combattant combattant;
         private Panel panel;
-        private Dictionary<ItemType, Button> equipmentButtons = [];
-        private Button? selectedButton;
+        private Dictionary<ItemType, InventoryButton> equipmentButtons = [];
+        private List<InventoryButton> inventoryButtons = [];
+        private InventoryButton selectedInventoryButton;
 
         public Panel Panel => panel;
 
-        public InventoryManager(Combattant combattant, Sprite combattantSprite)
+        public InventoryManager(ref Combattant combattant, Sprite combattantSprite)
         {
             this.combattant = combattant;
 
@@ -31,7 +32,6 @@ namespace Caps.RPG.DungeonCrawler.UI
                 Padding = new Vector2(10)
             };
 
-            //var columns = GeonBit.UI.Utils.PanelsGrid.GenerateColums([new(0.33f), new(0.67f)], panel);
             var columns = GeonBit.UI.Utils.PanelsGrid.GenerateColums(2, panel);
             foreach (var column in columns)
             {
@@ -82,24 +82,19 @@ namespace Caps.RPG.DungeonCrawler.UI
                 column.Skin = PanelSkin.None;
             }
 
-            var equipmentSlots = new[]
-            {
-                new EquipmentSlot { Type = ItemType.Crown, Tooltip = "Crown Slot", Column = 0 },
-                new EquipmentSlot { Type = ItemType.Face, Tooltip = "Face Slot", Column = 1 },
-                new EquipmentSlot { Type = ItemType.Neck, Tooltip = "Neck Slot", Column = 0 },
-                new EquipmentSlot { Type = ItemType.Shoulders, Tooltip = "Shoulders Slot", Column = 1 },
-                new EquipmentSlot { Type = ItemType.Chest, Tooltip = "Chest Slot", Column = 0 },
-                new EquipmentSlot { Type = ItemType.Back, Tooltip = "Back Slot", Column = 1 },
-                new EquipmentSlot { Type = ItemType.Arms, Tooltip = "Arms Slot", Column = 0 },
-                new EquipmentSlot { Type = ItemType.Gloves, Tooltip = "Gloves Slot", Column = 1 },
-                new EquipmentSlot { Type = ItemType.Belt, Tooltip = "Belt Slot", Column = 0 },
-                new EquipmentSlot { Type = ItemType.Jewelry, Tooltip = "Jewelry Slot", Column = 1 },
-                new EquipmentSlot { Type = ItemType.Pants, Tooltip = "Pants Slot", Column = 0 },
-                new EquipmentSlot { Type = ItemType.Boots, Tooltip = "Boots Slot", Column = 1 }
+            var equipmentTypes = new[] {
+                ItemType.Crown, ItemType.Face,
+                ItemType.Neck,  ItemType.Shoulders,
+                ItemType.Chest, ItemType.Back,
+                ItemType.Arms,  ItemType.Gloves,
+                ItemType.Belt,  ItemType.Jewelry,
+                ItemType.Pants, ItemType.Boots
             };
-
-            foreach (var slot in equipmentSlots)
+            for (int i = 0; i < equipmentTypes.Length; i++)
             {
+                var type = equipmentTypes[i];
+                var column = i % 2;  // Alternates 0, 1, 0, 1...
+
                 Panel slotPanel = new(new Vector2(0, buttonSize), PanelSkin.None, Anchor.Auto)
                 {
                     Padding = new Vector2(10, 0),
@@ -107,25 +102,22 @@ namespace Caps.RPG.DungeonCrawler.UI
                     SpaceBefore = Vector2.Zero
                 };
 
-                Label slotLabel = new(slot.Type.ToString(), Anchor.CenterLeft, size: new Vector2(0, buttonSize))
+                Label slotLabel = new(type.ToString(), Anchor.CenterLeft, size: new Vector2(0, buttonSize))
                 {
                     Scale = 0.8f,
                     Padding = Vector2.Zero
                 };
                 slotPanel.AddChild(slotLabel);
 
-                Button button = new(slot.Type.ToString()[..2].ToUpper(), ButtonSkin.Default, Anchor.CenterRight, size: new Vector2(buttonSize))
-                {
-                    Tag = slot.Type.ToString(),
-                    Padding = Vector2.Zero,
-                    Enabled = false
-                };
-                button.ButtonParagraph.FillColor = Color.Gray;
-                button.OnClick += EquipmentButtonClicked;
-                slotPanel.AddChild(button);
+                var equipmentButton = new InventoryButton(
+                    type,
+                    buttonSize
+                );
+                equipmentButton.Button.OnClick += EquipmentButtonClicked;
+                slotPanel.AddChild(equipmentButton.Button);
 
-                gearColumns[slot.Column].AddChild(slotPanel);
-                equipmentButtons[slot.Type] = button;
+                gearColumns[column].AddChild(slotPanel);
+                equipmentButtons[type] = equipmentButton;
             }
 
             // hands
@@ -143,19 +135,12 @@ namespace Caps.RPG.DungeonCrawler.UI
             };
             handPanel.AddChild(handLabel);
 
-            Button hand1 = new("HA", ButtonSkin.Default, Anchor.Center, size: new Vector2(buttonSize))
-            {
-                ToolTipText = "Hands Slot 1",
-                Tag = ItemType.Hands.ToString(),
-                Padding = Vector2.Zero,
-                Enabled = false
-            };
-            hand1.ButtonParagraph.FillColor = Color.Gray;
-            hand1.OnClick += EquipmentButtonClicked;
-            handPanel.AddChild(hand1);
+            var handsButton = new InventoryButton(ItemType.Hands, buttonSize);
+            handsButton.Button.OnClick += EquipmentButtonClicked;
+            handPanel.AddChild(handsButton.Button);
 
             columns[0].AddChild(handPanel);
-            equipmentButtons[ItemType.Hands] = hand1;
+            equipmentButtons[ItemType.Hands] = handsButton;
 
             // inventory slots
             Panel inventorySlots = new(new Vector2(0, (panel.Size.Y - (columns[0].Padding.Y)) / 3.0f), PanelSkin.Simple, Anchor.AutoInline)
@@ -168,86 +153,80 @@ namespace Caps.RPG.DungeonCrawler.UI
             for (int i = 0; i < combattant.Creature.Inventory.Slots.Length; i++)
             {
                 var slot = combattant.Creature.Inventory.Slots[i];
-                string slotText = slot.Item != null ? slot.Item.Name : " ";
-                Button inventoryButton = new("", ButtonSkin.Default, Anchor.AutoInline, size: new Vector2(buttonSize))
-                {
-                    ToolTipText = $"{slotText}",
-                    Tag = i.ToString(),
-                    ToggleMode = true
-                };
-                inventoryButton.OnClick += InventoryButtonClicked;
-
-
-                Label iconLabel = new(slotText[0].ToString(), Anchor.Center, size: new Vector2(buttonSize - 10))
-                {
-                    Scale = 1.0f,
-                    Padding = Vector2.Zero
-                };
-                inventoryButton.AddChild(iconLabel, true);
-
-                inventorySlots.AddChild(inventoryButton);
+                var inventoryButton = new InventoryButton(i, slot.Item, buttonSize);
+                inventoryButton.Button.OnClick += InventoryButtonClicked;
+                
+                inventoryButtons.Add(inventoryButton);
+                inventorySlots.AddChild(inventoryButton.Button);
             }
         }
 
         private void EquipmentButtonClicked(Entity entity)
         {
-            if (selectedButton != null)
+            if (selectedInventoryButton != null)
             {
                 // move item to this slot
-                var item = combattant.Creature.Inventory.Slots[int.Parse(selectedButton.Tag)].Item;
+                var item = combattant.Creature.Inventory.Slots[selectedInventoryButton.SlotIndex].Item;
                 combattant.Creature.Inventory.Equip(item);
-                combattant.Creature.Inventory.Slots[int.Parse(selectedButton.Tag)].Item = null;
-                selectedButton.Checked = false;
-                selectedButton = null;
+                combattant.Creature.Inventory.Slots[selectedInventoryButton.SlotIndex].Item = null;
+                equipmentButtons[item.Type].UpdateItem(item);
 
                 // clear inventory slot
-                selectedButton.Checked = false;
-                (selectedButton.Children.First(c => c is Label) as Label).Text = "";
-                selectedButton.ToolTipText = "";
-                selectedButton = null;
+                (entity as Button).Checked = false;
+                selectedInventoryButton.Deselect();
+                selectedInventoryButton.ClearItem();
+                selectedInventoryButton = null;
+            }
+            else
+            {
+                var clickedButton = equipmentButtons.FirstOrDefault(ib => ib.Value.Button == entity).Value;
+                selectedInventoryButton = clickedButton;
             }
         }
 
         private void InventoryButtonClicked(Entity entity)
         {
-            var item = combattant.Creature.Inventory.Slots[int.Parse(entity.Tag)].Item;
-            if (selectedButton == entity as Button)
+            var destination = inventoryButtons.FirstOrDefault(ib => ib.Button == entity);
+            if (destination == null) return;
+
+            var item = combattant.Creature.Inventory.Slots[destination.SlotIndex].Item;
+            
+            if (selectedInventoryButton == destination)
             {
-                selectedButton = null;
-                equipmentButtons[item.Type].Enabled = false;
+                selectedInventoryButton = null;
+                equipmentButtons[item.Type].SetEnabled(false);
                 return;
             }
 
-            if (selectedButton == null)
+            if (selectedInventoryButton == null)
             {
-                selectedButton = entity as Button;
-                equipmentButtons[item.Type].Enabled = true;
+                selectedInventoryButton = destination;
+                equipmentButtons[item.Type].SetEnabled(true);
             }
             else
             {
-                // move item to this slot
-                item = combattant.Creature.Inventory.Slots[int.Parse(selectedButton.Tag)].Item;
-                combattant.Creature.Inventory.Slots[int.Parse(selectedButton.Tag)].Item = null;
-                combattant.Creature.Inventory.Slots[int.Parse(entity.Tag)].Item = item;
+                if (selectedInventoryButton.IsEquipmentSlot)
+                {
+                    var itemSlot = combattant.Creature.Inventory.EquippedItems.GetSlotForItemType(selectedInventoryButton.EquipmentType.Value);
+                    item = itemSlot.Item;
+                    combattant.Creature.Inventory.Unequip(itemSlot);
+                    combattant.Creature.Inventory.Slots[destination.SlotIndex].Item = item;
+                    selectedInventoryButton.SetEnabled(false);
+                }
+                else
+                {
+                    item = combattant.Creature.Inventory.MoveItem(selectedInventoryButton.SlotIndex, destination.SlotIndex);
+                }
 
-                var newBtn = entity as Button;
-                newBtn.Checked = false;
-                (newBtn.Children.First(c => c is Label) as Label).Text = item.Name[0].ToString();
-                newBtn.ToolTipText = item.Name;
+                destination.Deselect();
+                destination.UpdateItem(item);
+                if (item != null)
+                    equipmentButtons[item.Type].SetEnabled(false);
 
-                selectedButton.Checked = false;
-                (selectedButton.Children.First(c => c is Label) as Label).Text = "";
-                selectedButton.ToolTipText = "";
-                selectedButton = null;
+                selectedInventoryButton.Deselect();
+                selectedInventoryButton.ClearItem();
+                selectedInventoryButton = null;
             }
-        }
-
-        private struct EquipmentSlot
-        {
-            public ItemType Type;
-            public string Label;
-            public string Tooltip;
-            public int Column;
         }
     }
 }
