@@ -41,17 +41,6 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             List<Monster> redTeam = monsterLoader.LoadComponentsFromCategory<Monster>("MonsterInstances");
             combattants.AddRange(redTeam.Select(c => new Combattant(c, "MONSTERS", hexMap.RandomTile(true))));
 
-
-            var itemLoader = Program.LuaEnvironment.LoadFromFolder("Items");
-            var swords = itemLoader.LoadComponentsFromCategory<Rules.Inventory.Item>("Swords");
-            var crowns = itemLoader.LoadComponentsFromCategory<Rules.Inventory.Item>("Crowns");
-            var debugSword = swords.FirstOrDefault(i => i.Name == "Debug Sword");
-            var crown = crowns.FirstOrDefault(i => i.Name == "Royal Crown");
-            playerCharacters[0].Inventory.Slots[0].Item = debugSword;
-            playerCharacters[0].Inventory.Slots[3].Item = crown;
-            playerCharacters[1].Inventory.Slots[1].Item = debugSword;
-            playerCharacters[1].Inventory.Slots[3].Item = crown;
-
             foreach (Combattant combattant in combattants)
             {
                 combattant.HealMax();

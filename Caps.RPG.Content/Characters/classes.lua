@@ -3,7 +3,8 @@ Classes = {
 		CharacterClass = {
 			Name = "Cleric",
 			StartingInventory = {
-				Swords.Broadsword.Item
+				Swords.Debug.Item,
+				Chestplates.Debug.Item,
 			}
 		}
 	},
