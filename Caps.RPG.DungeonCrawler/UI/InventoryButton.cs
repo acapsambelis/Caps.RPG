@@ -21,7 +21,7 @@ namespace Caps.RPG.DungeonCrawler.UI
 
         public InventoryButton(int slotIndex, Item item, int buttonSize) : this(slotIndex, item, buttonSize, null, false) { }
 
-        public InventoryButton(ItemType equipmentType, int buttonSize) : this(-1, null, buttonSize, equipmentType, true) { }
+        public InventoryButton(ItemType equipmentType, Item item, int buttonSize) : this(-1, item, buttonSize, equipmentType, true) { }
 
         private InventoryButton(int slotIndex, Item item, int buttonSize, ItemType? equipmentType, bool isEquipmentSlot)
         {
@@ -37,10 +37,14 @@ namespace Caps.RPG.DungeonCrawler.UI
                 {
                     Tag = equipmentType.ToString(),
                     Padding = Vector2.Zero,
-                    Enabled = false,
+                    Enabled = item != null,
                     ToggleMode = true
                 };
                 iconLabel = null;
+                if (item != null)
+                {
+                    button.ToolTipText = item.Name;
+                }
             }
             else
             {
@@ -67,6 +71,11 @@ namespace Caps.RPG.DungeonCrawler.UI
             {
                 iconLabel.Text = item.Name[0].ToString();
                 button.ToolTipText = item.Name;
+                if (isEquipmentSlot)
+                {
+                    button.Enabled = true;
+                    button.ButtonParagraph.FillColor = Color.White;
+                }
             }
             else
             {
@@ -81,6 +90,10 @@ namespace Caps.RPG.DungeonCrawler.UI
                 iconLabel.Text = "";
             }
             button.ToolTipText = isEquipmentSlot ? $"{equipmentType} Slot" : "";
+            if (isEquipmentSlot)
+            {
+                button.Enabled = false;
+            }
         }
 
         public void Select()
@@ -96,9 +109,9 @@ namespace Caps.RPG.DungeonCrawler.UI
         public void SetEnabled(bool enabled)
         {
             button.Enabled = enabled;
-            if (!enabled && isEquipmentSlot)
+            if (isEquipmentSlot)
             {
-                button.ButtonParagraph.FillColor = Color.Gray;
+                button.ButtonParagraph.FillColor = enabled ? Color.White : Color.Gray;
             }
         }
     }

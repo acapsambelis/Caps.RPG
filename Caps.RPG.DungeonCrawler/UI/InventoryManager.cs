@@ -111,6 +111,7 @@ namespace Caps.RPG.DungeonCrawler.UI
 
                 var equipmentButton = new InventoryButton(
                     type,
+                    combattant.Creature.Inventory.EquippedItems.GetSlotForItemType(type).Item,
                     buttonSize
                 );
                 equipmentButton.Button.OnClick += EquipmentButtonClicked;
@@ -135,7 +136,7 @@ namespace Caps.RPG.DungeonCrawler.UI
             };
             handPanel.AddChild(handLabel);
 
-            var handsButton = new InventoryButton(ItemType.Hands, buttonSize);
+            var handsButton = new InventoryButton(ItemType.Hands, combattant.Creature.Inventory.EquippedItems.Hands.Item, buttonSize);
             handsButton.Button.OnClick += EquipmentButtonClicked;
             handPanel.AddChild(handsButton.Button);
 
@@ -163,8 +164,11 @@ namespace Caps.RPG.DungeonCrawler.UI
 
         private void EquipmentButtonClicked(Entity entity)
         {
-            var destination = inventoryButtons.FirstOrDefault(ib => ib.Button == entity);
-            destination ??= equipmentButtons.FirstOrDefault(eb => eb.Value.Button == entity).Value;
+            var destination = equipmentButtons.FirstOrDefault(eb => eb.Value.Button == entity).Value;
+            if (destination == null) return;
+
+            var destinationSlot = combattant.Creature.Inventory.EquippedItems.GetSlotForItemType(destination.EquipmentType.Value);
+            var destinationItem = destinationSlot.Item;
 
             // toggle click off
             if (selectedInventoryButton == destination)
@@ -174,24 +178,71 @@ namespace Caps.RPG.DungeonCrawler.UI
                 return;
             }
 
-            if (selectedInventoryButton != null)
+            // if first click
+            if (selectedInventoryButton == null)
             {
-                // move item to this slot
-                var item = combattant.Creature.Inventory.Slots[selectedInventoryButton.SlotIndex].Item;
-                combattant.Creature.Inventory.Equip(item);
-                combattant.Creature.Inventory.Slots[selectedInventoryButton.SlotIndex].Item = null;
-                equipmentButtons[item.Type].UpdateItem(item);
-
-                // clear inventory slot
-                destination.Deselect();
-                selectedInventoryButton.Deselect();
-                selectedInventoryButton.ClearItem();
-                selectedInventoryButton = null;
+                selectedInventoryButton = destination;
+                if (destinationItem == null)
+                    destination.Deselect();
             }
+            // if second click
             else
             {
-                var clickedButton = equipmentButtons.FirstOrDefault(ib => ib.Value.Button == entity).Value;
-                selectedInventoryButton = clickedButton;
+                Item sourceItem = null;
+
+                // from inventory to equipment
+                if (!selectedInventoryButton.IsEquipmentSlot)
+                {
+                    sourceItem = combattant.Creature.Inventory.Slots[selectedInventoryButton.SlotIndex].Item;
+                    
+                    // swap: unequip destination item and place in inventory, then equip source item
+                    if (destinationItem != null)
+                    {
+                        combattant.Creature.Inventory.Unequip(destinationSlot);
+                        combattant.Creature.Inventory.Slots[selectedInventoryButton.SlotIndex].Item = destinationItem;
+                        selectedInventoryButton.UpdateItem(destinationItem);
+                    }
+                    // move to empty equipment slot
+                    else
+                    {
+                        combattant.Creature.Inventory.Slots[selectedInventoryButton.SlotIndex].Item = null;
+                        selectedInventoryButton.ClearItem();
+                    }
+                    
+                    combattant.Creature.Inventory.Equip(sourceItem);
+                    destination.UpdateItem(sourceItem);
+                }
+                // from equipment to equipment (swap equipped items)
+                else
+                {
+                    var sourceSlot = combattant.Creature.Inventory.EquippedItems.GetSlotForItemType(selectedInventoryButton.EquipmentType.Value);
+                    sourceItem = sourceSlot.Item;
+
+                    // swap equipped items
+                    if (destinationItem != null && sourceItem != null)
+                    {
+                        combattant.Creature.Inventory.Unequip(sourceSlot);
+                        combattant.Creature.Inventory.Unequip(destinationSlot);
+                        combattant.Creature.Inventory.Equip(destinationItem);
+                        combattant.Creature.Inventory.Equip(sourceItem);
+                        
+                        selectedInventoryButton.UpdateItem(destinationItem);
+                        destination.UpdateItem(sourceItem);
+                    }
+                    // move to empty equipment slot
+                    else if (sourceItem != null)
+                    {
+                        combattant.Creature.Inventory.Unequip(sourceSlot);
+                        combattant.Creature.Inventory.Equip(sourceItem);
+                        selectedInventoryButton.ClearItem();
+                        destination.UpdateItem(sourceItem);
+                    }
+                }
+
+                // cleanup
+                destination.Deselect();
+                selectedInventoryButton.Deselect();
+                selectedInventoryButton = null;
             }
         }
 
@@ -200,13 +251,15 @@ namespace Caps.RPG.DungeonCrawler.UI
             var destination = inventoryButtons.FirstOrDefault(ib => ib.Button == entity);
             if (destination == null) return;
 
-            var item = combattant.Creature.Inventory.Slots[destination.SlotIndex].Item;
+            var destinationItem = combattant.Creature.Inventory.Slots[destination.SlotIndex].Item;
 
             // toggle click off
             if (selectedInventoryButton == destination)
             {
                 selectedInventoryButton = null;
-                equipmentButtons[item.Type].SetEnabled(false);
+                destination.Deselect();
+                if (destinationItem != null)
+                    equipmentButtons[destinationItem.Type].SetEnabled(false);
                 return;
             }
 
@@ -214,37 +267,73 @@ namespace Caps.RPG.DungeonCrawler.UI
             if (selectedInventoryButton == null)
             {
                 selectedInventoryButton = destination;
-                if (item != null)
-                    equipmentButtons[item.Type].SetEnabled(true);
+                if (destinationItem != null)
+                    equipmentButtons[destinationItem.Type].SetEnabled(true);
                 else
                     destination.Deselect();
             }
             // if second click
             else
             {
-                // equip
+                // from equipment to inventory
                 if (selectedInventoryButton.IsEquipmentSlot)
                 {
                     var itemSlot = combattant.Creature.Inventory.EquippedItems.GetSlotForItemType(selectedInventoryButton.EquipmentType.Value);
-                    item = itemSlot.Item;
-                    combattant.Creature.Inventory.Unequip(itemSlot);
-                    combattant.Creature.Inventory.Slots[destination.SlotIndex].Item = item;
-                    selectedInventoryButton.SetEnabled(false);
+                    var sourceItem = itemSlot.Item;
+                    
+                    // swap: unequip source item, equip destination item (if exists), then place source in inventory
+                    if (destinationItem != null)
+                    {
+                        combattant.Creature.Inventory.Unequip(itemSlot);
+                        combattant.Creature.Inventory.Equip(destinationItem);
+                        combattant.Creature.Inventory.Slots[destination.SlotIndex].Item = sourceItem;
+                        
+                        selectedInventoryButton.UpdateItem(destinationItem);
+                        destination.UpdateItem(sourceItem);
+                    }
+                    // move to empty inventory slot
+                    else
+                    {
+                        combattant.Creature.Inventory.Unequip(itemSlot);
+                        combattant.Creature.Inventory.Slots[destination.SlotIndex].Item = sourceItem;
+                        selectedInventoryButton.ClearItem();
+                        selectedInventoryButton.SetEnabled(false);
+                        
+                        destination.UpdateItem(sourceItem);
+                        equipmentButtons[sourceItem.Type].SetEnabled(false);
+                    }
                 }
-                // move
+                // from inventory to inventory (move or swap)
                 else
                 {
-                    item = combattant.Creature.Inventory.MoveItem(selectedInventoryButton.SlotIndex, destination.SlotIndex);
+                    var sourceItem = combattant.Creature.Inventory.Slots[selectedInventoryButton.SlotIndex].Item;
+                    
+                    // swap items
+                    if (destinationItem != null)
+                    {
+                        combattant.Creature.Inventory.Slots[selectedInventoryButton.SlotIndex].Item = destinationItem;
+                        combattant.Creature.Inventory.Slots[destination.SlotIndex].Item = sourceItem;
+                        
+                        selectedInventoryButton.UpdateItem(destinationItem);
+                        destination.UpdateItem(sourceItem);
+                        
+                        // Disable equipment buttons for both items now in inventory
+                        equipmentButtons[sourceItem.Type].SetEnabled(false);
+                        equipmentButtons[destinationItem.Type].SetEnabled(false);
+                    }
+                    // move to empty slot
+                    else
+                    {
+                        sourceItem = combattant.Creature.Inventory.MoveItem(selectedInventoryButton.SlotIndex, destination.SlotIndex);
+                        selectedInventoryButton.ClearItem();
+                        destination.UpdateItem(sourceItem);
+                        equipmentButtons[sourceItem.Type].SetEnabled(false);
+                    }
                 }
 
                 // cleanup
                 destination.Deselect();
-                destination.UpdateItem(item);
-                if (item != null)
-                    equipmentButtons[item.Type].SetEnabled(false);
-
                 selectedInventoryButton.Deselect();
-                selectedInventoryButton.ClearItem();
                 selectedInventoryButton = null;
             }
         }

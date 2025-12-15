@@ -18,12 +18,14 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         public static readonly string PLAYER_TEAM = "PLAYER";
 
         private CreatureType[] creatureTypes;
+        private CharacterClass[] classes;
         private readonly CharacterCreationData[] characterData = new CharacterCreationData[config.PartySize];
 
         public override void Initialize()
         {
             var characterLoader = Program.LuaEnvironment.LoadFromFolder("Characters");
             creatureTypes = [.. characterLoader.LoadComponentsFromCategory<CreatureType>("CreatureTypes.Humanoids")];
+            classes = [.. characterLoader.LoadComponentsFromCategory<CharacterClass>("Classes")];
 
             for (int i = 0; i < config.PartySize; i++)
             {
@@ -95,7 +97,10 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 {
                     Type selectedClassType = classTypesList.FirstOrDefault(ct => ct.Name == classTypes.SelectedValue);
                     if (selectedClassType != null)
+                    {
                         characterData[int.Parse(tab.panel.Tag)].Class = selectedClassType;
+                        characterData[int.Parse(tab.panel.Tag)].ChClass = classes.FirstOrDefault(c => c.Name.Equals(selectedClassType.Name));
+                    }
                 };
                 classTypes.SelectedIndex = 0;
                 leftPanel.AddChild(classTypes);
@@ -216,6 +221,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         {
             public CreatureType Ancestry;
             public Type Class;
+            public CharacterClass ChClass;
             public Color Color;
             public Dictionary<Rules.Attributes.Stat, int> AbilityScores;
             public string Name;
@@ -224,6 +230,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             {
                 Ancestry = null;
                 Class = null;
+                ChClass = null;
                 Color = Color.White;
                 AbilityScores = [];
                 Name = "Unnamed Hero" + i;
@@ -253,7 +260,12 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                     [Class] = 1
                 };
                 var character = new ClassedCharacter(Name, attrSet, Ancestry, classes);
-                //character.Color = Color;
+
+                foreach (var item in ChClass.StartingInventory)
+                {
+                    character.Equip(item);
+                }
+
                 return character;
             }
         }
