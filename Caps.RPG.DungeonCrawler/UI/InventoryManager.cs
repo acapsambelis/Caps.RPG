@@ -163,6 +163,17 @@ namespace Caps.RPG.DungeonCrawler.UI
 
         private void EquipmentButtonClicked(Entity entity)
         {
+            var destination = inventoryButtons.FirstOrDefault(ib => ib.Button == entity);
+            destination ??= equipmentButtons.FirstOrDefault(eb => eb.Value.Button == entity).Value;
+
+            // toggle click off
+            if (selectedInventoryButton == destination)
+            {
+                selectedInventoryButton = null;
+                destination.Deselect();
+                return;
+            }
+
             if (selectedInventoryButton != null)
             {
                 // move item to this slot
@@ -172,7 +183,7 @@ namespace Caps.RPG.DungeonCrawler.UI
                 equipmentButtons[item.Type].UpdateItem(item);
 
                 // clear inventory slot
-                (entity as Button).Checked = false;
+                destination.Deselect();
                 selectedInventoryButton.Deselect();
                 selectedInventoryButton.ClearItem();
                 selectedInventoryButton = null;
@@ -190,7 +201,8 @@ namespace Caps.RPG.DungeonCrawler.UI
             if (destination == null) return;
 
             var item = combattant.Creature.Inventory.Slots[destination.SlotIndex].Item;
-            
+
+            // toggle click off
             if (selectedInventoryButton == destination)
             {
                 selectedInventoryButton = null;
@@ -198,13 +210,19 @@ namespace Caps.RPG.DungeonCrawler.UI
                 return;
             }
 
+            // if first click
             if (selectedInventoryButton == null)
             {
                 selectedInventoryButton = destination;
-                equipmentButtons[item.Type].SetEnabled(true);
+                if (item != null)
+                    equipmentButtons[item.Type].SetEnabled(true);
+                else
+                    destination.Deselect();
             }
+            // if second click
             else
             {
+                // equip
                 if (selectedInventoryButton.IsEquipmentSlot)
                 {
                     var itemSlot = combattant.Creature.Inventory.EquippedItems.GetSlotForItemType(selectedInventoryButton.EquipmentType.Value);
@@ -213,11 +231,13 @@ namespace Caps.RPG.DungeonCrawler.UI
                     combattant.Creature.Inventory.Slots[destination.SlotIndex].Item = item;
                     selectedInventoryButton.SetEnabled(false);
                 }
+                // move
                 else
                 {
                     item = combattant.Creature.Inventory.MoveItem(selectedInventoryButton.SlotIndex, destination.SlotIndex);
                 }
 
+                // cleanup
                 destination.Deselect();
                 destination.UpdateItem(item);
                 if (item != null)

@@ -128,6 +128,7 @@ namespace Caps.RPG.Rules.Inventory
             Type = ItemType.None;
             Modifiers = [];
             CombatActions = [];
+            Tags = [];
         }
         public Item(string name, string description, ItemType type)
         {
@@ -135,6 +136,7 @@ namespace Caps.RPG.Rules.Inventory
             Description = description;
             Type = type;
             Modifiers = [];
+            Tags = [];
         }
 
         public override string ToString()
