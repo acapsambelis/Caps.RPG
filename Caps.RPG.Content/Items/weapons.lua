@@ -33,9 +33,6 @@ Swords = {
                                 end
                             end
                         end
-                        local test = { Description = "This action defeated " .. defeatedName }
-                        print(test)
-                        print(type(test))
                         return { Description = "This action defeated " .. defeatedName }
                     end
                 }

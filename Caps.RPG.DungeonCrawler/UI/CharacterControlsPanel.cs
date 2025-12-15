@@ -36,7 +36,7 @@ namespace Caps.RPG.DungeonCrawler.UI
             this.map = map;
             this.combattant = combattant;
             float healthPercent = combattant.Health / (float)Math.Max(1, combattant.Creature.MaxHealth);
-            Panel = new Panel(new Vector2(500, 730), PanelSkin.None, Anchor.TopCenter)
+            Panel = new Panel(new Vector2(500, 730), PanelSkin.None, Anchor.TopLeft)
             {
                 Padding = new Vector2(10)
             };
@@ -167,29 +167,15 @@ namespace Caps.RPG.DungeonCrawler.UI
             {
                 TabData tab = tabs.AddTab("All");
                 tab.panel.Padding = new Vector2(5);
-                // Add a button with an icon for each combat action, 5 per row
-                Panel rowPanel = null;
-                var actionButtonPadding = Vector2.Zero;
                 for (int i = 0; i < actions.Count; i++)
                 {
-                    if (i % buttonsPerRow == 0)
-                    {
-                        rowPanel = new Panel(new Vector2(0, buttonSize), PanelSkin.None, Anchor.AutoCenter)
-                        {
-                            Padding = new Vector2(0, 2)
-                        };
-                        tab.panel.Size = new Vector2(abilitiesPanel.Size.X, abilitiesPanel.Size.Y + buttonSize + actionButtonPadding.Y);
-                        tab.panel.AddChild(rowPanel);
-                    }
-
                     var action = actions[i];
-                    Button actionButton = new("", ButtonSkin.Default, Anchor.AutoInlineNoBreak, size: new Vector2(buttonSize))
+                    Button actionButton = new("", ButtonSkin.Default, Anchor.AutoInline, size: new Vector2(buttonSize))
                     {
                         ToolTipText = $"{action.Name} (Cost: {action.Cost})",
                         Tag = action.Name,
                         ToggleMode = true
                     };
-                    actionButtonPadding = actionButton.Padding;
                     actionButton.OnClick += ActionClicked;
                     actionButton.OnClick += actionSelection;
 
@@ -209,7 +195,7 @@ namespace Caps.RPG.DungeonCrawler.UI
                     }
 
                     actionButtons.Add(actionButton);
-                    rowPanel.AddChild(actionButton);
+                    tab.panel.AddChild(actionButton);
                 }
             }
             {
