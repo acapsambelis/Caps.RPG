@@ -122,6 +122,8 @@ namespace Caps.RPG.MonoGame
 
         public void ZoomCamera()
         {
+            if (UserInterface.Active.ActiveEntity is not GeonBit.UI.Entities.RootPanel && !DirectOrder)
+                return;
             var delta = _mouseInfo.ScrollWheelDelta;
             if (delta != 0)
             {

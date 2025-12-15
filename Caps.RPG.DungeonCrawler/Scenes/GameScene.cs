@@ -8,12 +8,9 @@ using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Creatures.Classed;
 using Caps.RPG.Rules.Creatures.Unclassed;
 using Caps.RPG.Rules.Maps;
-using Caps.Util;
-using Caps.Util.Lua;
 using GeonBit.UI;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -46,10 +43,14 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
 
             var itemLoader = Program.LuaEnvironment.LoadFromFolder("Items");
-            var items = itemLoader.LoadComponentsFromCategory<Rules.Inventory.Item>("Swords");
-            var debugSword = items.FirstOrDefault(i => i.Name == "Debug Sword");
-            playerCharacters[0].Inventory.Equip(debugSword);
-            playerCharacters[1].Inventory.Equip(debugSword);
+            var swords = itemLoader.LoadComponentsFromCategory<Rules.Inventory.Item>("Swords");
+            var crowns = itemLoader.LoadComponentsFromCategory<Rules.Inventory.Item>("Crowns");
+            var debugSword = swords.FirstOrDefault(i => i.Name == "Debug Sword");
+            var crown = crowns.FirstOrDefault(i => i.Name == "Royal Crown");
+            playerCharacters[0].Inventory.Slots[0].Item = debugSword;
+            playerCharacters[0].Inventory.Slots[3].Item = crown;
+            playerCharacters[1].Inventory.Slots[1].Item = debugSword;
+            playerCharacters[1].Inventory.Slots[3].Item = crown;
 
             foreach (Combattant combattant in combattants)
             {
@@ -90,21 +91,30 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             initiativePanel = new(initiative);
 
             // create character panels
-            characterControlPanels = new(new Vector2(500, 730), PanelSkin.Default, Anchor.BottomLeft)
+            characterControlPanels = new(new Vector2(510, 730), PanelSkin.Default, Anchor.BottomLeft)
             {
                 Padding = new Vector2(5)
             };
+            var bottomLeftPanels = GeonBit.UI.Utils.PanelsGrid.GenerateColums([new(510, 0), new(75, 0)], characterControlPanels);
+            var characterPanelsContainer = bottomLeftPanels[0];
+            var characterButtonsContainer = bottomLeftPanels[1];
+
             foreach (Combattant combattant in combattants)
             {
                 Combattant currentCombattant = combattant;
                 Sprite characterSprite;
                 characterSprite = characterSprites[currentCombattant.Name + " " + currentCombattant.Team.ToString()];
                 CombattantEntity entity = new(ref currentCombattant, characterSprite, ref _map, ActionClicked, EndTurn);
-                characterControlPanels.AddChild(entity.CharacterControlsPanel.Panel);
+                characterPanelsContainer.AddChild(entity.CharacterControlsPanel.Panel);
                 initiative.AddChild(entity.InitiativeTracker.Panel);
                 initiativePanel.AddCombattant(currentCombattant, entity.InitiativeTracker);
                 entity.CharacterControlsPanel.Panel.Visible = currentCombattant == gameLoop.CurrentCombattant;
                 uiUpdatingEntities.Add(entity);
+
+                if (combattant.IsComputerControlled()) continue;
+
+                characterButtonsContainer.AddChild(entity.SidebarButtons);
+                UserInterface.Active.AddEntity(entity.InventoryManager.Panel);
             }
             UserInterface.Active.AddEntity(characterControlPanels);
 
@@ -206,7 +216,9 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             foreach (var combattantEntity in uiUpdatingEntities.OfType<CombattantEntity>())
             {
                 if (combattantEntity.SetVisibility(combattant))
+                {
                     currentCharacterPanel = combattantEntity.CharacterControlsPanel;
+                }
             }
         }
 

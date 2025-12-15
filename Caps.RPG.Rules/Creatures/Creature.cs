@@ -119,7 +119,7 @@ namespace Caps.RPG.Rules.Creatures
         
         private int GetModifierValue(ModifiedValue targetType, ref bool changedFlag, ref int cachedValue)
         {
-            if (changedFlag)
+            if (changedFlag || Inventory.EquipmentChanged)
             {
                 UpdateAllModifiers();
                 if (!modifiers.TryGetValue(targetType, out List<Modifier>? value))
@@ -265,7 +265,7 @@ namespace Caps.RPG.Rules.Creatures
 
         private void UpdateAllModifiers()
         {
-            if (Inventory.EquippedItems.EquipmentChanged)
+            if (Inventory.EquipmentChanged)
             {
                 var inventoryModifiers = Inventory.GetModifiers();
                 foreach (var kvp in inventoryModifiers)
@@ -275,9 +275,8 @@ namespace Caps.RPG.Rules.Creatures
                         AddModifier(mod, mod.Source);
                     }
                 }
-                Inventory.EquippedItems.EquipmentChanged = false;
+                Inventory.EquipmentChanged = false;
             }
-            
         }
 
         #region GenericMethods

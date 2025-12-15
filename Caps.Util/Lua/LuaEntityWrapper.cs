@@ -410,6 +410,8 @@ namespace Caps.Util.Lua
             for (int i = 0; i < args.Length; i++)
                 luaArgs[i + 1] = DynValue.FromObject(_script, args[i]);
             var result = _script.Call(closure, luaArgs);
+            if (returnType == typeof(void))
+                return null;
             if (result.Type == DataType.UserData)
                 return result.ToObject(returnType);
             if (result.Type == DataType.Table)

@@ -1,4 +1,5 @@
-﻿using Caps.RPG.Rules.Creatures.Actions;
+﻿using Caps.RPG.Rules.Creatures;
+using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Modifiers;
 using SNS.Data.DataSerializer;
 
@@ -7,23 +8,41 @@ namespace Caps.RPG.Rules.Inventory
     [DataClass("CreatureInventories")]
     public class CreatureInventory : Inventory, IGenericDataObject<CreatureInventory>
     {
+        private bool equipmentChanged = false;
+        public bool EquipmentChanged
+        {
+            get { return equipmentChanged; }
+            set { equipmentChanged = value; }
+        }
+
         [SubDataObject("EquippedItems")]
         public Equipment EquippedItems { get; set; }
         
-        public CreatureInventory() : base (15)
+        public CreatureInventory() : base (50)
         {
             EquippedItems = new Equipment();
         }
-        public CreatureInventory(int size = 15) : base(size)
+        public CreatureInventory(int size = 50) : base(size)
         {
             EquippedItems = new Equipment();
         }
 
         public void Equip(Item i)
         {
-            var possibleNull = EquippedItems.GetSlotForItem(i);
-            InventorySlot slot = possibleNull ?? new InventorySlot(ItemType.None);
-            slot.SetItem(i);
+            equipmentChanged = EquippedItems.GetSlotForItem(i).SetItem(i);
+        }
+
+        public void Unequip(InventorySlot slot)
+        {
+            equipmentChanged = slot.SetItem(null);
+        }
+
+        public Item? MoveItem(int oldSlot, int newSlot)
+        {
+            var item = Slots[oldSlot].Item;
+            Slots[oldSlot].Item = null;
+            Slots[newSlot].Item = item;
+            return Slots[newSlot].Item;
         }
 
         public Dictionary<ModifiedValue, List<Modifier>> GetModifiers()

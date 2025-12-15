@@ -1,7 +1,8 @@
 ﻿using Caps.RPG.DungeonCrawler.UI;
 using Caps.RPG.MonoGame.Graphics;
 using Caps.RPG.Rules.Creatures;
-using Caps.RPG.Rules.Maps;
+using GeonBit.UI.Entities;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,12 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
         public Sprite Sprite { get; }
         public InitiativeTracker InitiativeTracker { get; }
         public CharacterControlsPanel CharacterControlsPanel { get; }
-        
+        public Panel SidebarButtons { get; }
+
+        public InventoryManager InventoryManager => inventoryManager;
+
+        private InventoryManager inventoryManager;
+
         private readonly Map map;
         private readonly Texture2D icon;
         private readonly Sprite deathSprite;
@@ -34,11 +40,34 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
             icon = Sprite.GetTextureWithColor();
             deathSprite = CommonTileFeatures.CreateDeathSprite(sprite);
             deathIcon = deathSprite.GetTextureWithColor();
+            this.map = map;
 
             InitiativeTracker = new(sprite, ref combattant, ref map);
             CharacterControlsPanel = new(combattant, icon, map, ActionClicked, EndTurn);
 
-            this.map = map;
+            if (combattant.IsComputerControlled()) return;
+
+            SidebarButtons = BuildSidebar(ref combattant, sprite);
+        }
+
+        private Panel BuildSidebar(ref Combattant combattant, Sprite combattantSprite)
+        {
+            var panel = new Panel(new Vector2(75), PanelSkin.None, Anchor.BottomRight);
+            panel.Padding = Vector2.Zero;
+            
+            inventoryManager = new InventoryManager(ref combattant, combattantSprite);
+            Button inventory = new Button("INV", ButtonSkin.Default, Anchor.AutoInline, new Vector2(75));
+            inventory.OnClick += (entity) =>
+            {
+                inventoryManager.Panel.Visible = !inventoryManager.Panel.Visible;
+            };
+            panel.AddChild(inventory);
+
+            Button test = new Button("TST", ButtonSkin.Default, Anchor.Auto, new Vector2(75));
+            panel.AddChild(test);
+
+            panel.Size = new Vector2(panel.Size.X, 75 * panel.Children.Count + 10); // 10 = bottom padding
+            return panel;
         }
 
         private void Moved(object sender, PositionChangedEventArgs e)
@@ -76,6 +105,10 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
         public bool SetVisibility(Combattant combattant)
         {
             CharacterControlsPanel.Panel.Visible = Combattant == combattant;
+            if (SidebarButtons != null)
+            {
+                SidebarButtons.Visible = CharacterControlsPanel.Panel.Visible;
+            }
             return Combattant == combattant;
         }
     }

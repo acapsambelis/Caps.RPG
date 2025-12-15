@@ -7,18 +7,12 @@ namespace Caps.RPG.Rules.Inventory
     [DataClass("Equipment")]
     public class Equipment : IGenericDataObject<Equipment>
     {
-        private bool equipmentChanged = true;
-        public bool EquipmentChanged {
-            get { return equipmentChanged; }
-            set { equipmentChanged = value; }
-        }
-
         private InventorySlot crown;
         [SubDataObject("Crown")]
         public InventorySlot Crown
         {
             get => crown;
-            set { crown = value; equipmentChanged = true; }
+            set { crown = value; }
         }
 
         private InventorySlot face;
@@ -26,15 +20,15 @@ namespace Caps.RPG.Rules.Inventory
         public InventorySlot Face
         {
             get => face;
-            set { face = value; equipmentChanged = true; }
+            set { face = value; }
         }
 
-        private InventorySlot headJewelry;
-        [SubDataObject("HeadJewelry")]
-        public InventorySlot HeadJewelry
+        private InventorySlot jewelry;
+        [SubDataObject("Jewelry")]
+        public InventorySlot Jewelry
         {
-            get => headJewelry;
-            set { headJewelry = value; equipmentChanged = true; }
+            get => jewelry;
+            set { jewelry = value; }
         }
 
         private InventorySlot neck;
@@ -42,7 +36,7 @@ namespace Caps.RPG.Rules.Inventory
         public InventorySlot Neck
         {
             get => neck;
-            set { neck = value; equipmentChanged = true; }
+            set { neck = value; }
         }
 
         private InventorySlot chest;
@@ -50,7 +44,7 @@ namespace Caps.RPG.Rules.Inventory
         public InventorySlot Chest
         {
             get => chest;
-            set { chest = value; equipmentChanged = true; }
+            set { chest = value; }
         }
 
         private InventorySlot shoulders;
@@ -58,7 +52,7 @@ namespace Caps.RPG.Rules.Inventory
         public InventorySlot Shoulders
         {
             get => shoulders;
-            set { shoulders = value; equipmentChanged = true; }
+            set { shoulders = value; }
         }
 
         private InventorySlot back;
@@ -66,7 +60,7 @@ namespace Caps.RPG.Rules.Inventory
         public InventorySlot Back
         {
             get => back;
-            set { back = value; equipmentChanged = true; }
+            set { back = value; }
         }
 
         private InventorySlot arms;
@@ -74,7 +68,7 @@ namespace Caps.RPG.Rules.Inventory
         public InventorySlot Arms
         {
             get => arms;
-            set { arms = value; equipmentChanged = true; }
+            set { arms = value; }
         }
 
         private InventorySlot gloves;
@@ -82,15 +76,7 @@ namespace Caps.RPG.Rules.Inventory
         public InventorySlot Gloves
         {
             get => gloves;
-            set { gloves = value; equipmentChanged = true; }
-        }
-
-        private InventorySlot handJewelry;
-        [SubDataObject("HandJewelry")]
-        public InventorySlot HandJewelry
-        {
-            get => handJewelry;
-            set { handJewelry = value; equipmentChanged = true; }
+            set { gloves = value; }
         }
 
         private InventorySlot belt;
@@ -98,7 +84,7 @@ namespace Caps.RPG.Rules.Inventory
         public InventorySlot Belt
         {
             get => belt;
-            set { belt = value; equipmentChanged = true; }
+            set { belt = value; }
         }
 
         private InventorySlot pants;
@@ -106,7 +92,7 @@ namespace Caps.RPG.Rules.Inventory
         public InventorySlot Pants
         {
             get => pants;
-            set { pants = value; equipmentChanged = true; }
+            set { pants = value; }
         }
 
         private InventorySlot boots;
@@ -114,7 +100,7 @@ namespace Caps.RPG.Rules.Inventory
         public InventorySlot Boots
         {
             get => boots;
-            set { boots = value; equipmentChanged = true; }
+            set { boots = value; }
         }
 
         private InventorySlot hands;
@@ -122,7 +108,7 @@ namespace Caps.RPG.Rules.Inventory
         public InventorySlot Hands
         {
             get => hands;
-            set { hands = value; equipmentChanged = true; }
+            set { hands = value; }
         }
 
         private bool _wasLoaded = false;
@@ -132,14 +118,13 @@ namespace Caps.RPG.Rules.Inventory
         {
             crown = new InventorySlot(ItemType.Crown);
             face = new InventorySlot(ItemType.Face);
-            headJewelry = new InventorySlot(ItemType.HeadJewelry);
+            jewelry = new InventorySlot(ItemType.Jewelry);
             neck = new InventorySlot(ItemType.Neck);
             chest = new InventorySlot(ItemType.Chest);
             shoulders = new InventorySlot(ItemType.Shoulders);
             back = new InventorySlot(ItemType.Back);
             arms = new InventorySlot(ItemType.Arms);
             gloves = new InventorySlot(ItemType.Gloves);
-            handJewelry = new InventorySlot(ItemType.HandJewelry);
             belt = new InventorySlot(ItemType.Belt);
             pants = new InventorySlot(ItemType.Pants);
             boots = new InventorySlot(ItemType.Boots);
@@ -148,18 +133,22 @@ namespace Caps.RPG.Rules.Inventory
 
         public InventorySlot GetSlotForItem(Item item)
         {
-            return item.Type switch
+            return GetSlotForItemType(item.Type);
+        }
+
+        public InventorySlot GetSlotForItemType(ItemType itemType)
+        {
+            return itemType switch
             {
                 ItemType.Crown => Crown,
                 ItemType.Face => Face,
-                ItemType.HeadJewelry => HeadJewelry,
+                ItemType.Jewelry => Jewelry,
                 ItemType.Neck => Neck,
                 ItemType.Chest => Chest,
                 ItemType.Shoulders => Shoulders,
                 ItemType.Back => Back,
                 ItemType.Arms => Arms,
                 ItemType.Gloves => Gloves,
-                ItemType.HandJewelry => HandJewelry,
                 ItemType.Belt => Belt,
                 ItemType.Pants => Pants,
                 ItemType.Boots => Boots,
@@ -206,8 +195,8 @@ namespace Caps.RPG.Rules.Inventory
         private List<InventorySlot> GetAllSlots()
         {
             return [
-                Crown, Face, HeadJewelry, Neck, Chest, Shoulders,
-                Back, Arms, Gloves, HandJewelry, Belt, Pants, Boots, Hands
+                Crown, Face, Jewelry, Neck, Chest, Shoulders,
+                Back, Arms, Gloves, Belt, Pants, Boots, Hands
             ];
         }
 
@@ -216,14 +205,13 @@ namespace Caps.RPG.Rules.Inventory
             return obj is Equipment equipment &&
                    EqualityComparer<InventorySlot>.Default.Equals(Crown, equipment.Crown) &&
                    EqualityComparer<InventorySlot>.Default.Equals(Face, equipment.Face) &&
-                   EqualityComparer<InventorySlot>.Default.Equals(HeadJewelry, equipment.HeadJewelry) &&
+                   EqualityComparer<InventorySlot>.Default.Equals(Jewelry, equipment.Jewelry) &&
                    EqualityComparer<InventorySlot>.Default.Equals(Neck, equipment.Neck) &&
                    EqualityComparer<InventorySlot>.Default.Equals(Chest, equipment.Chest) &&
                    EqualityComparer<InventorySlot>.Default.Equals(Shoulders, equipment.Shoulders) &&
                    EqualityComparer<InventorySlot>.Default.Equals(Back, equipment.Back) &&
                    EqualityComparer<InventorySlot>.Default.Equals(Arms, equipment.Arms) &&
                    EqualityComparer<InventorySlot>.Default.Equals(Gloves, equipment.Gloves) &&
-                   EqualityComparer<InventorySlot>.Default.Equals(HandJewelry, equipment.HandJewelry) &&
                    EqualityComparer<InventorySlot>.Default.Equals(Belt, equipment.Belt) &&
                    EqualityComparer<InventorySlot>.Default.Equals(Pants, equipment.Pants) &&
                    EqualityComparer<InventorySlot>.Default.Equals(Boots, equipment.Boots) &&
@@ -235,14 +223,13 @@ namespace Caps.RPG.Rules.Inventory
             HashCode hash = new HashCode();
             hash.Add(Crown);
             hash.Add(Face);
-            hash.Add(HeadJewelry);
+            hash.Add(Jewelry);
             hash.Add(Neck);
             hash.Add(Chest);
             hash.Add(Shoulders);
             hash.Add(Back);
             hash.Add(Arms);
             hash.Add(Gloves);
-            hash.Add(HandJewelry);
             hash.Add(Belt);
             hash.Add(Pants);
             hash.Add(Boots);
@@ -260,5 +247,4 @@ namespace Caps.RPG.Rules.Inventory
             return !(left == right);
         }
     }
-
 }
