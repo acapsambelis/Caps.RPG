@@ -6,23 +6,19 @@ namespace Caps.RPG.Rules.Creatures.Actions
 {
     public class ActionResult
     {
-        private readonly string description;
-        private readonly TerminalColor color;
+        private string description;
 
-        public ActionResult()
+        public string Description
         {
-            description = "";
-            color = TerminalColors.Gray;
+            get { return description; }
+            set { description = value; }
         }
+
+        public ActionResult() : this("") { }
+
         public ActionResult(string description)
         {
             this.description = description;
-            color = TerminalColors.Gray;
-        }
-        public ActionResult(string description, TerminalColor color)
-        {
-            this.description = description;
-            this.color = color;
         }
 
         public override string ToString()
@@ -72,11 +68,6 @@ namespace Caps.RPG.Rules.Creatures.Actions
             }
 
             return sb.ToString();
-        }
-
-        public ConsoleColor Color
-        {
-            get { return color.Color; }
         }
     }
 }

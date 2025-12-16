@@ -1,2 +1,5 @@
-swords.lua
+--swords.lua
+item_tags.lua
+weapons.lua
 crowns.lua
+armor.lua

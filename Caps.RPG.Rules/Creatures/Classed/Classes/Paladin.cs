@@ -21,7 +21,7 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
 
         public readonly static Dictionary<int, CombatAction> actionDictionary = new Dictionary<int, CombatAction>()
         {
-            { 1, new CombatAction("Smite", "You deal damage to one target equal to 5 times your Paladin level.", 1, Smite, new ActionSetup(true, 1, ActionSetup.TargetType.SingleCreature)) },
+            { 1, new CombatAction("Smite", "You deal damage to one target equal to 5 times your Paladin level.", 1, Smite, new ActionSetup(true, 1, null, ActionSetup.TargetType.SingleCreature)) },
         };
 
         public static ActionResult Smite(Combattant source, TileBase[] targets)

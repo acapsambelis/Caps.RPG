@@ -10,6 +10,7 @@ namespace Caps.RPG.DungeonCrawler
     {
         private string gameName;
         private string lastSaveFile;
+        private int partySize;
 
         public string GameName
         {
@@ -31,6 +32,13 @@ namespace Caps.RPG.DungeonCrawler
             get => lastSaveFile;
             set => lastSaveFile = value;
         }
+
+        [DataProperty("PartySize")]
+        public int PartySize
+        {
+            get { return partySize; }
+            set { partySize = value; }
+        } 
 
 
         private bool wasLoaded;

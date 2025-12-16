@@ -13,9 +13,10 @@ namespace Caps.RPG.DungeonCrawler
         public static readonly string VERSION = "1.0.0";
         public static readonly string GAME_NAME = "DungeonCrawler";
 
+        public static readonly LuaEnvironment LuaEnvironment = new("Caps.RPG.Rules");
+
         private static void Main()
         {
-            RegisterLua();
             // load config
             var gameDataPath = ProgramFilesWrapper.GetGameDataPath(GAME_NAME);
             if (!Directory.Exists(gameDataPath))
@@ -35,21 +36,6 @@ namespace Caps.RPG.DungeonCrawler
             // Write config back to the file it was loaded from
             using var writer = new StreamWriter(commonConfigPath, false);
             writer.Write(config.ToXml());
-        }
-
-        private static void RegisterLua()
-        {
-            var rulesAssembly = AppDomain.CurrentDomain.GetAssemblies()
-                .FirstOrDefault(a => a.GetName().Name == "Caps.RPG.Rules");
-
-            if (rulesAssembly == null)
-            {
-                // Load from output directory
-                var assemblyPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Caps.RPG.Rules.dll");
-                rulesAssembly = Assembly.LoadFrom(assemblyPath);
-            }
-
-            LuaRegistrations.RegisterNamespacePrefixTypes("Caps.RPG.Rules", rulesAssembly);
         }
     }
 }

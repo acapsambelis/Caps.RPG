@@ -69,7 +69,7 @@ namespace Caps.RPG.Rules.Maps
                 {
                     var tile = new HexTile(new HexCoords(q, r));
                     if (random.Next(1, 20) <= obstacleWeight)
-                        tile.Features.Add(0, new TileFeature("Rock", false, Util.TerminalColors.Gray));
+                        tile.Features.Add(0, new TileFeature("Rock", false));
                     map.Tiles.Add(tile.Coords.Pos, tile);
                 }
             }

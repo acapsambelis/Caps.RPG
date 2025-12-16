@@ -12,7 +12,7 @@ namespace Caps.RPG.Rules.Creatures
     public class Combattant : TileFeature, IGenericDataObject<Combattant>
     {
         private Creature _creature;
-        private TerminalColor _team;
+        private string _team;
         private TileBase _position;
         private bool _wasLoaded = false;
 
@@ -22,8 +22,8 @@ namespace Caps.RPG.Rules.Creatures
 
         [SubDataObject("Creature")]
         public Creature Creature { get { return _creature; } set { _creature = value; } }
-        [SubDataObject("Team")]
-        public TerminalColor Team { get { return _team; } set { _team = value; } }
+        [DataProperty("Team")]
+        public string Team { get { return _team; } set { _team = value; } }
         [SubDataObject("Position")]
         public TileBase Position
         {
@@ -63,9 +63,9 @@ namespace Caps.RPG.Rules.Creatures
             get { return Creature.MoveSpeed; }
         }
 
-        public Combattant() : base(" ", true, TerminalColors.Gray) { }
+        public Combattant() : base(" ", true) { }
 
-        public Combattant(Creature creature, TerminalColor team, TileBase position) : base(creature.Name, false, team)
+        public Combattant(Creature creature, string team, TileBase position) : base(creature.Name, false)
         {
             _creature = creature;
             _team = team;
@@ -99,7 +99,7 @@ namespace Caps.RPG.Rules.Creatures
             Health = Creature.MaxHealth;
         }
 
-        public static Creature[] GetTeam(TerminalColor name, Combattant[] creatures)
+        public static Creature[] GetTeam(string name, Combattant[] creatures)
         {
             return creatures.Where(c => c.Team == name).Select(c => c.Creature).ToArray();
         }
@@ -114,8 +114,8 @@ namespace Caps.RPG.Rules.Creatures
                 cost:        1,
                 action:      Attack,
                 setup:       new ActionSetup(
-                    needsSource: true,
-                    sourcerange: 1,
+                    needsTarget: true,
+                    targetRange: 1,
                     sourcetype: ActionSetup.TargetType.SingleCreature
                 )
                 {
@@ -128,8 +128,8 @@ namespace Caps.RPG.Rules.Creatures
                 cost:        1,
                 action:      Move,
                 setup:       new ActionSetup(
-                    needsSource:         true,
-                    sourceRangeProperty: typeof(Creature).GetProperty(nameof(Creature.MoveSpeed)),
+                    needsTarget:         true,
+                    targetRangeProperty: typeof(Creature).GetProperty(nameof(Creature.MoveSpeed)),
                     sourcetype:          ActionSetup.TargetType.SingleTile,
                     mapShape:            MapShape.Tile,
                     needsEmptyTile:      true

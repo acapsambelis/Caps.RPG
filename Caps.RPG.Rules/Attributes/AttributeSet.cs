@@ -17,6 +17,14 @@ namespace Caps.RPG.Rules.Attributes
         Charisma = 8
     }
 
+    //public static class StatExtensions
+    //{
+    //    public static string ToString(this Stat stat)
+    //    {
+    //        return stat.ToString();
+    //    }
+    //}
+
     [DataClass("AttributeSet")]
     public class AttributeSet : IGenericDataObject<AttributeSet>
     {
@@ -32,17 +40,7 @@ namespace Caps.RPG.Rules.Attributes
 
         public bool WasLoaded { get { return _wasLoaded; } set { _wasLoaded = value; } }
 
-        public AttributeSet()
-        {
-            //this[Stat.Strength]     = -1;
-            //this[Stat.Agility]      = -1;
-            //this[Stat.Constitution] = -1;
-            //this[Stat.Intellect]    = -1;
-            //this[Stat.Arcana]       = -1;
-            //this[Stat.Wisdom]       = -1;
-            //this[Stat.Presence]     = -1;
-            //this[Stat.Charisma]     = -1;
-        }
+        public AttributeSet() { }
         public AttributeSet(int str, int agi, int con, int itl, int arc, int wis, int pre, int cha)
         {
             this[Stat.Strength]     = [new(Stat.Strength, str)];
@@ -83,21 +81,6 @@ namespace Caps.RPG.Rules.Attributes
                 }
             }
             this[modifier.Target.ToStat()].Add(modifier);
-        }
-
-        public int GetMaxHealth()
-        {
-            return SumModifiers(Stat.Constitution) * 10;
-        }
-
-        public int InitiativeModifier()
-        {
-            return SumModifiers(Stat.Agility);
-        }
-
-        public int MoveSpeed()
-        {
-            return 5 + (SumModifiers(Stat.Agility) / 2);
         }
 
         public override bool Equals(object? obj)

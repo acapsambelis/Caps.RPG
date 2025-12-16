@@ -24,7 +24,7 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
         public readonly static Dictionary<int, CombatAction> actionDictionary = new()
         {
             { 1, new CombatAction("Second Wind", "You regain Health equal to 5 times your Fighter level.", 1, SecondWind, new ActionSetup()) },
-            { 2, new CombatAction("Attack Twice", "You attack twice.", 1, HitTwice, new ActionSetup(true, 1, ActionSetup.TargetType.SingleCreature)) },
+            { 2, new CombatAction("Attack Twice", "You attack twice.", 1, HitTwice, new ActionSetup(true, 1, null, ActionSetup.TargetType.SingleCreature)) },
         };
 
         public static ActionResult SecondWind(Combattant source, TileBase[] targets)

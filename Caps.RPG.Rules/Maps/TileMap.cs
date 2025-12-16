@@ -167,14 +167,14 @@ namespace Caps.RPG.Rules.Maps
             return [];
         }
 
-        public virtual TileBase? GetNearestEnemy(TileBase source, bool considerLOS = false)
+        public virtual TileBase? GetNearestEnemy(TileBase source, bool considerLOS = false, bool includeDead = false)
         {
             Combattant sourceCombattant = source.GetFeature<Combattant>();
             var tilesWithFeature = GetFeaturesWithinRange(
                 source,
                 considerLOS,
                 Math.Max(_gridWidth, _gridDepth),
-                f => f is Combattant c && c.Team != sourceCombattant.Team
+                f => f is Combattant c && c.Team != sourceCombattant.Team && (includeDead || c.Creature.Status == Creature.HealthStatus.Alive)
             );
             if (tilesWithFeature.Length == 0)
                 return null;

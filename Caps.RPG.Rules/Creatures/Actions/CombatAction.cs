@@ -1,6 +1,6 @@
+using Caps.RPG.Rules.Maps;
 using SNS.Data.DataSerializer;
 using System.Reflection;
-using Caps.RPG.Rules.Maps;
 using System.Text;
 
 namespace Caps.RPG.Rules.Creatures.Actions
@@ -35,40 +35,6 @@ namespace Caps.RPG.Rules.Creatures.Actions
         {
             get { return cost; }
             set { cost = value; }
-        }
-        [DataProperty("FunctionLocation")]
-        public string ExecutionLocation
-        {
-            get
-            {
-                if (Execution != null)
-                {
-                    var method = Execution.Method;
-                    var declaringType = method.DeclaringType?.FullName ?? "Unknown";
-                    var methodName = method.Name;
-                    return $"{declaringType}|{methodName}";
-                }
-                return string.Empty;
-            }
-            set
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    var parts = value.Split('|');
-                    if (parts.Length == 2)
-                    {
-                        var type = Type.GetType(parts[0]);
-                        if (type != null)
-                        {
-                            var method = type.GetMethod(parts[1], BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-                            if (method != null)
-                            {
-                                Execution = (Func<Combattant, TileBase[], ActionResult>)Delegate.CreateDelegate(typeof(Func<Combattant, TileBase?, ActionResult>), method.IsStatic ? null : Activator.CreateInstance(type), method);
-                            }
-                        }
-                    }
-                }
-            }
         }
         public Func<Combattant, TileBase[], ActionResult> Execution
         {
@@ -144,7 +110,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
 
     }
 
-    public struct ActionSetup
+    public class ActionSetup
     {
         public enum TargetType
         {
@@ -166,22 +132,28 @@ namespace Caps.RPG.Rules.Creatures.Actions
             Utility,
         }
 
-        private bool needsSource;
-        private double sourcerange = 0;
-        private PropertyInfo? sourceRangeProperty;
+        private bool needsTarget;
+        private double targetRange;
+        private PropertyInfo? targetRangeProperty;
         private TargetType target;
         private MapShape mapShape;
         private double distanceFromSource;
         private bool needsEmptyTile;
-        private ActionTags[] tags;
+        private ActionTags[] tags = [];
 
         [DataProperty("NeedsTarget")]
         public bool NeedsTarget
         {
-            get { return needsSource; }
-            set { needsSource = value; }
+            get { return needsTarget; }
+            set { needsTarget = value; }
         }
-        [DataProperty("SourceType")]
+        [DataProperty("TargetRange")]
+        public double TargetRange
+        {
+            get { return targetRange; }
+            set { targetRange = value; }
+        }
+        [DataProperty("Target")]
         public TargetType Target
         {
             get { return target; }
@@ -212,48 +184,34 @@ namespace Caps.RPG.Rules.Creatures.Actions
             set { tags = value; }
         }
 
+        public ActionSetup() { }
+
         public ActionSetup(
-            bool needsSource = false,
-            double sourcerange = 0,
+            bool needsTarget = false,
+            double targetRange = 0,
+            PropertyInfo? targetRangeProperty = null,
             TargetType sourcetype = TargetType.None,
             MapShape mapShape = MapShape.None,
             double distanceFromSource = 0,
-            bool needsEmptyTile = false
-        )
+            bool needsEmptyTile = false)
         {
-            this.needsSource = needsSource;
-            this.sourcerange = sourcerange;
+            this.needsTarget = needsTarget;
+            this.targetRange = targetRange;
+            this.targetRangeProperty = targetRangeProperty;
             this.target = sourcetype;
             this.mapShape = mapShape;
             this.distanceFromSource = distanceFromSource;
             this.needsEmptyTile = needsEmptyTile;
-            tags = [];
-        }
-        public ActionSetup(
-            bool needsSource = false,
-            PropertyInfo? sourceRangeProperty = null,
-            TargetType sourcetype = TargetType.None,
-            MapShape mapShape = MapShape.None,
-            double distanceFromSource = 0,
-            bool needsEmptyTile = false
-        )
-        {
-            this.needsSource = needsSource;
-            this.sourceRangeProperty = sourceRangeProperty;
-            this.target = sourcetype;
-            this.mapShape = mapShape;
-            this.distanceFromSource = distanceFromSource;
-            this.needsEmptyTile = needsEmptyTile;
-            tags = [];
+            this.tags = [];
         }
 
         public double GetRange(Creature source)
         {
-            if (needsSource && sourcerange > 0)
+            if (needsTarget && targetRange > 0)
             {
-                return sourcerange;
+                return targetRange;
             }
-            if (needsSource && sourceRangeProperty != null && source != null)
+            if (needsTarget && targetRangeProperty != null && source != null)
             {
                 return GetRangeFromProperty(source);
             }
@@ -262,9 +220,9 @@ namespace Caps.RPG.Rules.Creatures.Actions
 
         private double GetRangeFromProperty(Creature source)
         {
-            if (sourceRangeProperty == null)
+            if (targetRangeProperty == null)
                 throw new InvalidOperationException("sourceRangeProperty is not set.");
-            object? value = sourceRangeProperty.GetValue(source) ?? throw new InvalidOperationException("The property value is null.");
+            object? value = targetRangeProperty.GetValue(source) ?? throw new InvalidOperationException("The property value is null.");
             if (value is double d)
                 return d;
             if (value is int i)
@@ -327,8 +285,8 @@ namespace Caps.RPG.Rules.Creatures.Actions
         public override bool Equals(object? obj)
         {
             return obj is ActionSetup setup &&
-                   needsSource == setup.needsSource &&
-                   sourcerange == setup.sourcerange &&
+                   needsTarget == setup.needsTarget &&
+                   targetRange == setup.targetRange &&
                    target == setup.target &&
                    mapShape == setup.mapShape &&
                    distanceFromSource == setup.distanceFromSource;
@@ -336,7 +294,7 @@ namespace Caps.RPG.Rules.Creatures.Actions
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(needsSource, sourcerange, target, mapShape, distanceFromSource);
+            return HashCode.Combine(needsTarget, targetRange, target, mapShape, distanceFromSource);
         }
 
         public static bool operator ==(ActionSetup left, ActionSetup right)

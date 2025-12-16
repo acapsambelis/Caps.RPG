@@ -22,8 +22,8 @@ namespace Caps.RPG.Rules.Creatures.Classed.Classes
 
         public readonly static Dictionary<int, CombatAction> actionDictionary = new Dictionary<int, CombatAction>()
         {
-            { 1, new CombatAction("Firebolt", "You deal damage to one target equal to 5 times your Wizard level.", 1, Firebolt, new ActionSetup(true, 10, ActionSetup.TargetType.SingleCreature)) },
-            { 1, new CombatAction("Fireball", "You deal damage in a radius equal to 5 times your Wizard level.", 1, Fireball, new ActionSetup(true, 10, ActionSetup.TargetType.SingleCreature)) },
+            { 1, new CombatAction("Firebolt", "You deal damage to one target equal to 5 times your Wizard level.", 1, Firebolt, new ActionSetup(true, 10, null, ActionSetup.TargetType.SingleCreature)) },
+            { 1, new CombatAction("Fireball", "You deal damage in a radius equal to 5 times your Wizard level.", 1, Fireball, new ActionSetup(true, 10, null, ActionSetup.TargetType.SingleCreature)) },
         };
 
         public static ActionResult Firebolt(Combattant source, TileBase[] targets)

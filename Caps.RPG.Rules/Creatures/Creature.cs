@@ -25,6 +25,7 @@ namespace Caps.RPG.Rules.Creatures
         private int maxHealth;
         private int health;
         private AttributeSet attributes;
+        private CreatureType creatureType;
 
         // Combat
         private HealthStatus status;
@@ -57,7 +58,7 @@ namespace Caps.RPG.Rules.Creatures
         }
         public int MaxHealth
         {
-            get => GetModifierValue(ModifiedValue.MaxHealth, ref maxHealthChanged, ref maxHealth) + attributes.GetMaxHealth();
+            get => GetModifierValue(ModifiedValue.MaxHealth, ref maxHealthChanged, ref maxHealth) + attributes.SumModifiers(Stat.Constitution) * 10 + 10;
         }
         public int Health
         {
@@ -108,17 +109,17 @@ namespace Caps.RPG.Rules.Creatures
 
         public int InitiativeModifier
         {
-            get => GetModifierValue(ModifiedValue.Initiative, ref initiativeChanged, ref initiativeBonus) + Attributes.InitiativeModifier();
+            get => GetModifierValue(ModifiedValue.Initiative, ref initiativeChanged, ref initiativeBonus) + Attributes.SumModifiers(Stat.Agility);
         }
 
         public int MoveSpeed
         {
-            get => GetModifierValue(ModifiedValue.MovementSpeed, ref moveSpeedChanged, ref moveSpeed) + Attributes.MoveSpeed();
+            get => GetModifierValue(ModifiedValue.MovementSpeed, ref moveSpeedChanged, ref moveSpeed) + 5 + (Attributes.SumModifiers(Stat.Agility) / 2);
         }
         
         private int GetModifierValue(ModifiedValue targetType, ref bool changedFlag, ref int cachedValue)
         {
-            if (changedFlag)
+            if (changedFlag || Inventory.EquipmentChanged)
             {
                 UpdateAllModifiers();
                 if (!modifiers.TryGetValue(targetType, out List<Modifier>? value))
@@ -128,6 +129,27 @@ namespace Caps.RPG.Rules.Creatures
                 changedFlag = false;
             }
             return cachedValue;
+        }
+
+        [SubDataObject("CreatureType")]
+        public CreatureType CreatureType
+        {
+            get { return creatureType; }
+            set {
+                if (creatureType != null) throw new Exception("CreatureType cannot be changed once set.");
+                creatureType = value;
+                foreach (var mod in creatureType.Modifiers)
+                {
+                    AddModifier(mod, mod.Source);
+                }
+                foreach (var action in creatureType.CombatActions)
+                {
+                    if (!combatActions.Contains(action))
+                    {
+                        combatActions.Add(action);
+                    }
+                }
+            }
         }
 
         [SubDataObject("Inventory")]
@@ -157,29 +179,30 @@ namespace Caps.RPG.Rules.Creatures
         public Creature()
         {
             name = "";
+            creatureType = null;
             attributes = new AttributeSet();
             combatActions = Combattant.GetGenericList();
             inv = new CreatureInventory();
             modifiers = Modifier.GetCreatureModifiers();
             status = HealthStatus.Alive;
         }
-        public Creature(string name, AttributeSet attributes)
+        public Creature(string name, CreatureType creatureType, AttributeSet attributes)
         {
+            this.inv = new CreatureInventory();
             this.status = HealthStatus.Alive;
             this.name = name;
+            this.creatureType = creatureType;
             this.attributes = attributes;
-            this.maxHealth = attributes.GetMaxHealth();
             this.health = MaxHealth;
             this.combatActions = Combattant.GetGenericList();
 
-            this.inv = new CreatureInventory();
             modifiers = Modifier.GetCreatureModifiers();
         }
         #endregion
 
         public virtual List<CombatAction> GetCombatActions()
         {
-            return combatActions;
+            return [.. combatActions, .. Inventory.GetCombatActions()];
         }
 
         public void Equip(Item item)
@@ -206,8 +229,7 @@ namespace Caps.RPG.Rules.Creatures
                 case ModifiedValue.Wisdom:
                 case ModifiedValue.Charisma:
                 case ModifiedValue.Presence:
-                    this.attributes.AddModifier(modifier, source);
-                    return;
+                    break;
                 case ModifiedValue.DefenseClass:
                     this.defenseClassChanged = true;
                     break;
@@ -223,7 +245,8 @@ namespace Caps.RPG.Rules.Creatures
                 default:
                     break;
             }
-
+            if (!modifiers.ContainsKey(modifier.Target))
+                modifiers[modifier.Target] = [];
             List<Modifier> targetList = modifiers[modifier.Target];
             if (source is Item s)
             {
@@ -242,7 +265,7 @@ namespace Caps.RPG.Rules.Creatures
 
         private void UpdateAllModifiers()
         {
-            if (Inventory.EquippedItems.EquipmentChanged)
+            if (Inventory.EquipmentChanged)
             {
                 var inventoryModifiers = Inventory.GetModifiers();
                 foreach (var kvp in inventoryModifiers)
@@ -252,9 +275,8 @@ namespace Caps.RPG.Rules.Creatures
                         AddModifier(mod, mod.Source);
                     }
                 }
-                Inventory.EquippedItems.EquipmentChanged = false;
+                Inventory.EquipmentChanged = false;
             }
-            
         }
 
         #region GenericMethods

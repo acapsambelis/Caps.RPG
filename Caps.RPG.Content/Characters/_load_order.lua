@@ -1,4 +1,4 @@
 ..\Items\
 
-blue_team.lua
-red_team.lua
+creature_types.lua
+classes.lua

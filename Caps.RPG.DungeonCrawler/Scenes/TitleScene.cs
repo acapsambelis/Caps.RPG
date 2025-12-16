@@ -82,19 +82,14 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             Button exitButton = new("Exit", ButtonSkin.Default, Anchor.BottomRight, size: new Vector2(windowWidth / 20, 60), offset:new Vector2(10, 10));
             exitButton.OnClick += btn => { Core.Instance.Exit(); };
             UserInterface.Active.AddEntity(exitButton);
+            Button showExample = new Button("Show Example", ButtonSkin.Default, Anchor.TopRight, new Vector2(200, 75));
+            showExample.OnClick += (btn) => { Core.ChangeScene(new ExampleCharacterCreatorScene(config)); };
+            UserInterface.Active.AddEntity(showExample);
         }
 
         public void Continue()
         {
-            Core.ChangeScene(new GameScene(config));
-            //if (!config.LastSaveFile.Equals(""))
-            //{
-            //    GeonBit.UI.Utils.MessageBox.ShowMsgBox("Continuing Game", $"In this example we won't actually load anything, but in a real project we would load the last save file located at '{config.LastSaveFile}'.");
-            //}
-            //else
-            //{
-            //    GeonBit.UI.Utils.MessageBox.ShowMsgBox("No Save File", "No last save file found! Please use 'Load Game' to load a previous save.");
-            //}
+            Core.ChangeScene(new PartyCreationScene(config));
         }
 
         public void NewGame()
@@ -116,7 +111,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 config.LastSaveFile = filename;
                 GeonBit.UI.Utils.MessageBox.ShowMsgBox("Save name", string.Format("Save created: " + config.LastSaveFile));
             });
-
+            Core.ChangeScene(new PartyCreationScene(config));
         }
 
         public void LoadGame()

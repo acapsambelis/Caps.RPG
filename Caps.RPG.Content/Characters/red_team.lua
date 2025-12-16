@@ -22,7 +22,7 @@ RedTeam = {
 			Inventory = {
 				EquippedItems = {
 					Crown = { Item = Crowns.RoyalCrown.Item },
-					Hands = { Item = Swords.HugeSword.Sword }
+					Hands = { Item = Swords.DebugSword.Sword }
 				}
 			}
 		}
@@ -49,7 +49,7 @@ RedTeam = {
 			},
 			Inventory = {
 				EquippedItems = {
-					Hands = { Item = Swords.HugeSword.Sword }
+					Hands = { Item = Swords.DebugSword.Sword }
 				}
 			}
 		}

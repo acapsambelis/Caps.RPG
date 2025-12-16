@@ -2,6 +2,7 @@
 using Caps.RPG.DungeonCrawler.Scenes;
 using Caps.RPG.MonoGame;
 using Caps.RPG.MonoGame.Graphics;
+using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using System;
 using System.Runtime.InteropServices;
@@ -21,6 +22,7 @@ namespace Caps.RPG.DungeonCrawler
         protected override void Initialize()
         {
             base.Initialize(); // Core.Initialize() already set the window size / borderless
+            UserInterface.TimeToShowTooltipText = 0.75f;
 
 #if DEBUG
             // Choose monitor - replace with e.g. Config.MonitorIndex if you add it to CommonConfig

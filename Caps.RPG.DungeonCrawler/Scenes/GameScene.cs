@@ -8,51 +8,44 @@ using Caps.RPG.Rules.Creatures.Actions;
 using Caps.RPG.Rules.Creatures.Classed;
 using Caps.RPG.Rules.Creatures.Unclassed;
 using Caps.RPG.Rules.Maps;
-using Caps.Util;
-using Caps.Util.Lua;
 using GeonBit.UI;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Caps.RPG.DungeonCrawler.Scenes
 {
-    public class GameScene(CommonConfig config) : BaseScene(config, CameraSceneMode.Panning)
+    public class GameScene(CommonConfig config, ClassedCharacter[] playerCharacters, Dictionary<string, Sprite> characterSprites) : BaseScene(config, CameraSceneMode.Panning)
     {
         private readonly TileMap hexMap = HexMap.GenerateRandomMap(0, 3);
+        private readonly ClassedCharacter[] playerCharacters = playerCharacters;
         private readonly List<Combattant> combattants = [];
-        private readonly Dictionary<string, Sprite> characterSprites = [];
+        private readonly Dictionary<string, Sprite> characterSprites = characterSprites;
         private Map _map;
         private MainLoop gameLoop;
         private readonly List<IUIEntity> uiUpdatingEntities = [];
         private Panel characterControlPanels;
         private CharacterControlsPanel currentCharacterPanel;
+        private InitiativePanel initiativePanel;
         private SelectList actionLog;
         private int actionsAvailable;
         private CombatAction tentativeAction;
 
         public override void Initialize()
         {
-            var characterLoader = new LuaEntityLoader("Characters");
-            List<ClassedCharacter> blueTeam = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("BlueTeam");
-            //List<ClassedCharacter> redTeam = characterLoader.LoadComponentsFromCategory<ClassedCharacter>("RedTeam");
-            var monsterLoader = new LuaEntityLoader("Monsters");
-            List<Monster> redTeam = monsterLoader.LoadComponentsFromCategory<Monster>("MonsterInstances");
+            combattants.AddRange(playerCharacters.Select(c => new Combattant(c, PartyCreationScene.PLAYER_TEAM, hexMap.RandomTile(true))));
 
-            combattants.AddRange(blueTeam.Select(c => new Combattant(c, TerminalColors.Blue, hexMap.RandomTile(true))));
-            combattants.AddRange(redTeam.Select(c => new Combattant(c, TerminalColors.Red, hexMap.RandomTile(true))));
+            var monsterLoader = Program.LuaEnvironment.LoadFromFolder("Monsters");
+            List<Monster> redTeam = monsterLoader.LoadComponentsFromCategory<Monster>("MonsterInstances");
+            combattants.AddRange(redTeam.Select(c => new Combattant(c, "MONSTERS", hexMap.RandomTile(true))));
 
             foreach (Combattant combattant in combattants)
             {
                 combattant.HealMax();
                 if (combattant.IsComputerControlled()) ((IComputerControlled)combattant.Creature).FullMap = hexMap;
             }
-            combattants[0].Health = 1;
-            combattants[1].Health = 15;
-
 
             gameLoop = new(hexMap, combattants);
             gameLoop.OnActionCompleted += LogAction;
@@ -84,23 +77,33 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             };
             topPanel.AddChild(initiative);
             UserInterface.Active.AddEntity(topPanel);
+            initiativePanel = new(initiative);
 
             // create character panels
-            //characterControlPanels = new(new Vector2(500, 120 * combattants.Count + 10), PanelSkin.Default, Anchor.BottomLeft)
-            characterControlPanels = new(new Vector2(500, 730), PanelSkin.Default, Anchor.BottomLeft)
+            characterControlPanels = new(new Vector2(510, 730), PanelSkin.Default, Anchor.BottomLeft)
             {
                 Padding = new Vector2(5)
             };
+            var bottomLeftPanels = GeonBit.UI.Utils.PanelsGrid.GenerateColums([new(510, 0), new(75, 0)], characterControlPanels);
+            var characterPanelsContainer = bottomLeftPanels[0];
+            var characterButtonsContainer = bottomLeftPanels[1];
+
             foreach (Combattant combattant in combattants)
             {
                 Combattant currentCombattant = combattant;
                 Sprite characterSprite;
                 characterSprite = characterSprites[currentCombattant.Name + " " + currentCombattant.Team.ToString()];
                 CombattantEntity entity = new(ref currentCombattant, characterSprite, ref _map, ActionClicked, EndTurn);
-                characterControlPanels.AddChild(entity.CharacterControlsPanel.Panel);
+                characterPanelsContainer.AddChild(entity.CharacterControlsPanel.Panel);
                 initiative.AddChild(entity.InitiativeTracker.Panel);
+                initiativePanel.AddCombattant(currentCombattant, entity.InitiativeTracker);
                 entity.CharacterControlsPanel.Panel.Visible = currentCombattant == gameLoop.CurrentCombattant;
                 uiUpdatingEntities.Add(entity);
+
+                if (combattant.IsComputerControlled()) continue;
+
+                characterButtonsContainer.AddChild(entity.SidebarButtons);
+                UserInterface.Active.AddEntity(entity.InventoryManager.Panel);
             }
             UserInterface.Active.AddEntity(characterControlPanels);
 
@@ -122,13 +125,6 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         public override void LoadContent()
         {
             base.LoadContent();
-
-            TextureAtlas characterAtlas = TextureAtlas.FromFile(Core.Content, "images/characters-definition.xml");
-            foreach (Combattant combattant in combattants.Where(c => c.Creature is not Monster))
-            {
-                TextureRegion region = characterAtlas.GetRegion(combattant.Name + " " + combattant.Team.ToString());
-                characterSprites[combattant.Name + " " + combattant.Team.ToString()] = new Sprite(region, new Vector2(3));
-            }
 
             TextureAtlas monsterAtlas = TextureAtlas.FromFile(Core.Content, "images/monsters-definition.xml");
             foreach (Combattant combattant in combattants.Where(c => c.Creature is Monster))
@@ -153,7 +149,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             string actionName = ((Button)entity).Tag;
             if (string.IsNullOrEmpty(actionName)) return;
 
-            var actions = gameLoop.CurrentCombattant.Creature.GetCombatActions();
+            var actions = gameLoop.CurrentCombattant.GetCombatActions();
             tentativeAction = actions.FirstOrDefault(a => a.Name == actionName);
         }
 
@@ -196,6 +192,8 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 actionsAvailable = gameLoop.ActionsAvailable;
                 currentCharacterPanel.SetActionNumber(actionsAvailable);
             }
+
+            initiativePanel.Update(gameLoop.State.CombatOrder, gameLoop.CurrentCombattant);
             foreach (var entity in uiUpdatingEntities)
             {
                 entity.Update();
@@ -207,7 +205,9 @@ namespace Caps.RPG.DungeonCrawler.Scenes
             foreach (var combattantEntity in uiUpdatingEntities.OfType<CombattantEntity>())
             {
                 if (combattantEntity.SetVisibility(combattant))
+                {
                     currentCharacterPanel = combattantEntity.CharacterControlsPanel;
+                }
             }
         }
 

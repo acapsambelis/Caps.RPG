@@ -4,14 +4,14 @@ Monsters = {
 			Name = "Zombie",
 			Attributes = {
 				Modifiers = {
-					{ Source = SourceType.Base, Target = ModifiedValue.Strength,     Type = ActionType.Set, Bonus = 2 },
-					{ Source = SourceType.Base, Target = ModifiedValue.Agility,      Type = ActionType.Set, Bonus = 0 },
-					{ Source = SourceType.Base, Target = ModifiedValue.Constitution, Type = ActionType.Set, Bonus = 2 },
-					{ Source = SourceType.Base, Target = ModifiedValue.Intellect,    Type = ActionType.Set, Bonus = -4 },
-					{ Source = SourceType.Base, Target = ModifiedValue.Arcana,       Type = ActionType.Set, Bonus = -4 },
-					{ Source = SourceType.Base, Target = ModifiedValue.Wisdom,       Type = ActionType.Set, Bonus = -2 },
-					{ Source = SourceType.Base, Target = ModifiedValue.Presence,     Type = ActionType.Set, Bonus = -2 },
-					{ Source = SourceType.Base, Target = ModifiedValue.Charisma,     Type = ActionType.Set, Bonus = -2 },
+					{ Source = SourceType.Base, Target = ModifiedValue.Strength,     Type = ActionType.Base, Bonus = 2 },
+					{ Source = SourceType.Base, Target = ModifiedValue.Agility,      Type = ActionType.Base, Bonus = 0 },
+					{ Source = SourceType.Base, Target = ModifiedValue.Constitution, Type = ActionType.Base, Bonus = 2 },
+					{ Source = SourceType.Base, Target = ModifiedValue.Intellect,    Type = ActionType.Base, Bonus = -4 },
+					{ Source = SourceType.Base, Target = ModifiedValue.Arcana,       Type = ActionType.Base, Bonus = -4 },
+					{ Source = SourceType.Base, Target = ModifiedValue.Wisdom,       Type = ActionType.Base, Bonus = -2 },
+					{ Source = SourceType.Base, Target = ModifiedValue.Presence,     Type = ActionType.Base, Bonus = -2 },
+					{ Source = SourceType.Base, Target = ModifiedValue.Charisma,     Type = ActionType.Base, Bonus = -2 },
 				}
 			},
 

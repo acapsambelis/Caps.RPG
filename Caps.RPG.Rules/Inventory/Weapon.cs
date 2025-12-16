@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Caps.RPG.Content.Items
+namespace Caps.RPG.Rules.Inventory
 {
-    public interface Weapon
+    public class Weapon : Item
     {
+        public Weapon() : base() { }
+
     }
 }

@@ -51,8 +51,7 @@ namespace Caps.RPG.DungeonCrawler.UI
             // Container for image and health bar
             panel = new(new Vector2(topPanelHeight), PanelSkin.Fancy, Anchor.AutoInline)
             {
-                Padding = Vector2.Zero,
-                FillColor = ConsoleColorToXnaColor(data.Team.Color)
+                Padding = Vector2.Zero
             };
             panel.OnClick += CenterCamera;
             panel.OnMouseEnter += HighlightCharacter;
@@ -103,37 +102,12 @@ namespace Caps.RPG.DungeonCrawler.UI
             healthBar.ToolTipText = $"HP: {data.Health} / {data.Creature.MaxHealth}";
             healthBar.FillColor = GetColorForHealth(data.Health, data.Creature.MaxHealth);
             healthBar.ProgressFill.FillColor = healthBar.FillColor;
-            panel.FillColor = isFocused ? Color.Gold : ConsoleColorToXnaColor(data.Team.Color);
         }
 
         private static Color GetColorForHealth(int current, int max)
         {
             float healthPercent = current / (float)Math.Max(1, max);
             return healthPercent > 0.5f ? Color.LimeGreen : (healthPercent > 0.25f ? Color.Orange : Color.Red);
-        }
-
-        private static Color ConsoleColorToXnaColor(ConsoleColor color)
-        {
-            return color switch
-            {
-                ConsoleColor.Black => Color.Black,
-                ConsoleColor.DarkBlue => Color.DarkBlue,
-                ConsoleColor.DarkGreen => Color.DarkGreen,
-                ConsoleColor.DarkCyan => Color.DarkCyan,
-                ConsoleColor.DarkRed => Color.DarkRed,
-                ConsoleColor.DarkMagenta => Color.Purple,
-                ConsoleColor.DarkYellow => Color.Olive,
-                ConsoleColor.Gray => Color.Gray,
-                ConsoleColor.DarkGray => Color.DarkGray,
-                ConsoleColor.Blue => Color.Blue,
-                ConsoleColor.Green => Color.Green,
-                ConsoleColor.Cyan => Color.Cyan,
-                ConsoleColor.Red => Color.Red,
-                ConsoleColor.Magenta => Color.Magenta,
-                ConsoleColor.Yellow => Color.Yellow,
-                ConsoleColor.White => Color.White,
-                _ => Color.Pink
-            };
         }
     }
 }
