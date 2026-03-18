@@ -17,7 +17,7 @@ namespace Caps.RPG.DungeonCrawler.UI
 
         private Sprite characterSprite;
         private readonly Combattant data;
-        private readonly Map mapData;
+        private readonly EncounterMap mapData;
         private readonly Panel panel;
         private readonly ProgressBar healthBar;
         private bool isFocused = false;
@@ -42,7 +42,7 @@ namespace Caps.RPG.DungeonCrawler.UI
             }
         }
 
-        public InitiativeTracker(Sprite characterSprite, ref Combattant data, ref Map map) : base()
+        public InitiativeTracker(Sprite characterSprite, ref Combattant data, ref EncounterMap map) : base()
         {
             this.characterSprite = characterSprite;
             this.data = data;

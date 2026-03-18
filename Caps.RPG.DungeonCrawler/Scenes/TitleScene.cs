@@ -89,7 +89,8 @@ namespace Caps.RPG.DungeonCrawler.Scenes
 
         public void Continue()
         {
-            Core.ChangeScene(new PartyCreationScene(config));
+            Core.ChangeScene(new WorldMapScene(config, @"C:\Users\Alex Capsambelis\source\repos\RPG.Demo.World\RPG.Demo.World\temp\Orcelana Full 2026-03-07-01-43.json", () => Core.ChangeScene(new TitleScene(config))));
+            //Core.ChangeScene(new PartyCreationScene(config));
         }
 
         public void NewGame()

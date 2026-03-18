@@ -18,7 +18,7 @@ namespace Caps.RPG.DungeonCrawler.UI
     {
         public static readonly Dictionary<string, Sprite> ActionIcons = [];
 
-        private readonly Map map;
+        private readonly EncounterMap map;
         private readonly Combattant combattant;
 
         private readonly Label nameLabel;
@@ -31,7 +31,7 @@ namespace Caps.RPG.DungeonCrawler.UI
         public Combattant Combattant => combattant;
         public Panel Panel { get; }
 
-        public CharacterControlsPanel(Combattant combattant, Texture2D characterIcon, Map map, EventCallback actionSelection, EventCallback endTurn)
+        public CharacterControlsPanel(Combattant combattant, Texture2D characterIcon, EncounterMap map, EventCallback actionSelection, EventCallback endTurn)
         {
             this.map = map;
             this.combattant = combattant;

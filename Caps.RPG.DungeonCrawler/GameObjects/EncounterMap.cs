@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Caps.RPG.DungeonCrawler.GameObjects
 {
-    public class Map
+    public class EncounterMap
     {
         public static Sprite Grassland { get; set; }
 
@@ -55,7 +55,7 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
             }
         }
 
-        public Map(TileMap mapData, Dictionary<string, Sprite> characterSprites)
+        public EncounterMap(TileMap mapData, Dictionary<string, Sprite> characterSprites)
         {
             this.mapData = mapData;
             tiles = new Tile[mapData.GridWidth, mapData.GridDepth];

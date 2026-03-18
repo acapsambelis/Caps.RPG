@@ -27,12 +27,14 @@
     <PackageReference Include="GeonBit.UI" Version="4.3.0.4" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />
+    <PackageReference Include="SkiaSharp" Version="2.88.6" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Caps.RPG.Content\Caps.RPG.Content.csproj" />
     <ProjectReference Include="..\Caps.RPG.MonoGame\Caps.RPG.MonoGame.csproj" />
     <ProjectReference Include="..\Caps.RPG.Rules\Caps.RPG.Rules.csproj" />
     <ProjectReference Include="..\Caps.Util\Caps.Util.csproj" />
+    <ProjectReference Include="..\Caps.RPG.World\Caps.RPG.World.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="InstallData\game.config">

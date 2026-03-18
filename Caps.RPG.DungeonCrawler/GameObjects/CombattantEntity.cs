@@ -24,12 +24,12 @@ namespace Caps.RPG.DungeonCrawler.GameObjects
 
         private InventoryManager inventoryManager;
 
-        private readonly Map map;
+        private readonly EncounterMap map;
         private readonly Texture2D icon;
         private readonly Sprite deathSprite;
         private readonly Texture2D deathIcon;
 
-        public CombattantEntity(ref Combattant combattant, Sprite sprite, ref Map map, GeonBit.UI.EventCallback ActionClicked, GeonBit.UI.EventCallback EndTurn)
+        public CombattantEntity(ref Combattant combattant, Sprite sprite, ref EncounterMap map, GeonBit.UI.EventCallback ActionClicked, GeonBit.UI.EventCallback EndTurn)
         {
             Combattant = combattant;
             Combattant.OnPositionChanged += Moved;

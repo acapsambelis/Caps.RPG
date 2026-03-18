@@ -23,7 +23,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
         private readonly ClassedCharacter[] playerCharacters = playerCharacters;
         private readonly List<Combattant> combattants = [];
         private readonly Dictionary<string, Sprite> characterSprites = characterSprites;
-        private Map _map;
+        private EncounterMap _map;
         private MainLoop gameLoop;
         private readonly List<IUIEntity> uiUpdatingEntities = [];
         private Panel characterControlPanels;
@@ -139,7 +139,7 @@ namespace Caps.RPG.DungeonCrawler.Scenes
                 CharacterControlsPanel.ActionIcons[kvp.Key.ToLower()] = new Sprite(kvp.Value, new Vector2(1.0f));
             }
 
-            _map = new Map(hexMap, characterSprites);
+            _map = new EncounterMap(hexMap, characterSprites);
             foreach (Tile t in _map.Tiles)
                 RegisterClickable(t);
         }

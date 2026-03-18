@@ -59,7 +59,7 @@ namespace Caps.RPG.DungeonCrawler
 
             TextureAtlas tileAtlas = TextureAtlas.FromFile(Content, "images/tiles-definition.xml");
             TextureRegion grassland = tileAtlas.GetRegion("grassland");
-            Map.Grassland = new Sprite(grassland, new Vector2(3));
+            EncounterMap.Grassland = new Sprite(grassland, new Vector2(3));
             TextureRegion rock = tileAtlas.GetRegion("rock");
             CommonTileFeatures.Rock = new Sprite(rock, new Vector2(3));
             TextureRegion highlight = tileAtlas.GetRegion("highlight");

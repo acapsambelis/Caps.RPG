@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.10.35013.160
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11527.330 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Caps.RPG.Rules", "Caps.RPG.Rules\Caps.RPG.Rules.csproj", "{0C486C2B-5946-4631-B1A2-7795C3D56BD0}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SNS.Data.DataSerializer", "SNS.Data.DataSerializer\SNS.Data.DataSerializer.csproj", "{9443C3AE-9F4F-4C95-B71E-7A8C8D688E40}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Util", "Caps.Util\Caps.Util.csproj", "{53D79BA2-4757-4848-9360-A749AF0D4F9E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.RPG.World", "Caps.RPG.World\Caps.RPG.World.csproj", "{548184E8-91F2-84A5-D448-97EC1B153324}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,6 +60,12 @@ Global
 		{53D79BA2-4757-4848-9360-A749AF0D4F9E}.Develop|Any CPU.Build.0 = Release|Any CPU
 		{53D79BA2-4757-4848-9360-A749AF0D4F9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53D79BA2-4757-4848-9360-A749AF0D4F9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{548184E8-91F2-84A5-D448-97EC1B153324}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{548184E8-91F2-84A5-D448-97EC1B153324}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{548184E8-91F2-84A5-D448-97EC1B153324}.Develop|Any CPU.ActiveCfg = Release|Any CPU
+		{548184E8-91F2-84A5-D448-97EC1B153324}.Develop|Any CPU.Build.0 = Release|Any CPU
+		{548184E8-91F2-84A5-D448-97EC1B153324}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{548184E8-91F2-84A5-D448-97EC1B153324}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
