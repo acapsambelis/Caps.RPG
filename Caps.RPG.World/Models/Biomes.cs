@@ -51,6 +51,29 @@ namespace Caps.RPG.World.Models
         /// How packed icons can be for the biome (0 to 150)
         /// </summary>
         public int[]? IconsDensity { get; set; }
+
+        /// <summary>
+        /// Returns the biome index whose name matches <paramref name="name"/> (case-insensitive),
+        /// or null if <see cref="Names"/> is unpopulated or no match is found.
+        /// </summary>
+        public int? FindIdByName(string name)
+        {
+            if (Names == null) return null;
+            for (int i = 0; i < Names.Length; i++)
+            {
+                if (string.Equals(Names[i], name, System.StringComparison.OrdinalIgnoreCase))
+                    return i;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the habitability for the given biome index (0 = uninhabitable), or null if data is absent.
+        /// </summary>
+        public int? GetHabitability(int biomeId) =>
+            Habitability != null && biomeId >= 0 && biomeId < Habitability.Length
+                ? Habitability[biomeId]
+                : null;
     }
 
 }

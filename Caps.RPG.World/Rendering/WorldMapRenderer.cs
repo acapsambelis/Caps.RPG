@@ -350,6 +350,12 @@ namespace Caps.RPG.World.Rendering
                     catch (Exception ex) { Debug.WriteLine($"DrawStateBorders failed: {ex.Message}"); }
                 }
 
+                if (EnabledLayers.HasFlag(MapLayer.ProvinceBorders))
+                {
+                    try { DrawProvinceBorders(canvas, map); }
+                    catch (Exception ex) { Debug.WriteLine($"DrawProvinceBorders failed: {ex.Message}"); }
+                }
+
                 // Draw rivers when the layer is enabled regardless of high-level map mode.
                 // Previously rivers were only drawn from inside the StateAreas branch which
                 // caused DrawRiversIfPresent to be skipped in common cases (e.g. Physical mode).

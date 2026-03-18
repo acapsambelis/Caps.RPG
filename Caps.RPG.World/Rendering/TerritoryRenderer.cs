@@ -416,6 +416,28 @@ namespace Caps.RPG.World.Rendering
             }
         }
 
+        public void DrawProvinceOutlines(SKCanvas canvas, WorldMap pack)
+        {
+            if (_owner.BorderPaint == null || pack == null || pack.Cells?.VertexIndexes == null || pack.Vertices?.Coordinates == null || pack.ProvinceIndexes == null) return;
+            try
+            {
+                var edgeKeys = CollectBoundaryEdges(pack, i => i < pack.ProvinceIndexes.Length ? pack.ProvinceIndexes[i] : 0, requireReverseEdge: true, skipWaterNeighbors: true);
+
+                _owner.BorderPaint.Style = SKPaintStyle.Stroke;
+                _owner.BorderPaint.IsAntialias = true;
+                _owner.BorderPaint.StrokeCap = SKStrokeCap.Round;
+                _owner.BorderPaint.StrokeJoin = SKStrokeJoin.Round;
+                _owner.BorderPaint.Color = SKColors.Black.WithAlpha(60);
+                _owner.BorderPaint.StrokeWidth = Math.Max(0.5f, (float)(0.8 * Math.Min(_owner.Viewport.Scale, 2.0)));
+
+                DrawEdgeKeys(canvas, pack, edgeKeys);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"DrawProvinceOutlines failed: {ex.Message}");
+            }
+        }
+
         public void RenderVoronoiBasedStates(SKCanvas canvas, WorldMap pack)
         {
             if (pack.Grid?.Points==null || pack.StateIndexes==null || _owner.DefaultPaint==null) { Debug.WriteLine("Early exit - missing data or paint"); return; }

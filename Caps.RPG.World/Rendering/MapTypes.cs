@@ -71,7 +71,8 @@ namespace Caps.RPG.World.Rendering
         Labels = 64,
         StateAreas = 128,
         StateBorders = 512,
-        All = Terrain | Political | Cultural | Religion | Settlements | Rivers | Routes | Labels | StateAreas | StateBorders
+        ProvinceBorders = 1024,
+        All = Terrain | Political | Cultural | Religion | Settlements | Rivers | Routes | Labels | StateAreas | StateBorders | ProvinceBorders
     }
 
     /// <summary>

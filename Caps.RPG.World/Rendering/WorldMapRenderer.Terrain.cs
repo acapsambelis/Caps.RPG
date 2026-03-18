@@ -98,7 +98,10 @@ namespace Caps.RPG.World.Rendering
                     SKColor fillColor;
                     if (pack.BiomeIndexes != null && cellIndex < pack.BiomeIndexes.Length)
                     {
-                        fillColor = GetBiomeColor(pack.BiomeIndexes[cellIndex]).WithAlpha(220);
+                        var bId = pack.BiomeIndexes[cellIndex];
+                        var habitability = pack.Biomes?.GetHabitability(bId);
+                        var alpha = habitability.HasValue ? (byte)(60 + habitability.Value * 160 / 100) : (byte)220;
+                        fillColor = GetBiomeColor(bId, pack.Biomes).WithAlpha(alpha);
                     }
                     else
                     {
@@ -132,7 +135,10 @@ namespace Caps.RPG.World.Rendering
                         screenPt.Y + screenR < -50 || screenPt.Y - screenR > _viewport.ViewBounds.Height + 50)
                         continue;
 
-                    var fillColor = GetBiomeColor(pack.BiomeIndexes[i]).WithAlpha(200);
+                    var bId = pack.BiomeIndexes[i];
+                    var habitability = pack.Biomes?.GetHabitability(bId);
+                    var alpha = habitability.HasValue ? (byte)(60 + habitability.Value * 160 / 100) : (byte)200;
+                    var fillColor = GetBiomeColor(bId, pack.Biomes).WithAlpha(alpha);
                     _defaultPaint.Color = fillColor;
                     canvas.DrawCircle(screenPt, screenR, _defaultPaint);
                 }
@@ -323,7 +329,7 @@ namespace Caps.RPG.World.Rendering
             if (pack.BiomeIndexes != null && cellIndex < pack.BiomeIndexes.Length)
             {
                 var biomeId = pack.BiomeIndexes[cellIndex];
-                return GetBiomeColor(biomeId);
+                return GetBiomeColor(biomeId, pack.Biomes);
             }
 
             // Fall back to elevation-based coloring
@@ -391,7 +397,8 @@ namespace Caps.RPG.World.Rendering
                 DrawBSplineClosedOnPath(oceanPath, ring);
             }
 
-            _defaultPaint.Color = GetBiomeColor(0);
+            var oceanBiomeId = pack.Biomes?.FindIdByName("Marine") ?? 0;
+            _defaultPaint.Color = GetBiomeColor(oceanBiomeId, pack.Biomes);
             _defaultPaint.Style = SKPaintStyle.Fill;
             _defaultPaint.IsAntialias = true;
             canvas.DrawPath(oceanPath, _defaultPaint);
@@ -429,9 +436,16 @@ namespace Caps.RPG.World.Rendering
             path.Close();
         }
 
-        private SKColor GetBiomeColor(int biomeId)
+        private SKColor GetBiomeColor(int biomeId, BiomesData? biomes = null)
         {
-            // Standard FMG biome colors
+            if (biomes?.Colors != null && biomeId >= 0 && biomeId < biomes.Colors.Length)
+            {
+                var hex = biomes.Colors[biomeId];
+                if (!string.IsNullOrEmpty(hex) && SKColor.TryParse(hex, out var loaded))
+                    return loaded;
+            }
+
+            // Fallback: standard FMG biome colors
             return biomeId switch
             {
                 0 => SKColor.Parse("#4682b4"), // Marine/Ocean

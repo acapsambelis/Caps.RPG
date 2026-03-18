@@ -292,5 +292,11 @@ namespace Caps.RPG.World.Rendering
             var tr = new TerritoryRenderer(this);
             tr.DrawStateOutlines(canvas, pack, soft: true);
         }
+
+        private void DrawProvinceBorders(SKCanvas canvas, WorldMap pack)
+        {
+            var tr = new TerritoryRenderer(this);
+            tr.DrawProvinceOutlines(canvas, pack);
+        }
     }
 }

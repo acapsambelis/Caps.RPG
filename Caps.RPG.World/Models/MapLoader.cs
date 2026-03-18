@@ -74,6 +74,13 @@ namespace Caps.RPG.World.Models
                     ParsePackFromJson(packElement, map, options);
                 }
 
+                // Parse biomes section (top-level key alongside "pack")
+                if (root.TryGetProperty("biomes", out var biomesElement) && biomesElement.ValueKind == JsonValueKind.Object)
+                {
+                    map.Biomes = ParseBiomesFromJson(biomesElement);
+                    System.Diagnostics.Debug.WriteLine($"🚨 JSON EXPORT: Loaded biomes data ({map.Biomes.Names?.Length ?? 0} biomes)");
+                }
+
                 // Parse info section for map metadata
                 if (root.TryGetProperty("info", out var infoElement))
                 {
@@ -93,6 +100,7 @@ namespace Caps.RPG.World.Models
                 System.Diagnostics.Debug.WriteLine($"   States: {map?.States?.Count ?? 0}");
                 System.Diagnostics.Debug.WriteLine($"   Burgs: {map?.Burgs?.Count ?? 0}");
                 System.Diagnostics.Debug.WriteLine($"   Features: {map?.Features?.Count ?? 0}");
+                System.Diagnostics.Debug.WriteLine($"   Biomes: {map?.Biomes?.Names?.Length ?? 0}");
 
                 return map;
             }
@@ -668,6 +676,54 @@ namespace Caps.RPG.World.Models
                 System.Diagnostics.Debug.WriteLine($"🚨 MAP LOADING ERROR: Burg extraction failed: {ex.Message}");
                 return null;
             }
+        }
+
+        private static BiomesData ParseBiomesFromJson(JsonElement biomesElement)
+        {
+            var biomes = new BiomesData();
+
+            if (biomesElement.TryGetProperty("i", out var iElement) && iElement.ValueKind == JsonValueKind.Array)
+                biomes.BiomeIds = iElement.EnumerateArray().Select(x => x.GetInt32()).ToArray();
+
+            if (biomesElement.TryGetProperty("name", out var nameElement) && nameElement.ValueKind == JsonValueKind.Array)
+                biomes.Names = nameElement.EnumerateArray().Select(x => x.GetString() ?? string.Empty).ToArray();
+
+            if (biomesElement.TryGetProperty("color", out var colorElement) && colorElement.ValueKind == JsonValueKind.Array)
+                biomes.Colors = colorElement.EnumerateArray().Select(x => x.GetString() ?? string.Empty).ToArray();
+
+            if (biomesElement.TryGetProperty("cost", out var costElement) && costElement.ValueKind == JsonValueKind.Array)
+                biomes.MovementCost = costElement.EnumerateArray().Select(x => x.GetInt32()).ToArray();
+
+            if (biomesElement.TryGetProperty("habitability", out var habitElement) && habitElement.ValueKind == JsonValueKind.Array)
+                biomes.Habitability = habitElement.EnumerateArray().Select(x => x.GetInt32()).ToArray();
+
+            if (biomesElement.TryGetProperty("iconsDensity", out var densityElement) && densityElement.ValueKind == JsonValueKind.Array)
+                biomes.IconsDensity = densityElement.EnumerateArray().Select(x => x.GetInt32()).ToArray();
+
+            // icons is a 2D array: outer = biome index, inner = icon name strings
+            if (biomesElement.TryGetProperty("icons", out var iconsElement) && iconsElement.ValueKind == JsonValueKind.Array)
+                biomes.Icons = iconsElement.EnumerateArray()
+                    .Select(row => row.ValueKind == JsonValueKind.Array
+                        ? row.EnumerateArray().Select(x => x.GetString() ?? string.Empty).ToArray()
+                        : Array.Empty<string>())
+                    .ToArray();
+
+            // FMG uses "biomesMartix" (typo) in some versions, "biomesMatrix" in others
+            foreach (var matrixKey in new[] { "biomesMartix", "biomesMatrix" })
+            {
+                if (biomesElement.TryGetProperty(matrixKey, out var matrixElement) && matrixElement.ValueKind == JsonValueKind.Array)
+                {
+                    biomes.BiomesMatrix = matrixElement.EnumerateArray()
+                        .Select(row => row.ValueKind == JsonValueKind.Array
+                            ? row.EnumerateArray().Select(x => (byte)x.GetInt32()).ToArray()
+                            : Array.Empty<byte>())
+                        .ToArray();
+                    break;
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLine($"🚨 JSON EXPORT: Parsed biomes: {biomes.Names?.Length ?? 0} entries");
+            return biomes;
         }
 
         private static void ParseCultures(JsonElement array, List<Caps.RPG.World.Models.Culture> culturesList, JsonSerializerOptions options)
