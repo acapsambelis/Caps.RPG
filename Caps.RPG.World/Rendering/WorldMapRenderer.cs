@@ -514,7 +514,7 @@ namespace Caps.RPG.World.Rendering
 
         private float GetEnhancedSettlementSize(Burg burg)
         {
-            var baseSize = burg.Capital ? 10 : 5; var populationFactor = Math.Log10(burg.Population + 1); var scaleFactor = Math.Min(_viewport.Scale, 2.0); return (float)((baseSize + populationFactor * 2) * scaleFactor);
+            var baseSize = burg.Capital ? 5 : 2.5; var populationFactor = Math.Log10(burg.Population + 1); var scaleFactor = Math.Min(_viewport.Scale, 2.0); return (float)((baseSize + populationFactor * 2) * scaleFactor);
         }
 
         /// <summary>

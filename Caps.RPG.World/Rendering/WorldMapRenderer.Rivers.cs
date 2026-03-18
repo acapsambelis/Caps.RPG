@@ -308,16 +308,6 @@ namespace Caps.RPG.World.Rendering
                         }
                         swRiver.Stop();
                         PerfLogDuration($"River#{riverIndex}", swRiver.ElapsedMilliseconds);
-
-                        // Debug: draw a magenta dot at the river's final world-space endpoint so the
-                        // user can visually confirm where each river terminates relative to the coast.
-                        if (EnableRiverPerfDebug && smoothWorld.Count > 0)
-                        {
-                            var lastWorld = smoothWorld[smoothWorld.Count - 1];
-                            var lastScreen = _viewport.WorldToScreen(lastWorld);
-                            using var dotPaint = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Fill, Color = SKColors.Magenta.WithAlpha(220) };
-                            canvas.DrawCircle(lastScreen.X, lastScreen.Y, 4f, dotPaint);
-                        }
                     }
                     swRivers.Stop();
                     PerfLogDuration("Rivers total", swRivers.ElapsedMilliseconds);
